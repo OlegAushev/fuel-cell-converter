@@ -1,0 +1,10 @@
+/cpu1/CPU1_DEBUG/
+/cpu1/CPU1_DEBUG_SINGLECORE/
+/cpu1/CPU1_RELEASE/
+/cpu1/CPU1_TESTS/
+/cpu2/CPU2_RELEASE/
+/cpu2/CPU2_DEBUG/
+/doc/html/
+/doc/latex/
+/cpu1/.settings/org.eclipse.core.resources.prefs
+/cpu2/.settings/org.eclipse.core.resources.prefs
