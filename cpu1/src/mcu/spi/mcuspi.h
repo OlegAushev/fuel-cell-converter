@@ -73,7 +73,7 @@ enum SpiProtocol
 /// SPI mode
 enum SpiMode
 {
-	SPI_MODE_SLAVE = SPI_MODE_SLAVE,		//!< SPI slave
+	SPI_MODE_SLAVE = ::SPI_MODE_SLAVE,		//!< SPI slave
 	SPI_MODE_MASTER = ::SPI_MODE_MASTER,		//!< SPI master
 	SPI_MODE_SLAVE_OD = ::SPI_MODE_SLAVE_OD,	//!< SPI slave w/ output (TALK) disabled
 	SPI_MODE_MASTER_OD = ::SPI_MODE_MASTER_OD	//!< SPI master w/ output (TALK) disabled
