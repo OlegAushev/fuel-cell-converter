@@ -12,6 +12,8 @@
 
 #include "driverlib.h"
 #include "device.h"
+#include "../system/mcusystem.h"
+#include "../gpio/mcugpio.h"
 #include "emb/emb_common.h"
 
 
@@ -25,30 +27,6 @@ enum I2CModule
 {
 	I2CA,
 	I2CB
-};
-
-
-namespace tag {
-/// tag - use I2CA
-struct use_i2ca {};
-/// tag - use I2CB
-struct use_i2cb {};
-}
-
-/// I2C SDA pins
-enum I2CSdaPin
-{
-	I2CA_SDA_GPIO_32,
-	I2CA_SDA_GPIO_104,
-	I2CB_SDA_GPIO_40
-};
-
-/// I2C SCL pins
-enum I2CSclPin
-{
-	I2CA_SCL_GPIO_33,
-	I2CA_SCL_GPIO_105,
-	I2CB_SCL_GPIO_41
 };
 
 /// Count of bits per data word.
@@ -82,24 +60,20 @@ struct I2CConfig
 	uint16_t slaveAddr;
 };
 
+
+namespace detail {
 /**
  * @brief I2C module implementation
  */
 struct I2CModuleImpl
 {
-	const uint32_t base;
-	uint32_t sdaPin;
-	uint32_t sdaPinMux;
-	uint32_t sclPin;
-	uint32_t sclPinMux;
+	uint32_t base;
+	I2CModuleImpl(uint32_t _base) : base(_base) {}
 };
 
-namespace detail {
-extern const uint32_t i2cSdaPins[3];
-extern const uint32_t i2cSdaPinMuxs[3];
-extern const uint32_t i2cSclPins[3];
-extern const uint32_t i2cSclPinMuxs[3];
-}
+extern const uint32_t i2cBases[2];
+} // namespace detail
+
 
 /**
  * @brief I2C unit class.
@@ -108,29 +82,58 @@ template <I2CModule Module>
 class I2CUnit : public emb::c28x::Singleton<I2CUnit<Module> >
 {
 private:
+	detail::I2CModuleImpl m_module;
+
 	I2CUnit(const I2CUnit& other);			// no copy constructor
 	I2CUnit& operator=(const I2CUnit& other);	// no copy assignment operator
 public:
-	/// I2C module
-	static I2CModuleImpl module;
-
 	/**
 	 * @brief Initializes MCU I2C unit.
-	 * @param sdaPin - MCU I2C-SDA pin
-	 * @param sclPin - MCU I2C-SCL pin
+	 * @param sdaPin - MCU I2C-SDA pin config
+	 * @param sclPin - MCU I2C-SCL pin config
 	 * @param slaveAddr - slave address
 	 */
-	I2CUnit(I2CSdaPin sdaPin, I2CSclPin sclPin, const I2CConfig& cfg);
+	I2CUnit(const GpioPinConfig& sdaPin, const GpioPinConfig& sclPin, const I2CConfig& cfg)
+		: emb::c28x::Singleton<I2CUnit<Module> >(this)
+		, m_module(detail::i2cBases[Module])
+	{
+#ifdef CPU1
+		_initPins(sdaPin, sclPin);
+#endif
+		I2C_disableModule(m_module.base);
+
+		I2C_initMaster(m_module.base, mcu::sysclkFreq(), cfg.bitrate, static_cast<I2C_DutyCycle>(cfg.dutyCycle));
+		I2C_setBitCount(m_module.base, static_cast<I2C_BitCount>(cfg.bitCount));
+		I2C_setSlaveAddress(m_module.base, cfg.slaveAddr);
+		I2C_setEmulationMode(m_module.base, I2C_EMULATION_FREE_RUN);
+
+		I2C_disableFIFO(m_module.base);
+		I2C_enableModule(m_module.base);
+	}
 
 #ifdef CPU1
 	/**
 	 * @brief Transfers control over I2C unit to CPU2.
-	 * @param sdaPin - MCU I2C-SDA pin
-	 * @param sclPin - MCU I2C-SCL pin
+	 * @param sdaPin - MCU I2C-SDA pin config
+	 * @param sclPin - MCU I2C-SCL pin config
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(I2CSdaPin sdaPin, I2CSclPin sclPin);
+	static void transferControlToCpu2(const GpioPinConfig& sdaPin, const GpioPinConfig& sclPin)
+	{
+		_initPins(sdaPin, sclPin);
+		GPIO_setMasterCore(sdaPin.no, GPIO_CORE_CPU2);
+		GPIO_setMasterCore(sclPin.no, GPIO_CORE_CPU2);
+
+		SysCtl_selectCPUForPeripheral(SYSCTL_CPUSEL7_I2C, static_cast<uint16_t>(Module)+1, SYSCTL_CPUSEL_CPU2);
+	}
 #endif
+
+	/**
+	 * @brief Returns base of I2C-unit.
+	 * @param (none)
+	 * @return Base of I2C-unit.
+	 */
+	uint32_t base() const { return m_module.base; }
 
 	/**
 	 * @brief Sets slave address.
@@ -144,14 +147,28 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enable() { I2C_enableModule(module.base); }
+	void enable() { I2C_enableModule(m_module.base); }
 
 	/**
 	 * @brief Disables unit.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disable() { I2C_disableModule(module.base); }
+	void disable() { I2C_disableModule(m_module.base); }
+
+protected:
+#ifdef CPU1
+	static void _initPins(const GpioPinConfig& sdaPin, const GpioPinConfig& sclPin)
+	{
+		GPIO_setPadConfig(sdaPin.no, GPIO_PIN_TYPE_PULLUP);
+		GPIO_setQualificationMode(sdaPin.no, GPIO_QUAL_ASYNC);
+		GPIO_setPinConfig(sdaPin.mux);
+
+		GPIO_setPadConfig(sclPin.no, GPIO_PIN_TYPE_PULLUP);
+		GPIO_setQualificationMode(sclPin.no, GPIO_QUAL_ASYNC);
+		GPIO_setPinConfig(sclPin.mux);
+	}
+#endif
 };
 
 

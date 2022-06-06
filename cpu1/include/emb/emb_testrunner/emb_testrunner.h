@@ -8,7 +8,7 @@
 #include <assert.h>
 
 
-#ifdef RUNTESTS
+#ifdef TEST_BUILD
 void RUN_TESTS();
 #endif
 

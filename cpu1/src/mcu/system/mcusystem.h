@@ -14,13 +14,23 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "../gpio/mcugpio.h"
 #include "emb/emb_common.h"
 
 
 namespace mcu {
 /// @addtogroup mcu_system
 /// @{
+
+
+/// Tags for tag dispatching
+namespace tag {
+
+struct not_configured {};
+struct use_i2ca {};
+struct use_i2cb {};
+
+} // namespace tag
+
 
 /**
  * @brief Initializes MCU device.
@@ -126,104 +136,18 @@ public:
 };
 #define CRITICAL_SECTION CriticalSection EMB_UNIQ_ID(__LINE__);
 
-
-//******************************************************************************
-#if defined(_LAUNCHXL_F28379D)
-/// LaunchPad LEDs.
-enum LaunchPadLed
-{
-	LED_BLUE = 31,
-	LED_RED = 34
-};
-
 /**
- * @brief Configures LaunchPad LEDs.
- * @param blueLedCore - blue LED controlling CPU
- * @param redLedCore - red LED controlling CPU
- * @return (none)
+ * @brief Returns device SYSCLK frequency.
+ * @param (none)
+ * @return Device SYSCLK frequency.
  */
-inline void configureLaunchPadLeds(GPIO_CoreSelect blueLedCore, GPIO_CoreSelect redLedCore)
+inline uint32_t sysclkFreq()
 {
-	GpioPin ledBlue(31, GPIO_31_GPIO31, mcu::PIN_OUTPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-	GpioPin ledRed(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-
-	initGpioPin(ledBlue);
-	GPIO_setMasterCore(ledBlue.no, blueLedCore);
-
-	initGpioPin(ledRed);
-	GPIO_setMasterCore(ledRed.no, redLedCore);
+	return DEVICE_SYSCLK_FREQ;
 }
-
-/**
- * @brief Turns specified LaunchPad LED on.
- * @param led - LaunchPad LED
- * @return (none)
- */
-inline void turnLedOn(LaunchPadLed led) { GPIO_writePin(led, 0); }
-
-/**
- * @brief Turns specified LaunchPad LED off.
- * @param led - LaunchPad LED
- * @return (none)
- */
-inline void turnLedOff(LaunchPadLed led) { GPIO_writePin(led, 1); }
-
-/**
- * @brief Toggles specified LaunchPad LED.
- * @param led - LaunchPad LED
- * @return (none)
- */
-inline void toggleLed(LaunchPadLed led) { GPIO_togglePin(led); }
-
-
-#elif defined(CONTROLCARD)
-
-enum ControlCardLed
-{
-	LED_RED = 34/**< LED_RED */
-};
-
-/**
- * @brief Configures controlCARD LEDs.
- * @param ledRedCore - LED RED1 controlling CPU
- * @return (none)
- */
-inline void configureControlCardLeds(GPIO_CoreSelect ledRedCore)
-{
-	GpioPin ledRed(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-
-	initGpioPin(ledRed);
-	GPIO_setMasterCore(ledRed.no, ledRedCore);
-}
-
-/**
- * @brief Turns specified LaunchPad LED on.
- * @param led - LaunchPad LED
- * @return (none)
- */
-inline void turnLedOn(ControlCardLed led) { GPIO_writePin(led, 0); }
-
-/**
- * @brief Turns specified LaunchPad LED off.
- * @param led - LaunchPad LED
- * @return (none)
- */
-inline void turnLedOff(ControlCardLed led) { GPIO_writePin(led, 1); }
-
-/**
- * @brief Toggles specified LaunchPad LED.
- * @param led - LaunchPad LED
- * @return (none)
- */
-inline void toggleLed(ControlCardLed led) { GPIO_togglePin(led); }
-
-#endif
-//******************************************************************************
 
 
 /// @}
 } // namespace mcu
-
-
 
 

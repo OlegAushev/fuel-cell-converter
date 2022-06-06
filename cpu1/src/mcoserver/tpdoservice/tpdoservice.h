@@ -13,6 +13,8 @@
 #include "driverlib.h"
 #include "device.h"
 
+#include "../mcodef.h"
+#include "mcu/can/mcucan.h"
 #include "syslog/syslog.h"
 
 
@@ -31,19 +33,29 @@ namespace microcanopen {
  */
 struct CobTpdo1
 {
-	uint16_t statusRun : 1;			// bit 0
-	uint16_t statusFault : 1;		// bit 1
-	uint16_t statusWarning : 1;		// bit 2
-	uint16_t statusOverheat : 1;		// bit 3
-	uint16_t referenceType : 1;		// bit 4
-	uint16_t controlLoopType : 1;		// bit 5
-	uint16_t statusReserved : 2;		// bit 6..7
-	uint8_t driveState : 8;
-	int16_t speed : 16;
-	int8_t currentS : 8;
-	int8_t power : 8;
-	uint8_t voltageDC : 8;
-	uint8_t currentF : 8;
+	union
+	{
+		struct
+		{
+			uint16_t statusRun : 1;			// bit 0
+			uint16_t statusFault : 1;		// bit 1
+			uint16_t statusWarning : 1;		// bit 2
+			uint16_t statusOverheat : 1;		// bit 3
+			uint16_t referenceType : 1;		// bit 4
+			uint16_t controlLoopType : 1;		// bit 5
+			uint16_t statusReserved : 2;		// bit 6..7
+			uint8_t driveState : 8;
+			int16_t speed : 16;
+			int8_t currentS : 8;
+			int8_t power : 8;
+			uint8_t voltageDC : 8;
+			uint8_t currentF : 8;
+		} can1;
+		struct
+		{
+			uint64_t reserved;
+		} can2;
+	};
 	CobTpdo1()
 	{
 		uint64_t rawMsg = 0;
@@ -64,15 +76,25 @@ struct CobTpdo1
  */
 struct CobTpdo2
 {
-	uint8_t tempMotorS : 8;
-	uint8_t reserved1 : 8;
-	uint8_t voltageOut : 8;
-	uint8_t reserved2 : 7;
-	uint16_t torqueLimitation : 1;
-	uint8_t tempMotorFw : 8;
-	uint8_t tempHeatsink : 8;
-	uint8_t tepmCaseAir : 8;
-	uint8_t reserved3 : 8;
+	union
+	{
+		struct
+		{
+			uint8_t tempMotorS : 8;
+			uint8_t reserved1 : 8;
+			uint8_t voltageOut : 8;
+			uint8_t reserved2 : 7;
+			uint16_t torqueLimitation : 1;
+			uint8_t tempMotorFw : 8;
+			uint8_t tempHeatsink : 8;
+			uint8_t tepmCaseAir : 8;
+			uint8_t reserved3 : 8;
+		} can1;
+		struct
+		{
+			uint64_t reserved;
+		} can2;
+	};
 	CobTpdo2()
 	{
 		uint64_t rawMsg = 0;
@@ -93,15 +115,25 @@ struct CobTpdo2
  */
 struct CobTpdo3
 {
-	uint8_t voltagePosHousing : 8;
-	uint8_t voltageNegHousing : 8;
-	uint16_t statusReserved1 : 1;			// bit 0
-	uint16_t statusInsulationLow : 1;		// bit 1
-	uint16_t statusInsulationLowWoFilter : 1;	// bit 2
-	uint16_t statusReserved2 : 1;			// bit 3
-	uint16_t reserved1 : 4;
-	int8_t currentDC : 8;
-	uint32_t syslogInfo : 32;			// by protocol: uint32_t reserved2 : 32;
+	union
+	{
+		struct
+		{
+			uint8_t voltagePosHousing : 8;
+			uint8_t voltageNegHousing : 8;
+			uint16_t statusReserved1 : 1;			// bit 0
+			uint16_t statusInsulationLow : 1;		// bit 1
+			uint16_t statusInsulationLowWoFilter : 1;	// bit 2
+			uint16_t statusReserved2 : 1;			// bit 3
+			uint16_t reserved1 : 4;
+			int8_t currentDC : 8;
+			uint32_t syslogInfo : 32;			// by protocol: uint32_t reserved2 : 32;
+		} can1;
+		struct
+		{
+			uint64_t reserved;
+		} can2;
+	};
 	CobTpdo3()
 	{
 		uint64_t rawMsg = 0;
@@ -122,8 +154,18 @@ struct CobTpdo3
  */
 struct CobTpdo4
 {
-	uint32_t faults : 32;
-	uint32_t warnings : 32;
+	union
+	{
+		struct
+		{
+			uint32_t faults : 32;
+			uint32_t warnings : 32;
+		} can1;
+		struct
+		{
+			uint64_t reserved;
+		} can2;
+	};
 	CobTpdo4()
 	{
 		uint64_t rawMsg = 0;
@@ -144,6 +186,7 @@ struct CobTpdo4
 /**
  * @brief TPDO-service class.
  */
+template <mcu::CanModule Module>
 class TpdoService
 {
 	friend class TpdoServiceTest;
@@ -157,7 +200,7 @@ public:
 	 * @param (none)
 	 * @return TPDO1 message raw data.
 	 */
-	static uint64_t makeTpdo1();
+	uint64_t makeTpdo1();
 
 	/**
 	 * @ingroup mco_app_spec
@@ -165,7 +208,7 @@ public:
 	 * @param (none)
 	 * @return TPDO2 message raw data.
 	 */
-	static uint64_t makeTpdo2();
+	uint64_t makeTpdo2();
 
 	/**
 	 * @ingroup mco_app_spec
@@ -173,7 +216,7 @@ public:
 	 * @param (none)
 	 * @return TPDO3 message raw data.
 	 */
-	static uint64_t makeTpdo3();
+	uint64_t makeTpdo3();
 
 	/**
 	 * @ingroup mco_app_spec
@@ -181,7 +224,7 @@ public:
 	 * @param (none)
 	 * @return TPDO4 message raw data.
 	 */
-	static uint64_t makeTpdo4();
+	uint64_t makeTpdo4();
 
 /* ========================================================================== */
 /* =================== APPLICATION-SPECIFIC PART BEGIN ====================== */
@@ -190,12 +233,17 @@ public:
 	/**
 	 * @ingroup mco_app_spec
 	 * @brief Configures service.
-	 * @param drive - pointer to Drive instance
 	 */
 	TpdoService()
 	{
-
+//		drive6Ph = _drive6Ph;
+//		drive3Ph_1 = _drive3Ph_1;
+//		drive3Ph_2 = _drive3Ph_2;
 	}
+
+//	const acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive6Ph;
+//	const acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive3Ph_1;
+//	const acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive3Ph_2;
 
 private:
 	static const float SPEED_RPM_LIMIT = 8000;
@@ -219,7 +267,7 @@ private:
 	 */
 //	static void saveDriveState(CobTpdo1& msg, acim::DriveState state)
 //	{
-//		msg.driveState = static_cast<uint8_t>(state);
+//		msg.can1.driveState = static_cast<uint8_t>(state);
 //	}
 
 	/**
@@ -231,12 +279,12 @@ private:
 	{
 		if (speedRpm >= 0)
 		{
-			msg.speed = ((speedRpm > SPEED_RPM_LIMIT) ?
+			msg.can1.speed = ((speedRpm > SPEED_RPM_LIMIT) ?
 					32767 : (speedRpm / SPEED_RPM_LIMIT) * 32767);
 		}
 		else
 		{
-			msg.speed = ((speedRpm < -SPEED_RPM_LIMIT) ?
+			msg.can1.speed = ((speedRpm < -SPEED_RPM_LIMIT) ?
 					-32768 : (speedRpm / SPEED_RPM_LIMIT) * 32768);
 		}
 	}
@@ -250,12 +298,12 @@ private:
 	{
 		if (current >= 0)
 		{
-			msg.currentS = ((current > STATOR_CURRENT_LIMIT) ?
+			msg.can1.currentS = ((current > STATOR_CURRENT_LIMIT) ?
 					127 : (current / STATOR_CURRENT_LIMIT) * 127);
 		}
 		else
 		{
-			msg.currentS = ((current < -STATOR_CURRENT_LIMIT) ?
+			msg.can1.currentS = ((current < -STATOR_CURRENT_LIMIT) ?
 					-128 : (current / STATOR_CURRENT_LIMIT) * 128);
 		}
 	}
@@ -270,12 +318,12 @@ private:
 		{
 			if (power >= 0)
 			{
-				msg.power = ((power > POWER_LIMIT) ?
+				msg.can1.power = ((power > POWER_LIMIT) ?
 					127 : (power / POWER_LIMIT) * 127);
 			}
 			else
 			{
-				msg.power = ((power < -POWER_LIMIT) ?
+				msg.can1.power = ((power < -POWER_LIMIT) ?
 						-128 : (power / POWER_LIMIT) * 128);
 			}
 		}
@@ -290,11 +338,11 @@ private:
 	{
 		if (voltage < 0)
 		{
-			msg.voltageDC = 0;
+			msg.can1.voltageDC = 0;
 		}
 		else
 		{
-			msg.voltageDC = ((voltage > DC_VOLTAGE_LIMIT) ?
+			msg.can1.voltageDC = ((voltage > DC_VOLTAGE_LIMIT) ?
 					255 : (voltage / DC_VOLTAGE_LIMIT) * 255);
 		}
 	}
@@ -308,11 +356,11 @@ private:
 	{
 		if (current < 0)
 		{
-			msg.currentF = 0;
+			msg.can1.currentF = 0;
 		}
 		else
 		{
-			msg.currentF = ((current > FIELD_CURRENT_LIMIT) ?
+			msg.can1.currentF = ((current > FIELD_CURRENT_LIMIT) ?
 					255 : (current / FIELD_CURRENT_LIMIT) * 255);
 		}
 	}
@@ -322,28 +370,28 @@ private:
 	 * @param msg
 	 * @param run
 	 */
-	static void saveRunStatus(CobTpdo1& msg, uint32_t run) { msg.statusRun = ((run == 0) ? 0 : 1); }
+	static void saveRunStatus(CobTpdo1& msg, uint32_t run) { msg.can1.statusRun = ((run == 0) ? 0 : 1); }
 
 	/**
 	 *
 	 * @param msg
 	 * @param fault
 	 */
-	static void saveFaultStatus(CobTpdo1& msg, uint32_t fault) { msg.statusFault = ((fault == 0) ? 0 : 1); }
+	static void saveFaultStatus(CobTpdo1& msg, uint32_t fault) { msg.can1.statusFault = ((fault == 0) ? 0 : 1); }
 
 	/**
 	 *
 	 * @param msg
 	 * @param warning
 	 */
-	static void saveWarningStatus(CobTpdo1& msg, uint32_t warning) { msg.statusWarning = ((warning == 0) ? 0 : 1); }
+	static void saveWarningStatus(CobTpdo1& msg, uint32_t warning) { msg.can1.statusWarning = ((warning == 0) ? 0 : 1); }
 
 	/**
 	 *
 	 * @param msg
 	 * @param overheat
 	 */
-	static void saveOverheatStatus(CobTpdo1& msg, uint32_t overheat) { msg.statusOverheat = ((overheat == 0) ? 0 : 1); }
+	static void saveOverheatStatus(CobTpdo1& msg, uint32_t overheat) { msg.can1.statusOverheat = ((overheat == 0) ? 0 : 1); }
 
 	/**
 	 *
@@ -355,10 +403,10 @@ private:
 //		switch (ref)
 //		{
 //		case acim::SPEED_REFERENCE:
-//			msg.referenceType = 0;
+//			msg.can1.referenceType = 0;
 //			break;
 //		case acim::TORQUE_REFERENCE:
-//			msg.referenceType = 1;
+//			msg.can1.referenceType = 1;
 //			break;
 //		}
 //	}
@@ -373,10 +421,10 @@ private:
 //		switch (loopType)
 //		{
 //		case acim::OPEN_LOOP:
-//			msg.controlLoopType = 0;
+//			msg.can1.controlLoopType = 0;
 //			break;
 //		case acim::CLOSED_LOOP:
-//			msg.controlLoopType = 1;
+//			msg.can1.controlLoopType = 1;
 //			break;
 //		}
 //	}
@@ -393,11 +441,11 @@ private:
 	{
 		if (temp < -TEMP_OFFSET)
 		{
-			msg.tempMotorS = 0;
+			msg.can1.tempMotorS = 0;
 		}
 		else
 		{
-			msg.tempMotorS = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
+			msg.can1.tempMotorS = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
 		}
 	}
 
@@ -410,15 +458,15 @@ private:
 	{
 		if (voltagePU > 1)
 		{
-			msg.voltageOut = 255;
+			msg.can1.voltageOut = 255;
 		}
 		else if (voltagePU < 0)
 		{
-			msg.voltageOut = 0;
+			msg.can1.voltageOut = 0;
 		}
 		else
 		{
-			msg.voltageOut = voltagePU * 255;
+			msg.can1.voltageOut = voltagePU * 255;
 		}
 	}
 
@@ -429,7 +477,7 @@ private:
 	 */
 	void saveTorqueLimitationStatus(CobTpdo2& msg, uint32_t status) const
 	{
-		msg.torqueLimitation = ((status == 0) ? 0 : 1);
+		msg.can1.torqueLimitation = ((status == 0) ? 0 : 1);
 	}
 
 	/**
@@ -441,11 +489,11 @@ private:
 	{
 		if (temp < -TEMP_OFFSET)
 		{
-			msg.tempMotorFw = 0;
+			msg.can1.tempMotorFw = 0;
 		}
 		else
 		{
-			msg.tempMotorFw = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
+			msg.can1.tempMotorFw = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
 		}
 	}
 
@@ -458,11 +506,11 @@ private:
 	{
 		if (temp < -TEMP_OFFSET)
 		{
-			msg.tempHeatsink = 0;
+			msg.can1.tempHeatsink = 0;
 		}
 		else
 		{
-			msg.tempHeatsink = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
+			msg.can1.tempHeatsink = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
 		}
 	}
 
@@ -475,11 +523,11 @@ private:
 	{
 		if (temp < -TEMP_OFFSET)
 		{
-			msg.tepmCaseAir = 0;
+			msg.can1.tepmCaseAir = 0;
 		}
 		else
 		{
-			msg.tepmCaseAir = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
+			msg.can1.tepmCaseAir = (((temp + TEMP_OFFSET) > 255) ? 255 : temp + TEMP_OFFSET);
 		}
 	}
 
@@ -495,11 +543,11 @@ private:
 	{
 		if (voltage < 0)
 		{
-			msg.voltagePosHousing = 0;
+			msg.can1.voltagePosHousing = 0;
 		}
 		else
 		{
-			msg.voltagePosHousing = ((voltage > HOUSING_VOLTAGE_LIMIT) ?
+			msg.can1.voltagePosHousing = ((voltage > HOUSING_VOLTAGE_LIMIT) ?
 					255 : (voltage / HOUSING_VOLTAGE_LIMIT) * 255);
 		}
 	}
@@ -513,11 +561,11 @@ private:
 	{
 		if (voltage < 0)
 		{
-			msg.voltageNegHousing = 0;
+			msg.can1.voltageNegHousing = 0;
 		}
 		else
 		{
-			msg.voltageNegHousing = ((voltage > HOUSING_VOLTAGE_LIMIT) ?
+			msg.can1.voltageNegHousing = ((voltage > HOUSING_VOLTAGE_LIMIT) ?
 					255 : (voltage / HOUSING_VOLTAGE_LIMIT) * 255);
 		}
 	}
@@ -529,7 +577,7 @@ private:
 	 */
 	void saveInsulationLowStatus(CobTpdo3& msg, uint32_t status) const
 	{
-		msg.statusInsulationLow = ((status == 0) ? 0 : 1);
+		msg.can1.statusInsulationLow = ((status == 0) ? 0 : 1);
 	}
 
 	/**
@@ -539,7 +587,7 @@ private:
 	 */
 	void saveInsulationLowStatusWoFilter(CobTpdo3& msg, uint32_t status) const
 	{
-		msg.statusInsulationLowWoFilter = ((status == 0) ? 0 : 1);
+		msg.can1.statusInsulationLowWoFilter = ((status == 0) ? 0 : 1);
 	}
 
 	/**
@@ -551,12 +599,12 @@ private:
 	{
 		if (current >= 0)
 		{
-			msg.currentDC = ((current > DC_CURRENT_LIMIT) ?
+			msg.can1.currentDC = ((current > DC_CURRENT_LIMIT) ?
 					127 : (current / DC_CURRENT_LIMIT) * 127);
 		}
 		else
 		{
-			msg.currentDC = ((current < -DC_CURRENT_LIMIT) ?
+			msg.can1.currentDC = ((current < -DC_CURRENT_LIMIT) ?
 					-128 : (current / DC_CURRENT_LIMIT) * 128);
 		}
 	}
@@ -569,14 +617,14 @@ private:
 	 * @param msg
 	 * @param faults
 	 */
-	static void saveFaults(CobTpdo4& msg, uint32_t faults) { msg.faults = faults; }
+	static void saveFaults(CobTpdo4& msg, uint32_t faults) { msg.can1.faults = faults; }
 
 	/**
 	 *
 	 * @param msg
 	 * @param warnings
 	 */
-	static void saveWarnings(CobTpdo4& msg, uint32_t warnings) { msg.warnings = warnings; }
+	static void saveWarnings(CobTpdo4& msg, uint32_t warnings) { msg.can1.warnings = warnings; }
 
 /* ========================================================================== */
 /* =================== APPLICATION-SPECIFIC PART END ======================== */

@@ -88,8 +88,8 @@ inline size_t count(It first, It last, const T& value)
 /**
  * @brief Copies the elements in the range, defined by [first, last), to another range beginning at d_first.
  */
-template <class It>
-inline void copy(It first, It last, It d_first)
+template <class InputIt, class OutputIt>
+inline void copy(InputIt first, InputIt last, OutputIt d_first)
 {
 	for (; first != last; ++first, ++d_first)
 	{
@@ -215,24 +215,6 @@ inline Pair<It, It> minmax_element(It first, It last)
 	}
 	return Pair<It, It>(min, max);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 } // namespace emb

@@ -29,13 +29,20 @@ enum DacModule
 	DACC /**< DACC */
 };
 
+
+namespace detail {
 /**
  * @brief DAC module implementation.
  */
 struct DacModuleImpl
 {
-	const uint32_t base;
+	uint32_t base;
+	DacModuleImpl(uint32_t _base) : base(_base) {}
 };
+
+extern const uint32_t dacBases[3];
+} // namespace detail
+
 
 /**
  * @brief DAC input class.
@@ -72,17 +79,24 @@ template <DacModule Module>
 class DacUnit : public emb::c28x::Singleton<DacUnit<Module> >
 {
 private:
+	detail::DacModuleImpl m_module;
+
 	DacUnit(const DacUnit& other);			// no copy constructor
 	DacUnit& operator=(const DacUnit& other);	// no copy assignment operator
 public:
-	/// DAC module
-	static DacModuleImpl module;
-
 	/**
 	 * @brief Initializes MCU DAC unit.
 	 * @param (none)
 	 */
-	DacUnit();
+	DacUnit()
+		: emb::c28x::Singleton<DacUnit<Module> >(this)
+		, m_module(detail::dacBases[Module])
+	{
+		DAC_setReferenceVoltage(m_module.base, DAC_REF_ADC_VREFHI);
+		DAC_enableOutput(m_module.base);
+		DAC_setShadowValue(m_module.base, 0);
+		mcu::delay_us(10);	// Delay for buffered DAC to power up
+	}
 
 	/**
 	 * @brief Starts DAC.
@@ -91,7 +105,7 @@ public:
 	 */
 	void convert(DacInput input)
 	{
-		DAC_setShadowValue(module.base, input.value());
+		DAC_setShadowValue(m_module.base, input.value());
 	}
 };
 

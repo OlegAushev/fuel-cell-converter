@@ -19,33 +19,52 @@ namespace mcu {
 /// @addtogroup mcu_ipc
 /// @{
 
-
+/**
+ * @brief Local IPC signal.
+ */
 struct LocalIpcSignal
 {
-	const uint32_t flag;
+	uint32_t flag;
+	LocalIpcSignal() : flag(0) {}
 	explicit LocalIpcSignal(uint32_t flagNo)
 		: flag(1UL << flagNo)
 	{
-		ASSERT(flagNo < 32);
+		assert(flagNo < 32);
 	}
 };
 
+/**
+ * @brief Remote IPC signal.
+ */
 struct RemoteIpcSignal
 {
-	const uint32_t flag;
+	uint32_t flag;
+	RemoteIpcSignal() : flag(0) {}
 	explicit RemoteIpcSignal(uint32_t flagNo)
 		: flag(1UL << flagNo)
 	{
-		ASSERT(flagNo < 32);
+		assert(flagNo < 32);
 	}
+};
+
+/**
+ * @brief Local-Remote signal pair for objects which are created on both CPUs.
+ */
+struct IpcSignalPair
+{
+	LocalIpcSignal local;
+	RemoteIpcSignal remote;
+	IpcSignalPair() {}
+	explicit IpcSignalPair(uint32_t flagNo)
+		: local(flagNo)
+		, remote(flagNo)
+	{}
 };
 
 /**
  * @brief Sends IPC signal by setting local IPC flag.
  * @param ipcFlag
  * @return (none)
- * \callgraph
- * \callergraph
  */
 inline void sendIpcSignal(LocalIpcSignal ipcFlag)
 {
@@ -63,13 +82,12 @@ inline void waitForIpcSignal(RemoteIpcSignal ipcFlag)
 	IPCRtoLFlagAcknowledge(ipcFlag.flag);
 }
 
-#ifdef DUALCORE
 /**
- * @brief Checks if remote IPC flag is set.
+ * @brief Checks if remote IPC signal has been sent.
  * @param ipcFlag
- * @return (none)
+ * @return \c true if remote IPC signal has been sent, \c false otherwise.
  */
-inline bool isIpcSignalSet(RemoteIpcSignal ipcFlag)
+inline bool remoteIpcSignalSent(RemoteIpcSignal ipcFlag)
 {
 	if (IPCRtoLFlagBusy(ipcFlag.flag))
 	{
@@ -77,14 +95,13 @@ inline bool isIpcSignalSet(RemoteIpcSignal ipcFlag)
 	}
 	return false;
 }
-#endif
 
 /**
- * @brief Checks if local IPC flag is set.
+ * @brief Checks if local IPC signal has been sent.
  * @param ipcFlag
- * @return (none)
+ * @return \c true if local IPC signal has been sent, \c false otherwise.
  */
-inline bool isIpcSignalSet(LocalIpcSignal ipcFlag)
+inline bool localIpcSignalSent(LocalIpcSignal ipcFlag)
 {
 	if (IPCLtoRFlagBusy(ipcFlag.flag))
 	{
@@ -93,24 +110,22 @@ inline bool isIpcSignalSet(LocalIpcSignal ipcFlag)
 	return false;
 }
 
-#ifdef DUALCORE
 /**
- * @brief Acknowledges remote IPC flag.
+ * @brief Acknowledges remote IPC signal.
  * @param ipcFlag
  * @return (none)
  */
-inline void acknowledgeIpcSignal(RemoteIpcSignal ipcFlag)
+inline void acknowledgeRemoteIpcSignal(RemoteIpcSignal ipcFlag)
 {
 	IPCRtoLFlagAcknowledge(ipcFlag.flag);
 }
-#endif
 
 /**
- * @brief Clears local IPC flag.
+ * @brief Revokes local IPC signal.
  * @param ipcFlag
  * @return (none)
  */
-inline void acknowledgeIpcSignal(LocalIpcSignal ipcFlag)
+inline void revokeLocalIpcSignal(LocalIpcSignal ipcFlag)
 {
 	IPCLtoRFlagClear(ipcFlag.flag);
 }
@@ -145,56 +160,20 @@ inline void registerIpcInterruptHandler(IpcInterrupt ipcInterrupt, void (*handle
 /// @{
 #if (defined(DUALCORE) && defined(CPU1))
 extern const mcu::LocalIpcSignal CPU1_PERIPHERY_CONFIGURED;
-extern const mcu::LocalIpcSignal CAN_TSDO_READY;
-extern const mcu::LocalIpcSignal SYSLOG_RESET;
 
 extern const mcu::RemoteIpcSignal CPU2_BOOTED;
 extern const mcu::RemoteIpcSignal CPU2_PERIPHERY_CONFIGURED;
-extern const mcu::RemoteIpcSignal REPORT_SENT;
-extern const mcu::RemoteIpcSignal SETUPMSG_RECEIVED;
-extern const mcu::RemoteIpcSignal SYSLOG_POP_MESSAGE;
-extern const mcu::RemoteIpcSignal SYSLOG_ADD_MESSAGE;
-
-extern const mcu::RemoteIpcSignal CAN_FRAME_RECEIVED;
-extern const mcu::RemoteIpcSignal CAN_RPDO1_RECEIVED;
-extern const mcu::RemoteIpcSignal CAN_RPDO2_RECEIVED;
-extern const mcu::RemoteIpcSignal CAN_RPDO3_RECEIVED;
-extern const mcu::RemoteIpcSignal CAN_RPDO4_RECEIVED;
-extern const mcu::RemoteIpcSignal CAN_RSDO_RECEIVED;
 #endif
 
 #if (defined(DUALCORE) && defined(CPU2))
 extern const mcu::RemoteIpcSignal CPU1_PERIPHERY_CONFIGURED;
-extern const mcu::RemoteIpcSignal CAN_TSDO_READY;
-extern const mcu::RemoteIpcSignal SYSLOG_RESET;
 
 extern const mcu::LocalIpcSignal CPU2_BOOTED;
 extern const mcu::LocalIpcSignal CPU2_PERIPHERY_CONFIGURED;
-extern const mcu::LocalIpcSignal REPORT_SENT;
-extern const mcu::LocalIpcSignal SETUPMSG_RECEIVED;
-extern const mcu::LocalIpcSignal SYSLOG_POP_MESSAGE;
-extern const mcu::LocalIpcSignal SYSLOG_ADD_MESSAGE;
-
-extern const mcu::LocalIpcSignal CAN_FRAME_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO1_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO2_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO3_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO4_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RSDO_RECEIVED;
 #endif
 
 #if (!defined(DUALCORE) && defined(CPU1))
 extern const mcu::LocalIpcSignal CPU1_PERIPHERY_CONFIGURED;
-extern const mcu::LocalIpcSignal REPORT_SENT;
-extern const mcu::LocalIpcSignal SETUPMSG_RECEIVED;
-
-extern const mcu::LocalIpcSignal CAN_TSDO_READY;
-extern const mcu::LocalIpcSignal CAN_FRAME_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO1_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO2_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO3_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RPDO4_RECEIVED;
-extern const mcu::LocalIpcSignal CAN_RSDO_RECEIVED;
 #endif
 /// @}
 

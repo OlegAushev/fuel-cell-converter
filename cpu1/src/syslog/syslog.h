@@ -58,7 +58,7 @@ const uint32_t CRITICAL_FAULTS = (1UL << DRIVER_ALL_FLT)
 				| (1UL << DRIVER_Z_FLT)
 				| (1UL << EEPROM_ERROR)
 				| (1UL << CURRENT_SENSOR_FAULT);
-}  // namespace Fault
+} // namespace Fault
 
 
 namespace Warning {
@@ -72,41 +72,52 @@ enum Warning
 };
 
 const uint32_t CRITICAL_WARNINGS = 0;
-}
-
-
-namespace SyslogMsg {
-/// System messages
-enum SyslogMsg
-{
-	NO_MESSAGE,
-	DEVICE_BOOT_SUCCESS,
-	DEVICE_BUSY,
-	DEVICE_SW_RESET,
-	CONFIGS_READ_SUCCESS,
-	CONFIGS_READ_FAIL,
-	CONFIGS_RESET_SUCCESS,
-	CONFIGS_RESET_FAIL,
-	CONFIGS_APPLY_SUCCESS,
-	CONFIGS_APPLY_FAIL,
-	SDO_REQUEST_LOST,
-};
-} // namespace SyslogMsg
-
+} // namespace Warning
 
 /**
  * @brief System logger class.
  */
 class Syslog : public emb::Monostate<Syslog>
 {
+public:
+	/// System messages
+	enum Message
+	{
+		NO_MESSAGE,
+		DEVICE_BOOT_CPU1,
+		DEVICE_CPU1_BOOT_SUCCESS,
+		DEVICE_BOOT_CPU2,
+		DEVICE_CPU2_BOOT_SUCCESS,
+		DEVICE_CPU1_READY,
+		DEVICE_CPU2_READY,
+		DEVICE_READY,
+		DEVICE_BUSY,
+		DEVICE_SW_RESET,
+		CONFIGS_READ_SUCCESS,
+		CONFIGS_READ_FAIL,
+		CONFIGS_RESET_SUCCESS,
+		CONFIGS_RESET_FAIL,
+		CONFIGS_APPLY_SUCCESS,
+		CONFIGS_APPLY_FAIL,
+		SDO_REQUEST_LOST,
+	};
+
+	struct IpcSignals
+	{
+		mcu::IpcSignalPair reset;
+		mcu::IpcSignalPair addMessage;
+		mcu::IpcSignalPair popMessage;
+	};
+
 private:
 	Syslog();				// no constructor
 	Syslog(const Syslog& other);		// no copy constructor
 	Syslog& operator=(const Syslog& other);	// no copy assignment operator
+
 private:
-	static emb::Queue<SyslogMsg::SyslogMsg, 32> m_messages;
+	static emb::Queue<Syslog::Message, 32> m_messages;
 #ifdef DUALCORE
-	static SyslogMsg::SyslogMsg  m_cpu2Message;
+	static Syslog::Message m_cpu2Message;
 #endif
 
 	struct FaultData
@@ -125,6 +136,11 @@ private:
 
 	static FaultData* m_thisCpuFaultData;
 
+	// IPC signals
+	static mcu::IpcSignalPair RESET_FAULTS_AND_WARNINGS;
+	static mcu::IpcSignalPair ADD_MESSAGE;
+	static mcu::IpcSignalPair POP_MESSAGE;
+
 public:
 	static const char* DEVICE_NAME;
 	static const uint32_t SOFTWARE_VERSION;
@@ -135,7 +151,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void init()
+	static void init(const IpcSignals& ipcSignals)
 	{
 		if (initialized())
 		{
@@ -156,6 +172,10 @@ public:
 		m_thisCpuFaultData->criticalFaultMask = Fault::CRITICAL_FAULTS;
 		m_thisCpuFaultData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
 
+		RESET_FAULTS_AND_WARNINGS = ipcSignals.reset;
+		ADD_MESSAGE = ipcSignals.addMessage;
+		POP_MESSAGE = ipcSignals.popMessage;
+
 		setInitialized();
 	}
 
@@ -164,7 +184,7 @@ public:
 	 * @param msg - message to be added
 	 * @return (none)
 	 */
-	static void addMessage(SyslogMsg::SyslogMsg msg)
+	static void addMessage(Syslog::Message msg)
 	{
 		mcu::CRITICAL_SECTION;
 #ifdef CPU1
@@ -173,8 +193,12 @@ public:
 			m_messages.push(msg);
 		}
 #else
+		if (mcu::localIpcSignalSent(ADD_MESSAGE.local))
+		{
+			return;
+		}
 		m_cpu2Message = msg;
-		mcu::sendIpcSignal(SYSLOG_ADD_MESSAGE);
+		mcu::sendIpcSignal(ADD_MESSAGE.local);
 #endif
 	}
 
@@ -183,11 +207,11 @@ public:
 	 * @param (none)
 	 * @return Front message from Syslog message queue.
 	 */
-	static SyslogMsg::SyslogMsg readMessage()
+	static Syslog::Message readMessage()
 	{
 		if (m_messages.empty())
 		{
-			return SyslogMsg::NO_MESSAGE;
+			return Syslog::NO_MESSAGE;
 		}
 		return m_messages.front();
 	}
@@ -206,7 +230,7 @@ public:
 			m_messages.pop();
 		}
 #else
-		mcu::sendIpcSignal(SYSLOG_POP_MESSAGE);
+		mcu::sendIpcSignal(POP_MESSAGE.local);
 #endif
 	}
 
@@ -221,7 +245,6 @@ public:
 		m_messages.clear();
 	}
 
-#if (defined(DUALCORE) && defined(CPU1))
 	/**
 	 * @brief Checks and processes Syslog IPC signals.
 	 * @param (none)
@@ -229,20 +252,29 @@ public:
 	 */
 	static void processIpcSignals()
 	{
-		if (mcu::isIpcSignalSet(SYSLOG_POP_MESSAGE))
+#ifdef DUALCORE
+#ifdef CPU1
+		if (mcu::remoteIpcSignalSent(POP_MESSAGE.remote))
 		{
 			popMessage();
-			mcu::acknowledgeIpcSignal(SYSLOG_POP_MESSAGE);
+			mcu::acknowledgeRemoteIpcSignal(POP_MESSAGE.remote);
 		}
 
-		if (mcu::isIpcSignalSet(SYSLOG_ADD_MESSAGE))
+		if (mcu::remoteIpcSignalSent(ADD_MESSAGE.remote))
 		{
 			addMessage(m_cpu2Message);
-			mcu::acknowledgeIpcSignal(SYSLOG_ADD_MESSAGE);
+			mcu::acknowledgeRemoteIpcSignal(ADD_MESSAGE.remote);
 		}
-	}
 #endif
-
+#ifdef CPU2
+		if (mcu::remoteIpcSignalSent(RESET_FAULTS_AND_WARNINGS.remote))
+		{
+			resetFaultsAndWarnings();
+			mcu::acknowledgeRemoteIpcSignal(RESET_FAULTS_AND_WARNINGS.remote);
+		}
+#endif
+#endif
+	}
 
 	/**
 	 * @brief Enables specified fault.
@@ -413,7 +445,7 @@ public:
 		m_thisCpuFaultData->faults = m_thisCpuFaultData->faults & m_thisCpuFaultData->criticalFaultMask;
 		m_thisCpuFaultData->warnings = m_thisCpuFaultData->warnings & m_thisCpuFaultData->criticalWarningMask;
 #if (defined(CPU1) && defined(DUALCORE))
-		mcu::sendIpcSignal(SYSLOG_RESET);
+		mcu::sendIpcSignal(RESET_FAULTS_AND_WARNINGS.local);
 #endif
 	}
 
@@ -440,22 +472,6 @@ public:
 		m_thisCpuFaultData->criticalFaultMask = Fault::CRITICAL_FAULTS;
 		m_thisCpuFaultData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
 	}
-
-#ifdef CPU2
-	/**
-	 * @brief Reset faults and warnings IPC ISR for CPU2.
-	 * @param (none)
-	 * @return (none)
-	 */
-	static __interrupt void onFaultsAndWarningsReset()
-	{
-		Syslog::resetFaultsAndWarnings();
-		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
-		mcu::acknowledgeIpcSignal(SYSLOG_RESET);
-	}
-#endif
-
-
 };
 
 

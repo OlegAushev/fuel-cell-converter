@@ -35,8 +35,8 @@ enum ClockTaskStatus
 class Clock : public emb::Monostate<Clock>
 {
 private:
-	static volatile uint64_t m_timeMs;
-	static const uint32_t TIME_STEP_MS = 1;
+	static volatile uint64_t m_time_ms;
+	static const uint32_t TIME_STEP_ms = 1;
 
 /* ========================================================================== */
 /* = Periodic Tasks = */
@@ -44,6 +44,7 @@ private:
 private:
 	static const size_t TASK_COUNT = 4;
 	static uint64_t m_taskPeriods[TASK_COUNT];
+	static uint64_t m_taskTimestamps[TASK_COUNT];	// timestamp of executed task
 	static bool m_taskFlags[TASK_COUNT];
 	static ClockTaskStatus (*m_tasks[TASK_COUNT])();
 
@@ -84,6 +85,7 @@ public:
 				if (m_tasks[i]() == CLOCK_TASK_SUCCESS)
 				{
 					resetTaskFlag(i);
+					m_taskTimestamps[i] = now();
 				}
 			}
 		}
@@ -184,22 +186,20 @@ private:
 	 */
 	static void tick()
 	{
-		m_timeMs += TIME_STEP_MS;
+		m_time_ms += TIME_STEP_ms;
 
 		for (size_t i = 0; i < TASK_COUNT; ++i)
 		{
-			if (m_taskPeriods[i] != 0)
+			if ((m_taskPeriods[i] != 0)
+				&& (now() >= (m_taskTimestamps[i] + m_taskPeriods[i])))
 			{
-				if ((now() % m_taskPeriods[i]) == 0)
-				{
-					setTaskFlag(i);
-				}
+				setTaskFlag(i);
 			}
 		}
 
 		if ((m_watchdogEnabled == true) && (m_watchdogTimerMs < m_watchdogBoundMs))
 		{
-			m_watchdogTimerMs += TIME_STEP_MS;
+			m_watchdogTimerMs += TIME_STEP_ms;
 			if (m_watchdogTimerMs >= m_watchdogBoundMs)
 			{
 				m_watchdogTimeoutDetected = true;
@@ -216,7 +216,7 @@ private:
 
 		if (m_delayedTaskDelay != 0)
 		{
-			if (now() > (m_delayedTaskStart + m_delayedTaskDelay))
+			if (now() >= (m_delayedTaskStart + m_delayedTaskDelay))
 			{
 				m_delayedTask();
 				m_delayedTaskDelay = 0;
@@ -246,14 +246,14 @@ public:
 	 * @param (none)
 	 * @return A time point representing the current time in milliseconds.
 	 */
-	static uint64_t now() { return m_timeMs; }
+	static uint64_t now() { return m_time_ms; }
 
 	/**
 	 * @brief Returns clock step.
 	 * @param (none)
 	 * @return Clock step in milliseconds.
 	 */
-	static uint32_t step() { return TIME_STEP_MS; }
+	static uint32_t step() { return TIME_STEP_ms; }
 
 	/**
 	 * @brief Resets clock.
@@ -262,7 +262,7 @@ public:
 	 */
 	static void reset()
 	{
-		m_timeMs = 0;
+		m_time_ms = 0;
 		for (size_t i = 0; i < TASK_COUNT; ++i)
 		{
 			resetTaskFlag(i);
@@ -292,7 +292,7 @@ public:
 		CPUTimer_stopTimer(CPUTIMER1_BASE);             	// Make sure timer is stopped
 		CPUTimer_reloadTimerCounter(CPUTIMER1_BASE);    	// Reload counter register with period value
 
-		m_period = (uint32_t)(DEVICE_SYSCLK_FREQ / 1000000) * period_us - 1;
+		m_period = (uint32_t)(mcu::sysclkFreq() / 1000000) * period_us - 1;
 		CPUTimer_setPeriod(CPUTIMER1_BASE, m_period);
 		CPUTimer_setEmulationMode(CPUTIMER1_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
 	}

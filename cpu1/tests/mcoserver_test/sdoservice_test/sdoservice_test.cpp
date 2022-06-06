@@ -8,7 +8,7 @@ void SdoServiceTest::MessageProcessingTest()
 {
 	//SetupManager::SYSTEM_CONFIG = SetupManager::DEFAULT_CONFIG;
 
-	SdoService sdoService;
+	SdoService<mcu::CANA> sdoService;
 
 	const ODEntry* odEntry1 = emb::binary_find(OBJECT_DICTIONARY, OBJECT_DICTIONARY_END, ODEntryKeyAux(0x1008, 0x00));
 	EMB_ASSERT_TRUE(strcmp(odEntry1->value.name, "DEVICE_NAME") == 0);
@@ -24,7 +24,7 @@ void SdoServiceTest::MessageProcessingTest()
 	rsdo.index = 0x5FFF;
 	rsdo.subindex = 0x00;
 	rsdo.cs = SDO_CCS_READ;
-	sdoService.processSdoRequest(rsdo, tsdo);
+	sdoService._processRequest(rsdo, tsdo);
 	EMB_ASSERT_EQUAL(tsdo.data.u32, Syslog::SOFTWARE_VERSION);
 
 /*

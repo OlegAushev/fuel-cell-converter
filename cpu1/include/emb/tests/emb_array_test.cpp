@@ -4,8 +4,7 @@
 
 void EmbTest::ArrayTest()
 {
-	const float data1[5] = {0,1,2,3,4};
-	const emb::Array<float, 5> arr1(data1);
+	emb::Array<float, 5> arr1 = {0, 1, 2, 3, 4};
 	EMB_ASSERT_EQUAL(arr1[0], 0);
 	EMB_ASSERT_EQUAL(arr1[1], 1);
 	EMB_ASSERT_EQUAL(arr1[2], 2);
@@ -23,6 +22,12 @@ void EmbTest::ArrayTest()
 	for (size_t i = 0; i < arr2.size(); ++i)
 	{
 		EMB_ASSERT_EQUAL(arr2[i], 5);
+	}
+
+	emb::Array<float, 5>arr3 = {0};
+	for (size_t i = 0; i < arr3.size(); ++i)
+	{
+		EMB_ASSERT_EQUAL(arr3[i], 0);
 	}
 }
 

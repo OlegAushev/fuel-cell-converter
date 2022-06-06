@@ -27,31 +27,46 @@ namespace microcanopen {
 /// @addtogroup mco_server
 /// @{
 
-
-extern McoServerConfig config;
+/**
+ * @brief IPC flags.
+ */
+struct IpcSignals
+{
+	mcu::IpcSignalPair rpdo1;
+	mcu::IpcSignalPair rpdo2;
+	mcu::IpcSignalPair rpdo3;
+	mcu::IpcSignalPair rpdo4;
+	mcu::IpcSignalPair rsdo;
+	mcu::IpcSignalPair tsdo;
+};
 
 /**
  * @brief MicroCANopen server class.
  */
 template <mcu::CanModule Module, emb::MasterSlaveMode Mode>
-class McoServer
+class McoServer : public emb::c28x::Singleton<McoServer<Module, Mode> >
 {
 private:
 	mcu::CanUnit<Module>* m_canUnit;
-	TpdoService* m_tpdoService;
-	RpdoService* m_rpdoService;
-	SdoService* m_sdoService;
+	TpdoService<Module>* m_tpdoService;
+	RpdoService<Module>* m_rpdoService;
+	SdoService<Module>* m_sdoService;
 
 	volatile NmtState m_state;
 	unsigned int m_nodeId;
 
-	static emb::Array<mcu::CanMessageObject, COB_TYPE_COUNT> m_msgObjects;
+	emb::Array<mcu::CanMessageObject, COB_TYPE_COUNT> m_msgObjects;
 
 	uint64_t m_heartbeatPeriod;
 	emb::Array<uint64_t, 4> m_tpdoPeriods;
-	static emb::Array<uint64_t(*)(), 4> m_getTpdoCallbacks;
-	static emb::Array<void(*)(uint64_t), 4> m_processRpdoCallbacks;
-	static void (*m_processRsdoCallback)(uint64_t);
+
+	// IPC signals
+	mcu::IpcSignalPair RSDO_RECEIVED;
+	mcu::IpcSignalPair TSDO_READY;
+	mcu::IpcSignalPair RPDO1_RECEIVED;
+	mcu::IpcSignalPair RPDO2_RECEIVED;
+	mcu::IpcSignalPair RPDO3_RECEIVED;
+	mcu::IpcSignalPair RPDO4_RECEIVED;
 
 public:
 	/**
@@ -60,13 +75,26 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(TpdoService* tpdoService, RpdoService* rpdoService, SdoService* sdoService)
-		: m_canUnit(NULL)
+	McoServer(TpdoService<Module>* tpdoService, RpdoService<Module>* rpdoService, SdoService<Module>* sdoService,
+			const IpcSignals& ipcSignals)
+		: emb::c28x::Singleton<McoServer<Module, Mode> >(this)
+		, m_canUnit(NULL)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
+		// IPC signals
+		, RSDO_RECEIVED(ipcSignals.rsdo)
+		, TSDO_READY(ipcSignals.tsdo)
+		, RPDO1_RECEIVED(ipcSignals.rpdo1)
+		, RPDO2_RECEIVED(ipcSignals.rpdo2)
+		, RPDO3_RECEIVED(ipcSignals.rpdo3)
+		, RPDO4_RECEIVED(ipcSignals.rpdo4)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_SLAVE);
+
+		rpdoService->initIpcSignals(&RPDO1_RECEIVED, &RPDO2_RECEIVED,
+				&RPDO3_RECEIVED, &RPDO4_RECEIVED);
+		sdoService->initIpcSignals(&RSDO_RECEIVED, &TSDO_READY);
 	}
 
 	/**
@@ -80,42 +108,53 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(mcu::CanTxPin txPin, mcu::CanRxPin rxPin, mcu::CanBitrate bitrate, NodeId nodeId,
-			TpdoService* tpdoService, RpdoService* rpdoService, SdoService* sdoService)
-		: m_tpdoService(tpdoService)
+	McoServer(mcu::GpioPinConfig txPin, mcu::GpioPinConfig rxPin, mcu::CanBitrate bitrate, NodeId nodeId,
+			TpdoService<Module>* tpdoService, RpdoService<Module>* rpdoService, SdoService<Module>* sdoService,
+			const IpcSignals& ipcSignals)
+		: emb::c28x::Singleton<McoServer<Module, Mode> >(this)
+		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
 		, m_nodeId(nodeId.value)
+		// IPC signals
+		, RSDO_RECEIVED(ipcSignals.rsdo)
+		, TSDO_READY(ipcSignals.tsdo)
+		, RPDO1_RECEIVED(ipcSignals.rpdo1)
+		, RPDO2_RECEIVED(ipcSignals.rpdo2)
+		, RPDO3_RECEIVED(ipcSignals.rpdo3)
+		, RPDO4_RECEIVED(ipcSignals.rpdo4)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 
+		rpdoService->initIpcSignals(&RPDO1_RECEIVED, &RPDO2_RECEIVED,
+				&RPDO3_RECEIVED, &RPDO4_RECEIVED);
+		sdoService->initIpcSignals(&RSDO_RECEIVED, &TSDO_READY);
+
 		m_state = INITIALIZING;
-		mcu::CanUnit<Module> canUnit(txPin, rxPin, bitrate);
-		m_canUnit = mcu::CanUnit<Module>::instance();
+		m_canUnit = new mcu::CanUnit<Module>(txPin, rxPin, bitrate);
 
 		initMsgObjects();
 		for (size_t i = 1; i < COB_TYPE_COUNT; ++i)
 		{
-			canUnit.setupMessageObject(m_msgObjects[i]);
+			m_canUnit->setupMessageObject(m_msgObjects[i]);
 		}
 
 		m_heartbeatPeriod = 0;
-
 		m_tpdoPeriods.fill(0);
-		m_getTpdoCallbacks[TPDO_NUM1] = TpdoService::makeTpdo1;
-		m_getTpdoCallbacks[TPDO_NUM2] = TpdoService::makeTpdo2;
-		m_getTpdoCallbacks[TPDO_NUM3] = TpdoService::makeTpdo3;
-		m_getTpdoCallbacks[TPDO_NUM4] = TpdoService::makeTpdo4;
 
-		m_processRpdoCallbacks[RPDO_NUM1] = RpdoService::processRpdo1;
-		m_processRpdoCallbacks[RPDO_NUM2] = RpdoService::processRpdo2;
-		m_processRpdoCallbacks[RPDO_NUM3] = RpdoService::processRpdo3;
-		m_processRpdoCallbacks[RPDO_NUM4] = RpdoService::processRpdo4;
-
-		m_processRsdoCallback = SdoService::processRsdo;
-
-		canUnit.registerRxInterruptHandler(onFrameReceived);
+		m_canUnit->registerRxInterruptHandler(onFrameReceived);
 		m_state = PRE_OPERATIONAL;
+	}
+
+	/**
+	 * @brief Server destructor.
+	 */
+	~McoServer()
+	{
+		if (m_canUnit)
+		{
+			delete m_canUnit;
+		}
 	}
 
 	/**
@@ -177,35 +216,64 @@ public:
 	}
 
 	/**
+	 * @brief Runs all server operations.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void run()
+	{
+#ifdef CPU1
+		m_rpdoService->respondToProcessedRpdo();
+		m_sdoService->processRequest();
+#ifndef DUALCORE
+		runPeriodicTasks();
+		sendSdoResponse();
+#endif
+#endif
+#ifdef CPU2
+		runPeriodicTasks();
+		sendSdoResponse();
+#endif
+	}
+
+	/**
 	 * @brief Checks if periodic tasks must run and runs them if they must.
 	 * @param (none)
 	 * @return (none)
 	 */
 	void runPeriodicTasks()
 	{
-		static uint64_t timePrev = 0;
-		if (mcu::Clock::now() == timePrev)
-		{
-			return;
-		}
-		timePrev = mcu::Clock::now();
+		static uint64_t timeHbPrev = 0;
+		static uint64_t timeTpdoPrev[4] = {0};
 
-		if (m_heartbeatPeriod != 0)
+		if ((m_heartbeatPeriod != 0)
+				&& (mcu::Clock::now() >= (timeHbPrev + m_heartbeatPeriod)))
 		{
-			if ((mcu::Clock::now() % m_heartbeatPeriod) == 0)
-			{
-				sendHeartbeat();
-			}
+			sendHeartbeat();
+			timeHbPrev = mcu::Clock::now();
 		}
 
 		for (size_t i = 0; i < 4; ++i)
 		{
-			if (m_tpdoPeriods[i] != 0)
+			if ((m_tpdoPeriods[i] != 0)
+					&& (mcu::Clock::now() >= (timeTpdoPrev[i] + m_tpdoPeriods[i])))
 			{
-				if ((mcu::Clock::now() % m_tpdoPeriods[i]) == 0)
+				switch (i)
 				{
-					sendTpdo(static_cast<TpdoNum>(i), m_getTpdoCallbacks[i]());
+				case 0:
+					sendTpdo(TPDO_NUM1, m_tpdoService->makeTpdo1());
+					break;
+				case 1:
+					sendTpdo(TPDO_NUM2, m_tpdoService->makeTpdo2());
+					break;
+				case 2:
+					sendTpdo(TPDO_NUM3, m_tpdoService->makeTpdo3());
+					break;
+				case 3:
+					sendTpdo(TPDO_NUM4, m_tpdoService->makeTpdo4());
+					break;
 				}
+				timeTpdoPrev[i] = mcu::Clock::now();
 			}
 		}
 	}
@@ -217,34 +285,18 @@ public:
 	 */
 	void sendSdoResponse()
 	{
-		if (!mcu::isIpcSignalSet(CAN_TSDO_READY))
-		{
-			return;
-		}
+#ifdef DUALCORE
+		if (!mcu::remoteIpcSignalSent(TSDO_READY.remote)) return;
+#else
+		if (!mcu::localIpcSignalSent(TSDO_READY.local)) return;
+#endif
 
-		emb::c28x::to_8bit_bytes<CobSdo>(m_msgObjects[TSDO].data, SdoService::tsdoData.cob);
+		emb::c28x::to_8bit_bytes<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module>::tsdoData());
 		m_canUnit->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
-		mcu::acknowledgeIpcSignal(CAN_TSDO_READY);
-	}
-
-	/**
-	 * @brief Runs all server operations.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void run()
-	{
-#ifdef CPU1
-		m_rpdoService->utilizeProcessedMessages();
-		m_sdoService->processRequest();
-#ifndef DUALCORE
-		runPeriodicTasks();
-		sendSdoResponse();
-#endif
-#endif
-#ifdef CPU2
-		runPeriodicTasks();
-		sendSdoResponse();
+#ifdef DUALCORE
+		mcu::acknowledgeRemoteIpcSignal(TSDO_READY.remote);
+#else
+		mcu::revokeLocalIpcSignal(TSDO_READY.local);
 #endif
 	}
 
@@ -323,10 +375,11 @@ protected:
 	 */
 	static __interrupt void onFrameReceived()
 	{
+		McoServer<Module, Mode>* server = McoServer<Module, Mode>::instance();
 		mcu::CanUnit<Module>* canUnit = mcu::CanUnit<Module>::instance();
 
-		uint32_t interruptCause = CAN_getInterruptCause(canUnit->module.base);
-		uint16_t status = CAN_getStatus(canUnit->module.base);
+		uint32_t interruptCause = CAN_getInterruptCause(canUnit->base());
+		uint16_t status = CAN_getStatus(canUnit->base());
 
 		switch (interruptCause)
 		{
@@ -347,24 +400,47 @@ protected:
 			break;
 
 		case RPDO1:
+		{
+			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			uint64_t rawPdoMsg = 0;
+			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			server->m_rpdoService->processRpdo1(rawPdoMsg);
+			break;
+		}
+
 		case RPDO2:
+		{
+			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			uint64_t rawPdoMsg = 0;
+			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			server->m_rpdoService->processRpdo2(rawPdoMsg);
+			break;
+		}
+
 		case RPDO3:
+		{
+			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			uint64_t rawPdoMsg = 0;
+			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			server->m_rpdoService->processRpdo3(rawPdoMsg);
+			break;
+		}
+
 		case RPDO4:
 		{
-			canUnit->recv(interruptCause, m_msgObjects[interruptCause].data);
+			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, m_msgObjects[interruptCause].data);
-			size_t rpdoNum = (interruptCause - RPDO1) / 2;
-			m_processRpdoCallbacks[rpdoNum](rawPdoMsg);
+			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			server->m_rpdoService->processRpdo4(rawPdoMsg);
 			break;
 		}
 
 		case RSDO:
 		{
-			canUnit->recv(RSDO, m_msgObjects[RSDO].data);
+			canUnit->recv(RSDO, server->m_msgObjects[RSDO].data);
 			uint64_t rawSdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawSdoMsg, m_msgObjects[RSDO].data);
-			m_processRsdoCallback(rawSdoMsg);
+			emb::c28x::from_8bit_bytes<uint64_t>(rawSdoMsg, server->m_msgObjects[RSDO].data);
+			server->m_sdoService->processRsdo(rawSdoMsg);
 			break;
 		}
 
@@ -372,22 +448,11 @@ protected:
 			break;
 		}
 
-		CAN_clearInterruptStatus(canUnit->module.base, interruptCause);
-		CAN_clearGlobalInterruptStatus(canUnit->module.base, CAN_GLOBAL_INT_CANINT0);
+		CAN_clearInterruptStatus(canUnit->base(), interruptCause);
+		CAN_clearGlobalInterruptStatus(canUnit->base(), CAN_GLOBAL_INT_CANINT0);
 		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP9);
 	}
 };
-
-
-template <mcu::CanModule Module, emb::MasterSlaveMode Mode>
-emb::Array<mcu::CanMessageObject, COB_TYPE_COUNT> McoServer<Module, Mode>::m_msgObjects;
-template <mcu::CanModule Module, emb::MasterSlaveMode Mode>
-emb::Array<uint64_t(*)(), 4> McoServer<Module, Mode>::m_getTpdoCallbacks;
-template <mcu::CanModule Module, emb::MasterSlaveMode Mode>
-emb::Array<void(*)(uint64_t), 4> McoServer<Module, Mode>::m_processRpdoCallbacks;
-template <mcu::CanModule Module, emb::MasterSlaveMode Mode>
-void (*McoServer<Module, Mode>::m_processRsdoCallback)(uint64_t);
-
 
 
 /// @}

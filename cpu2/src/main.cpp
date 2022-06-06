@@ -7,6 +7,7 @@
 #include "profiler/profiler.h"
 
 #include "mcu/system/mcusystem.h"
+#include "mcu/support/mcusupport.h"
 #include "mcu/ipc/mcuipc.h"
 #include "mcu/cputimers/mcucputimers.h"
 #include "mcoserver/mcoserver.h"
@@ -82,7 +83,13 @@ void main()
 	/*##########*/
 	/*# SYSLOG #*/
 	/*##########*/
-	Syslog::init();
+	Syslog::IpcSignals syslogIpcSignals =
+	{
+		.reset = mcu::IpcSignalPair(10),
+		.addMessage = mcu::IpcSignalPair(11),
+		.popMessage = mcu::IpcSignalPair(12)
+	};
+	Syslog::init(syslogIpcSignals);
 
 /*####################################################################################################################*/
 	/*#########*/
@@ -115,10 +122,24 @@ void main()
 	/*#######*/
 	/*# CAN #*/
 	/*#######*/
-	microcanopen::TpdoService tpdoService;
-	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(mcu::CANA_TX_GPIO_31, mcu::CANA_RX_GPIO_30,
+	microcanopen::IpcSignals canIpcSignals =
+	{
+		.rpdo1 = mcu::IpcSignalPair(4),
+		.rpdo2 = mcu::IpcSignalPair(5),
+		.rpdo3 = mcu::IpcSignalPair(6),
+		.rpdo4 = mcu::IpcSignalPair(7),
+		.rsdo = mcu::IpcSignalPair(8),
+		.tsdo = mcu::IpcSignalPair(9),
+	};
+
+	microcanopen::TpdoService<mcu::CANA> tpdoService;
+	microcanopen::RpdoService<mcu::CANA> rpdoService;
+	microcanopen::SdoService<mcu::CANA> sdoService;
+	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(
+			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
+			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
 			mcu::CAN_BITRATE_500K, microcanopen::NodeId(1),
-			&tpdoService, NULL, NULL);
+			&tpdoService, &rpdoService, &sdoService, canIpcSignals);
 
 	uCanOpenServer.setHeartbeatPeriod(1000);
 	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
@@ -130,35 +151,16 @@ void main()
 	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
 
 /*####################################################################################################################*/
-	/*#######*/
-	/*# SPI #*/
-	/*#######*/
-	mcu::SpiConfig spiCfg =
-	{
-		.protocol = mcu::SPI_PROTOCOL_POL1PHA0,
-		.mode = mcu::SPI_MODE_MASTER,
-		.bitrate = mcu::SPI_BITRATE_1M,
-		.wordLen = mcu::SPI_WORD_16BIT,
-		.dataSize = 2,
-	};
-	mcu::SpiUnit<mcu::SPIA> spiUnit(mcu::SPIA_MOSI_GPIO_16, mcu::SPIA_MISO_GPIO_17,
-			mcu::SPIA_CLK_GPIO_18, mcu::SPIA_CS_GPIO_19, spiCfg);
-
-/*####################################################################################################################*/
 	/*##################*/
 	/*# IPC INTERRUPTS #*/
 	/*##################*/
-	mcu::registerIpcInterruptHandler(mcu::IPC_INTERRUPT_3, Syslog::onFaultsAndWarningsReset);
+	// NONE
 
 	mcu::sendIpcSignal(CPU2_PERIPHERY_CONFIGURED);
 	mcu::waitForIpcSignal(CPU1_PERIPHERY_CONFIGURED);
 
 	// END of CPU2 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
-
-#ifdef CONTROLCARD
-	///mcu::turnLedOff(mcu::LED_RED);
-#endif
 
 	mcu::Clock::reset();
 	uCanOpenServer.enable();

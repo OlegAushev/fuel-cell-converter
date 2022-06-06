@@ -9,6 +9,7 @@
 
 #include "emb_array.h"
 #include "emb_circularbuffer.h"
+#include "emb_algorithm.h"
 
 
 namespace emb {
@@ -60,7 +61,7 @@ public:
 
 	MovingAvgFilter(emb::Array<T, WindowSize>& dataArray)
 		: m_size(WindowSize)
-		, m_window(dataArray.data())
+		, m_window(dataArray.data)
 		, m_index(0)
 		, m_sum(T(0))
 		, m_heapUsed(false)
@@ -139,7 +140,8 @@ public:
 	virtual void process(T value)
 	{
 		m_window.push(value);
-		Array<T, WindowSize> windowSorted(m_window.data());
+		Array<T, WindowSize> windowSorted;
+		emb::copy(m_window.begin(), m_window.end(), windowSorted.begin());
 		std::sort(windowSorted.begin(), windowSorted.end());
 		m_out = windowSorted[WindowSize/2];
 	}
@@ -234,7 +236,8 @@ public:
 	virtual void process(T value)
 	{
 		m_window.push(value);
-		Array<T, WindowSize> windowSorted(m_window.data());
+		Array<T, WindowSize> windowSorted;
+		emb::copy(m_window.begin(), m_window.end(), windowSorted.begin());
 		std::sort(windowSorted.begin(), windowSorted.end());
 		value = windowSorted[WindowSize/2];
 

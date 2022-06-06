@@ -13,6 +13,7 @@
 #include "profiler/profiler.h"
 
 #include "mcu/system/mcusystem.h"
+#include "mcu/support/mcusupport.h"
 #include "mcu/ipc/mcuipc.h"
 #include "mcu/cputimers/mcucputimers.h"
 #include "mcu/adc/mcuadc.h"
@@ -31,7 +32,7 @@
 /* ========================================================================== */
 /* ============================ SYSTEM INFO ================================= */
 /* ========================================================================== */
-const char* Syslog::DEVICE_NAME = "ACIM";
+const char* Syslog::DEVICE_NAME = "FCC";
 const uint32_t Syslog::SOFTWARE_VERSION = 2205;
 
 #if defined(RUNTESTS)
@@ -79,8 +80,14 @@ void main()
 	/*##########*/
 	/*# SYSLOG #*/
 	/*##########*/
-	Syslog::init();
-	Syslog::addMessage(SyslogMsg::DEVICE_BOOT_SUCCESS);
+	Syslog::IpcSignals syslogIpcSignals =
+	{
+		.reset = mcu::IpcSignalPair(10),
+		.addMessage = mcu::IpcSignalPair(11),
+		.popMessage = mcu::IpcSignalPair(12)
+	};
+	Syslog::init(syslogIpcSignals);
+	Syslog::addMessage(Syslog::DEVICE_CPU1_BOOT_SUCCESS);
 
 // BEGIN of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
@@ -120,11 +127,13 @@ void main()
 	/*# BOOT CPU2 #*/
 	/*#############*/
 #ifdef DUALCORE
-	mcu::CanUnit<mcu::CANA>::transferControlToCpu2(mcu::CANA_TX_GPIO_19, mcu::CANA_RX_GPIO_18);
-	mcu::SpiUnit<mcu::SPIA>::transferControlToCpu2(mcu::SPIA_MOSI_GPIO_16, mcu::SPIA_MISO_GPIO_17,
-			mcu::SPIA_CLK_GPIO_18, mcu::SPIA_CS_GPIO_19);
+	mcu::CanUnit<mcu::CANA>::transferControlToCpu2(
+			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
+			mcu::GpioPinConfig(18, GPIO_18_CANRXA));
 	mcu::bootCpu2();
+	Syslog::addMessage(Syslog::DEVICE_BOOT_CPU2);
 	mcu::waitForIpcSignal(CPU2_BOOTED);
+	Syslog::addMessage(Syslog::DEVICE_CPU2_BOOT_SUCCESS);
 #endif
 
 /*####################################################################################################################*/
@@ -153,17 +162,29 @@ void main()
 	/*#######*/
 	/*# CAN #*/
 	/*#######*/
+	microcanopen::IpcSignals canIpcSignals =
+	{
+		.rpdo1 = mcu::IpcSignalPair(4),
+		.rpdo2 = mcu::IpcSignalPair(5),
+		.rpdo3 = mcu::IpcSignalPair(6),
+		.rpdo4 = mcu::IpcSignalPair(7),
+		.rsdo = mcu::IpcSignalPair(8),
+		.tsdo = mcu::IpcSignalPair(9),
+	};
+
 #ifdef DUALCORE
-	microcanopen::SdoService sdoService;
-	microcanopen::RpdoService rpdoService;
-	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> uCanOpenServer(NULL, &rpdoService, &sdoService);
+	microcanopen::SdoService<mcu::CANA> sdoService;
+	microcanopen::RpdoService<mcu::CANA> rpdoService;
+	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> uCanOpenServer(NULL, &rpdoService, &sdoService, canIpcSignals);
 #else
-	microcanopen::SdoService sdoService;
-	microcanopen::TpdoService tpdoService;
-	microcanopen::RpdoService rpdoService;
-	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(mcu::CANA_TX_GPIO_19, mcu::CANA_RX_GPIO_18,
+	microcanopen::SdoService<mcu::CANA> sdoService;
+	microcanopen::TpdoService<mcu::CANA> tpdoService;
+	microcanopen::RpdoService<mcu::CANA> rpdoService;
+	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(
+			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
+			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
 			mcu::CAN_BITRATE_500K, microcanopen::NodeId(0x01),
-			&tpdoService, &rpdoService, &sdoService);
+			&tpdoService, &rpdoService, &sdoService, canIpcSignals);
 
 	uCanOpenServer.setHeartbeatPeriod(1000);
 	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
@@ -183,6 +204,7 @@ void main()
 
 #ifdef DUALCORE
 	mcu::waitForIpcSignal(CPU2_PERIPHERY_CONFIGURED);
+	Syslog::addMessage(Syslog::DEVICE_CPU2_READY);
 #endif
 
 	mcu::enableMaskableInterrupts();
@@ -207,6 +229,7 @@ void main()
 	// CPU1 has finished all preparations, CPU2 can now enable all interrupts
 	mcu::sendIpcSignal(CPU1_PERIPHERY_CONFIGURED);
 #endif
+	Syslog::addMessage(Syslog::DEVICE_CPU1_READY);
 
 #ifndef DUALCORE
 	uCanOpenServer.enable();
@@ -214,6 +237,7 @@ void main()
 	mcu::Clock::enableWatchdog();
 
 /*####################################################################################################################*/
+	Syslog::addMessage(Syslog::DEVICE_READY);
 
 	while (true)
 	{

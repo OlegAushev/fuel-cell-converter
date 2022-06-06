@@ -12,6 +12,9 @@
 
 #include "driverlib.h"
 #include "device.h"
+#include <assert.h>
+
+#include "../system/mcusystem.h"
 
 
 namespace mcu {
@@ -61,13 +64,12 @@ enum PinQualMode
 	PIN_QUAL_ASYNC = GPIO_QUAL_ASYNC
 };
 
-
-
 /**
- * @brief GPIO pin class.
+ * @brief GPIO pin config.
  */
-struct GpioPin
+struct GpioPinConfig
 {
+	bool valid;
 	uint32_t no;
 	uint32_t mux;
 	PinDirection direction;
@@ -78,13 +80,13 @@ struct GpioPin
 	GPIO_CoreSelect masterCore;
 
 	/**
-	 * @brief Constructs default GPIO pin.
+	 * @brief Constructs default GPIO pin config.
 	 * @param (none)
 	 */
-	GpioPin() {}
+	GpioPinConfig() : valid(false) {}
 
 	/**
-	 * @brief Constructs GPIO pin.
+	 * @brief Constructs GPIO pin config.
 	 * @param _no - pin number
 	 * @param _mux - pin mux
 	 * @param _direction - pin direction
@@ -92,11 +94,13 @@ struct GpioPin
 	 * @param _type - pin type
 	 * @param _qualMode - pin qualification mode
 	 * @param _qualPeriod - pin qualification period (divider)
+	 * @param _masterCore - master core
 	 */
-	GpioPin(uint32_t _no, uint32_t _mux, PinDirection _direction, PinActiveState _activeState,
+	GpioPinConfig(uint32_t _no, uint32_t _mux, PinDirection _direction, PinActiveState _activeState,
 			PinType _type, PinQualMode _qualMode, uint32_t _qualPeriod,
 			GPIO_CoreSelect _masterCore = GPIO_CORE_CPU1)
-		: no(_no)
+		: valid(true)
+		, no(_no)
 		, mux(_mux)
 		, direction(_direction)
 		, activeState(_activeState)
@@ -113,52 +117,162 @@ struct GpioPin
 			while (true) {}
 		}
 	}
+
+	/**
+	 * @brief Constructs GPIO pin config for muxed pins.
+	 * @param _no - pin number
+	 * @param _mux - pin mux
+	 */
+	GpioPinConfig(uint32_t _no, uint32_t _mux)
+		: valid(true)
+		, no(_no)
+		, mux(_mux)
+	{}
+
+	/**
+	 * @brief Constructs config for pin which must not be configured.
+	 */
+	GpioPinConfig(tag::not_configured) : valid(false) {}
 };
 
 /**
- * @brief Initializes GPIO pin.
- * @param pin - GPIO pin structure
- * @return (none)
+ * @brief GPIO pin class.
  */
-void initGpioPin(const GpioPin& pin);
-
-/**
- * @brief Sets the master core of a specified pin.
- * @param pin - GPIO pin structure
- * @return (none)
- */
-void setGpioPinMasterCore(const GpioPin& pin, GPIO_CoreSelect masterCore);
-
-/**
- * @brief Reads pin state.
- * @param pin - pin
- * @return Pin state.
- */
-inline PinState readPinState(const GpioPin& pin)
+class GpioPin
 {
-	return static_cast<PinState>(1
-			- (GPIO_readPin(pin.no) ^ static_cast<uint32_t>(pin.activeState)));
-}
+private:
+	GpioPinConfig m_cfg;
+	bool m_initialized;
+public:
+	/**
+	 * @brief Gpio pin default constructor.
+	 * @param (none)
+	 */
+	GpioPin()
+		: m_initialized(false)
+	{}
 
-/**
- * @brief Sets pin state.
- * @param pin - pin
- * @return (none)
- */
-inline void setPinState(const GpioPin& pin, PinState state)
-{
-	GPIO_writePin(pin.no, 1 - (static_cast<uint32_t>(state) ^ static_cast<uint32_t>(pin.activeState)));
-}
+	/**
+	 * @brief Constructs GPIO pin.
+	 * @param cfg - pin config
+	 */
+	GpioPin(const GpioPinConfig& cfg)
+		: m_initialized(false)
+	{
+		init(cfg);
+	}
 
-/**
- * @brief Toggles pin state.
- * @param pin - pin
- * @return (none)
- */
-inline void togglePinState(const GpioPin& pin)
-{
-	GPIO_togglePin(pin.no);
-}
+	/**
+	 * @brief Initializes GPIO pin.
+	 * @param cfg - pin config
+	 * @return (none)
+	 */
+	void init(const GpioPinConfig& cfg)
+	{
+		m_cfg = cfg;
+#ifdef CPU1
+		if (m_cfg.valid)
+		{
+			m_initialized = true;	// _init() uses set(), so m_initialized must be set first
+			_init();
+		}
+#endif
+	}
+
+	/**
+	 * @brief Sets the master core.
+	 * @param _masterCore - master core
+	 * @return (none)
+	 */
+	void setMasterCore(GPIO_CoreSelect masterCore)
+	{
+		assert(m_initialized);
+		m_cfg.masterCore = masterCore;
+		GPIO_setMasterCore(m_cfg.no, masterCore);
+	}
+
+	/**
+	 * @brief Reads pin state.
+	 * @param (none)
+	 * @return Pin state.
+	 */
+	PinState read() const
+	{
+		assert(m_initialized);
+		return static_cast<PinState>(1
+				- (GPIO_readPin(m_cfg.no) ^ static_cast<uint32_t>(m_cfg.activeState)));
+	}
+
+	/**
+	 * @brief Sets pin state.
+	 * @param state - pin state
+	 * @return (none)
+	 */
+	void set(PinState state = PIN_ACTIVE)
+	{
+		assert(m_initialized);
+		GPIO_writePin(m_cfg.no, 1
+				- (static_cast<uint32_t>(state) ^ static_cast<uint32_t>(m_cfg.activeState)));
+	}
+
+	/**
+	 * @brief Sets pin state to INACTIVE.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void reset(PinState state = PIN_ACTIVE)
+	{
+		assert(m_initialized);
+		set(PIN_INACTIVE);
+	}
+
+	/**
+	 * @brief Toggles pin state.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void toggle()
+	{
+		assert(m_initialized);
+		GPIO_togglePin(m_cfg.no);
+	}
+
+	/**
+	 * @brief Returns reference to pin config.
+	 * @param (none)
+	 * @return Reference to pin config.
+	 */
+	const GpioPinConfig& config() const { return m_cfg; }
+
+private:
+	/**
+	 * @brief Initializes GPIO pin.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void _init()
+	{
+		switch (m_cfg.direction)
+		{
+		case PIN_OUTPUT:
+			GPIO_setPadConfig(m_cfg.no, m_cfg.type);
+			set(PIN_INACTIVE);
+			GPIO_setPinConfig(m_cfg.mux);
+			GPIO_setDirectionMode(m_cfg.no, static_cast<GPIO_Direction>(m_cfg.direction));
+			break;
+
+		case PIN_INPUT:
+			GPIO_setQualificationPeriod(m_cfg.no, m_cfg.qualPeriod);
+			GPIO_setQualificationMode(m_cfg.no, static_cast<GPIO_QualificationMode>(m_cfg.qualMode));
+			GPIO_setPadConfig(m_cfg.no, m_cfg.type);
+			GPIO_setPinConfig(m_cfg.mux);
+			GPIO_setDirectionMode(m_cfg.no, static_cast<GPIO_Direction>(m_cfg.direction));
+			break;
+		}
+
+		GPIO_setMasterCore(m_cfg.no, m_cfg.masterCore);
+	}
+};
 
 /**
  * @brief Pin debouncing class.
@@ -194,7 +308,7 @@ public:
 	void debounce()
 	{
 		m_stateChanged = false;
-		PinState rawState = readPinState(m_pin);
+		PinState rawState = m_pin.read();
 
 		if (rawState == m_state)
 		{

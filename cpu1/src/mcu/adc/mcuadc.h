@@ -33,7 +33,6 @@ enum AdcModule
 /// ADC channels (application-specific)
 enum AdcChannel
 {
-	/*
 	ADC_CURRENT_PHASE_U,
 	ADC_CURRENT_PHASE_V,
 	ADC_CURRENT_PHASE_W,
@@ -50,24 +49,25 @@ enum AdcChannel
 	ADC_TEMPERATURE_PHASE_Y,
 	ADC_TEMPERATURE_PHASE_Z,
 	ADC_TEMPERATURE_CASE,
-	*/
+
 	ADC_CHANNEL_COUNT
 };
 
 /// ADC interrupt request source (application-specific).
 enum AdcIrq
 {
-	/*
 	ADC_IRQ_CURRENT_UVW,
 	ADC_IRQ_CURRENT_XYZ,
 	ADC_IRQ_VOLTAGE_DC,
 	ADC_IRQ_TEMPERATURE_UVW,
 	ADC_IRQ_TEMPERATURE_XYZ,
 	ADC_IRQ_TEMPERATURE_CASE,
-	*/
+
 	ADC_IRQ_COUNT
 };
 
+
+namespace detail {
 /**
  * @brief ADC module implementation.
  */
@@ -75,6 +75,8 @@ struct AdcModuleImpl
 {
 	const uint32_t base;
 };
+} // namespace detail
+
 
 /**
  * @brief ADC unit class.
@@ -125,7 +127,7 @@ private:
 	AdcUnit& operator=(const AdcUnit& other);	// no copy assignment operator
 public:
 	/// ADC modules
-	static const AdcModuleImpl module[4];
+	static const detail::AdcModuleImpl module[4];
 
 	/**
 	 * @brief Initializes MCU ADC unit.
@@ -148,24 +150,24 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-//	void convertCurrentsUVW() const
-//	{
-//		//ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_U].base, m_channels[ADC_CURRENT_PHASE_U].soc);
-//		//ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_V].base, m_channels[ADC_CURRENT_PHASE_V].soc);
-//		//ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_W].base, m_channels[ADC_CURRENT_PHASE_W].soc);
-//	}
+	void convertCurrentsUVW() const
+	{
+		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_U].base, m_channels[ADC_CURRENT_PHASE_U].soc);
+		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_V].base, m_channels[ADC_CURRENT_PHASE_V].soc);
+		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_W].base, m_channels[ADC_CURRENT_PHASE_W].soc);
+	}
 
 	/**
 	 * @brief Launches XYZ-phase currents ADCs.
 	 * @param (none)
 	 * @return (none)
 	 */
-//	void convertCurrentsXYZ() const
-//	{
-//		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_X].base, m_channels[ADC_CURRENT_PHASE_X].soc);
-//		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_Y].base, m_channels[ADC_CURRENT_PHASE_Y].soc);
-//		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_Z].base, m_channels[ADC_CURRENT_PHASE_Z].soc);
-//	}
+	void convertCurrentsXYZ() const
+	{
+		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_X].base, m_channels[ADC_CURRENT_PHASE_X].soc);
+		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_Y].base, m_channels[ADC_CURRENT_PHASE_Y].soc);
+		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_Z].base, m_channels[ADC_CURRENT_PHASE_Z].soc);
+	}
 
 	/**
 	 * @brief Returns raw ADC-result of current of specified phase.
@@ -186,20 +188,20 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-//	void convertVoltageDc() const
-//	{
-//		ADC_forceSOC(m_channels[ADC_VOLTAGE_DC].base, m_channels[ADC_VOLTAGE_DC].soc);
-//	}
+	void convertVoltageDc() const
+	{
+		ADC_forceSOC(m_channels[ADC_VOLTAGE_DC].base, m_channels[ADC_VOLTAGE_DC].soc);
+	}
 
 	/**
 	 * @brief Returns raw ADC-result of DC-voltage.
 	 * @param (none)
 	 * @return Raw ADC-result of DC-voltage.
 	 */
-//	uint16_t voltageDc() const
-//	{
-//		return ADC_readResult(m_channels[ADC_VOLTAGE_DC].resultBase, m_channels[ADC_VOLTAGE_DC].soc);
-//	}
+	uint16_t voltageDc() const
+	{
+		return ADC_readResult(m_channels[ADC_VOLTAGE_DC].resultBase, m_channels[ADC_VOLTAGE_DC].soc);
+	}
 
 /*============================================================================*/
 /*======================= Temperature methods ================================*/
@@ -209,34 +211,34 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-//	void convertTemperaturesUVW() const
-//	{
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_U].base, m_channels[ADC_TEMPERATURE_PHASE_U].soc);
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_V].base, m_channels[ADC_TEMPERATURE_PHASE_V].soc);
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_W].base, m_channels[ADC_TEMPERATURE_PHASE_W].soc);
-//	}
+	void convertTemperaturesUVW() const
+	{
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_U].base, m_channels[ADC_TEMPERATURE_PHASE_U].soc);
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_V].base, m_channels[ADC_TEMPERATURE_PHASE_V].soc);
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_W].base, m_channels[ADC_TEMPERATURE_PHASE_W].soc);
+	}
 
 	/**
 	 * @brief Launch XYZ-phase modules temperatures ADCs.
 	 * @param (none)
 	 * @return (none)
 	 */
-//	void convertTemperaturesXYZ() const
-//	{
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_X].base, m_channels[ADC_TEMPERATURE_PHASE_X].soc);
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_Y].base, m_channels[ADC_TEMPERATURE_PHASE_Y].soc);
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_Z].base, m_channels[ADC_TEMPERATURE_PHASE_Z].soc);
-//	}
+	void convertTemperaturesXYZ() const
+	{
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_X].base, m_channels[ADC_TEMPERATURE_PHASE_X].soc);
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_Y].base, m_channels[ADC_TEMPERATURE_PHASE_Y].soc);
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_Z].base, m_channels[ADC_TEMPERATURE_PHASE_Z].soc);
+	}
 
 	/**
 	 * @brief Launch case temperature ADC.
 	 * @param (none)
 	 * @return (none)
 	 */
-//	void convertTemperatureCase() const
-//	{
-//		ADC_forceSOC(m_channels[ADC_TEMPERATURE_CASE].base, m_channels[ADC_TEMPERATURE_CASE].soc);
-//	}
+	void convertTemperatureCase() const
+	{
+		ADC_forceSOC(m_channels[ADC_TEMPERATURE_CASE].base, m_channels[ADC_TEMPERATURE_CASE].soc);
+	}
 
 	/**
 	 * @brief Returns raw ADC-result of module temperature of specified phase.
@@ -254,10 +256,10 @@ public:
 	 * @param (none)
 	 * @return Raw ADC-result of case temperature.
 	 */
-//	uint16_t temperatureCase() const
-//	{
-//		return ADC_readResult(m_channels[ADC_TEMPERATURE_CASE].resultBase, m_channels[ADC_TEMPERATURE_CASE].soc);
-//	}
+	uint16_t temperatureCase() const
+	{
+		return ADC_readResult(m_channels[ADC_TEMPERATURE_CASE].resultBase, m_channels[ADC_TEMPERATURE_CASE].soc);
+	}
 
 /*============================================================================*/
 /*============================ Interrupts ====================================*/

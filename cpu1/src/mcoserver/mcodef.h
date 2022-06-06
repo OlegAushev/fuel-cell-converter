@@ -12,6 +12,10 @@
 #pragma once
 
 
+#define MCO_CAN1 mcu::CANA
+#define MCO_CAN2 mcu::CANB
+
+
 namespace microcanopen {
 /// @addtogroup microcanopen
 /// @{

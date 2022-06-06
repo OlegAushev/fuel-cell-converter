@@ -9,9 +9,10 @@
 
 namespace mcu {
 
-volatile uint64_t Clock::m_timeMs;
+volatile uint64_t Clock::m_time_ms;
 
 uint64_t Clock::m_taskPeriods[Clock::TASK_COUNT];
+uint64_t Clock::m_taskTimestamps[Clock::TASK_COUNT];
 bool Clock::m_taskFlags[Clock::TASK_COUNT];
 ClockTaskStatus (*Clock::m_tasks[Clock::TASK_COUNT])();
 
@@ -36,7 +37,7 @@ void Clock::init()
 		return;
 	}
 
-	m_timeMs = 0;
+	m_time_ms = 0;
 
 	m_watchdogEnabled = false;
 	m_watchdogTimerMs = 0;
@@ -53,13 +54,14 @@ void Clock::init()
 	CPUTimer_stopTimer(CPUTIMER0_BASE);		// Make sure timer is stopped
 	CPUTimer_reloadTimerCounter(CPUTIMER0_BASE);	// Reload counter register with period value
 
-	uint32_t tmp = (uint32_t)(DEVICE_SYSCLK_FREQ / 1000 * TIME_STEP_MS);
+	uint32_t tmp = (uint32_t)((mcu::sysclkFreq() / 1000) * TIME_STEP_ms);
 	CPUTimer_setPeriod(CPUTIMER0_BASE, tmp - 1);
 	CPUTimer_setEmulationMode(CPUTIMER0_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
 
 	for (size_t i = 0; i < TASK_COUNT; ++i)
 	{
 		m_taskPeriods[i] = 0x0;
+		m_taskTimestamps[i] = 0x0;
 	}
 	for (size_t i = 0; i < TASK_COUNT; ++i)
 	{

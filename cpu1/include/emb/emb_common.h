@@ -59,13 +59,13 @@ protected:
 	Monostate()
 	{
 		assert(s_initialized);
-		if (!s_initialized) while(1) {}
+		if (!s_initialized) while (1) {}
 	}
 
 	static void setInitialized()
 	{
 		assert(!s_initialized);
-		if (s_initialized) while(1) {}
+		if (s_initialized) while (1) {}
 		s_initialized = true;
 	}
 public:
@@ -91,7 +91,7 @@ protected:
 	Singleton(T* self)
 	{
 		assert(!s_created);
-		if (s_created) while(1) {}
+		if (s_created) while (1) {}
 		s_instance = self;
 		s_created = true;
 	}
@@ -99,11 +99,17 @@ public:
 	static T* instance()
 	{
 		assert(s_created);
-		if (!s_created) while(1) {}
+		if (!s_created) while (1) {}
 		return s_instance;
 	}
 
 	static bool created() { return s_created; }
+
+	virtual ~Singleton()
+	{
+		s_created = false;
+		s_instance = static_cast<T*>(NULL);
+	}
 };
 
 template <class T>

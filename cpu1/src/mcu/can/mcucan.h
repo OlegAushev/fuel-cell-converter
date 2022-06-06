@@ -12,8 +12,9 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "emb/emb_common.h"
 #include "../system/mcusystem.h"
+#include "../gpio/mcugpio.h"
+#include "emb/emb_common.h"
 
 
 namespace mcu {
@@ -28,41 +29,12 @@ enum CanModule
 	CANB
 };
 
-/// CAN TX pins
-enum CanTxPin
-{
-	CANA_TX_GPIO_19,
-	CANA_TX_GPIO_31,
-	CANB_TX_GPIO_12
-};
-
-/// CAN RX pins
-enum CanRxPin
-{
-	CANA_RX_GPIO_18,
-	CANA_RX_GPIO_30,
-	CANB_RX_GPIO_17
-};
-
 /// CAN bitrates
 enum CanBitrate
 {
 	CAN_BITRATE_125K = 125000,
 	CAN_BITRATE_500K = 500000,
 	CAN_BITRATE_1M = 1000000,
-};
-
-/**
- * @brief CAN module implementation.
- */
-struct CanModuleImpl
-{
-	const uint32_t base;
-	uint32_t txPin;
-	uint32_t txPinMux;
-	uint32_t rxPin;
-	uint32_t rxPinMux;
-	const uint32_t pieIntNo;
 };
 
 /**
@@ -80,6 +52,24 @@ struct CanMessageObject
 	uint16_t data[8];
 };
 
+
+namespace detail {
+/**
+ * @brief CAN module implementation.
+ */
+struct CanModuleImpl
+{
+	uint32_t base;
+	uint32_t pieIntNo;
+	CanModuleImpl(uint32_t _base, uint32_t _pieIntNo)
+		: base(_base), pieIntNo(_pieIntNo) {}
+};
+
+extern const uint32_t canBases[2];
+extern const uint32_t canPieIntNos[2];
+} // namespace detail
+
+
 /**
  * @brief CAN unit class.
  */
@@ -87,30 +77,69 @@ template <CanModule Module>
 class CanUnit : public emb::c28x::Singleton<CanUnit<Module> >
 {
 private:
+	detail::CanModuleImpl m_module;
+
 	CanUnit(const CanUnit& other);			// no copy constructor
 	CanUnit& operator=(const CanUnit& other);	// no copy assignment operator
-
 public:
-	/// CAN module
-	static CanModuleImpl module;
-
 	/**
 	 * @brief Initializes MCU CAN unit.
-	 * @param txPin - MCU CAN-TX pin
-	 * @param rxPin	- MCU CAN-RX pin
+	 * @param txPin - MCU CAN-TX pin config
+	 * @param rxPin	- MCU CAN-RX pin config
 	 * @param bitrate - CAN bus bitrate
 	 */
-	CanUnit(CanTxPin txPin, CanRxPin rxPin, CanBitrate bitrate);
+	CanUnit(const GpioPinConfig& txPin, const GpioPinConfig& rxPin, CanBitrate bitrate)
+		: emb::c28x::Singleton<CanUnit<Module> >(this)
+		, m_module(detail::canBases[Module], detail::canPieIntNos[Module])
+	{
+#ifdef CPU1
+		_initPins(txPin, rxPin);
+#endif
+
+		CAN_initModule(m_module.base);
+		CAN_selectClockSource(m_module.base, CAN_CLOCK_SOURCE_SYS);
+
+		switch (bitrate)
+		{
+		case CAN_BITRATE_125K:
+		case CAN_BITRATE_500K:
+			CAN_setBitRate(m_module.base, mcu::sysclkFreq(), static_cast<uint32_t>(bitrate), 16);
+			break;
+		case CAN_BITRATE_1M:
+			CAN_setBitRate(m_module.base, mcu::sysclkFreq(), static_cast<uint32_t>(bitrate), 10);
+			break;
+		}
+
+		CAN_setAutoBusOnTime(m_module.base, 0);
+		CAN_enableAutoBusOn(m_module.base);
+
+		CAN_startModule(m_module.base);
+	}
 
 #ifdef CPU1
 	/**
 	 * @brief Transfers control over CAN unit to CPU2.
-	 * @param txPin - MCU CAN-TX pin
-	 * @param rxPin - MCU CAN-RX pin
+	 * @param txPin - MCU CAN-TX pin config
+	 * @param rxPin - MCU CAN-RX pin config
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(CanTxPin txPin, CanRxPin rxPin);
+	static void transferControlToCpu2(const GpioPinConfig& txPin, const GpioPinConfig& rxPin)
+	{
+		_initPins(txPin, rxPin);
+		GPIO_setMasterCore(txPin.no, GPIO_CORE_CPU2);
+		GPIO_setMasterCore(rxPin.no, GPIO_CORE_CPU2);
+
+		SysCtl_selectCPUForPeripheral(SYSCTL_CPUSEL8_CAN,
+				static_cast<uint16_t>(Module)+1, SYSCTL_CPUSEL_CPU2);
+	}
 #endif
+
+	/**
+	 * @brief Returns base of CAN-unit.
+	 * @param (none)
+	 * @return Base of CAN-unit.
+	 */
+	uint32_t base() const { return m_module.base; }
 
 	/**
 	 * @brief Retrieves received data.
@@ -120,7 +149,7 @@ public:
 	 */
 	bool recv(uint32_t objId, uint16_t* dataDest) const
 	{
-		return CAN_readMessage(module.base, objId, dataDest);
+		return CAN_readMessage(m_module.base, objId, dataDest);
 	}
 
 	/**
@@ -132,7 +161,7 @@ public:
 	 */
 	void send(uint32_t objId, const uint16_t* dataSrc, uint16_t dataLen) const
 	{
-		CAN_sendMessage(module.base, objId, dataLen, dataSrc);
+		CAN_sendMessage(m_module.base, objId, dataLen, dataSrc);
 	}
 
 	/**
@@ -142,7 +171,7 @@ public:
 	 */
 	void setupMessageObject(CanMessageObject& msgObj) const
 	{
-		CAN_setupMessageObject(module.base, msgObj.objId, msgObj.frameId, msgObj.frameType,
+		CAN_setupMessageObject(m_module.base, msgObj.objId, msgObj.frameId, msgObj.frameType,
 				msgObj.objType, msgObj.frameIdMask, msgObj.flags, msgObj.dataLen);
 	}
 
@@ -153,9 +182,9 @@ public:
 	 */
 	void registerRxInterruptHandler(void (*handler)(void)) const
 	{
-		Interrupt_register(module.pieIntNo, handler);
-		CAN_enableInterrupt(module.base, CAN_INT_IE0 | CAN_INT_ERROR | CAN_INT_STATUS);
-		CAN_enableGlobalInterrupt(module.base, CAN_GLOBAL_INT_CANINT0);
+		Interrupt_register(m_module.pieIntNo, handler);
+		CAN_enableInterrupt(m_module.base, CAN_INT_IE0 | CAN_INT_ERROR | CAN_INT_STATUS);
+		CAN_enableGlobalInterrupt(m_module.base, CAN_GLOBAL_INT_CANINT0);
 	}
 
 	/**
@@ -163,14 +192,23 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableRxInterrupt() const { Interrupt_enable(module.pieIntNo); }
+	void enableRxInterrupt() const { Interrupt_enable(m_module.pieIntNo); }
 
 	/**
 	 * @brief Disables Rx-interrupt.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disableRxInterrupt() const { Interrupt_disable(module.pieIntNo); }
+	void disableRxInterrupt() const { Interrupt_disable(m_module.pieIntNo); }
+
+protected:
+#ifdef CPU1
+	static void _initPins(const GpioPinConfig& txPin, const GpioPinConfig& rxPin)
+	{
+		GPIO_setPinConfig(txPin.mux);
+		GPIO_setPinConfig(rxPin.mux);
+	}
+#endif
 };
 
 

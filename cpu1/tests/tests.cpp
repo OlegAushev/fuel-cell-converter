@@ -16,7 +16,7 @@ void RUN_TESTS()
 #ifdef _LAUNCHXL_F28379D
 	mcu::configureLaunchPadLeds(GPIO_CORE_CPU1, GPIO_CORE_CPU1);
 #endif
-	Syslog::init();
+	Syslog::init(Syslog::IpcSignals());
 	mcu::Clock::init();
 	mcu::AdcUnit mcuAdcUnit(mcu::ADC_CHANNEL_COUNT);
 	mcuAdcUnit.enableInterrupts();

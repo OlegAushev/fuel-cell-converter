@@ -12,6 +12,7 @@
 
 #include "driverlib.h"
 #include "device.h"
+#include "../gpio/mcugpio.h"
 #include "emb/emb_common.h"
 
 
@@ -26,39 +27,6 @@ enum SpiModule
 	SPIA,
 	SPIB,
 	SPIC
-};
-
-/// SPI MOSI pins
-enum SpiMosiPin
-{
-	SPIA_MOSI_GPIO_16,
-	SPIA_MOSI_GPIO_58,
-	SPIB_MOSI_GPIO_63,
-};
-
-/// SPI MISO pins
-enum SpiMisoPin
-{
-	SPIA_MISO_GPIO_17,
-	SPIA_MISO_GPIO_59,
-	SPIB_MISO_GPIO_64,
-};
-
-/// SPI CLK pins
-enum SpiClkPin
-{
-	SPIA_CLK_GPIO_18,
-	SPIA_CLK_GPIO_60,
-	SPIB_CLK_GPIO_65,
-};
-
-/// SPI CS pins
-enum SpiCsPin
-{
-	SPI_CS_SOFTWARE,
-	SPIA_CS_GPIO_19,
-	SPIA_CS_GPIO_61,
-	SPIB_CS_GPIO_66,
 };
 
 /// SPI protocol
@@ -105,22 +73,23 @@ struct SpiConfig
 	uint16_t dataSize;
 };
 
+
+namespace detail {
 /**
  * @brief SPI module implementation.
  */
 struct SpiModuleImpl
 {
-	const uint32_t base;
-	uint32_t mosiPin;
-	uint32_t mosiPinMux;
-	uint32_t misoPin;
-	uint32_t misoPinMux;
-	uint32_t clkPin;
-	uint32_t clkPinMux;
-	uint32_t csPin;
-	uint32_t csPinMux;
-	const uint32_t rxPieIntNo;
+	uint32_t base;
+	uint32_t pieRxIntNo;
+	SpiModuleImpl(uint32_t _base, uint32_t _pieRxIntNo)
+		: base(_base), pieRxIntNo(_pieRxIntNo) {}
 };
+
+extern const uint32_t spiBases[3];
+extern const uint32_t spiRxPieIntNos[3];
+} // namespace detail
+
 
 /**
  * @brief SPI unit class.
@@ -129,15 +98,13 @@ template <SpiModule Module>
 class SpiUnit : public emb::c28x::Singleton<SpiUnit<Module> >
 {
 private:
-	static SpiWordLen m_wordLen;
+	detail::SpiModuleImpl m_module;
+	SpiWordLen m_wordLen;
 
 	SpiUnit(const SpiUnit& other);			// no copy constructor
 	SpiUnit& operator=(const SpiUnit& other);	// no copy assignment operator
 
 public:
-	/// SPI module
-	static SpiModuleImpl module;
-
 	/**
 	 * @brief Initializes MCU SPI unit.
 	 * @param mosiPin
@@ -146,7 +113,32 @@ public:
 	 * @param csPin
 	 * @param cfg
 	 */
-	SpiUnit(SpiMosiPin mosiPin, SpiMisoPin misoPin, SpiClkPin clkPin, SpiCsPin csPin, const SpiConfig& cfg);
+	SpiUnit(const GpioPinConfig& mosiPin, const GpioPinConfig& misoPin,
+			const GpioPinConfig& clkPin, const GpioPinConfig& csPin,
+			const SpiConfig& cfg)
+		: emb::c28x::Singleton<SpiUnit<Module> >(this)
+		, m_module(detail::spiBases[Module], detail::spiRxPieIntNos[Module])
+	{
+		assert((cfg.dataSize >= 1) && (cfg.dataSize <= 16));
+
+		m_wordLen = cfg.wordLen;
+
+		SPI_disableModule(m_module.base);
+		SPI_setConfig(m_module.base, DEVICE_LSPCLK_FREQ,
+				static_cast<SPI_TransferProtocol>(cfg.protocol),
+				static_cast<SPI_Mode>(cfg.mode),
+				static_cast<uint32_t>(cfg.bitrate), static_cast<uint16_t>(cfg.wordLen));
+		SPI_disableLoopback(m_module.base);
+		SPI_setEmulationMode(m_module.base, SPI_EMULATION_FREE_RUN);
+
+#ifdef CPU1
+		_initPins(mosiPin, misoPin, clkPin, csPin);
+#endif
+
+		SPI_enableFIFO(m_module.base);
+		SPI_setFIFOInterruptLevel(m_module.base, SPI_FIFO_TXEMPTY, static_cast<SPI_RxFIFOLevel>(cfg.dataSize));
+		SPI_enableModule(m_module.base);
+	}
 
 #ifdef CPU1
 	/**
@@ -158,22 +150,30 @@ public:
 	 * @param csMode
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(SpiMosiPin mosiPin, SpiMisoPin misoPin, SpiClkPin clkPin, SpiCsPin csPin);
+	static void transferControlToCpu2(const GpioPinConfig& mosiPin, const GpioPinConfig& misoPin,
+			const GpioPinConfig& clkPin, const GpioPinConfig& csPin)
+	{
+		_initPins(mosiPin, misoPin, clkPin, csPin);
+		GPIO_setMasterCore(mosiPin.no, GPIO_CORE_CPU2);
+		GPIO_setMasterCore(misoPin.no, GPIO_CORE_CPU2);
+		GPIO_setMasterCore(clkPin.no, GPIO_CORE_CPU2);
+		if (csPin.valid)
+		{
+			GPIO_setMasterCore(csPin.no, GPIO_CORE_CPU2);
+		}
+
+		SysCtl_selectCPUForPeripheral(SYSCTL_CPUSEL6_SPI,
+				static_cast<uint16_t>(Module)+1, SYSCTL_CPUSEL_CPU2);
+	}
 #endif
 
-private:
 	/**
-	 * @brief Initializes SPI unit pins.
-	 * @param mosiPin
-	 * @param misoPin
-	 * @param clkPin
-	 * @param csPin
-	 * @param csMode
-	 * @return (none)
+	 * @brief Returns base of SPI-unit.
+	 * @param (none)
+	 * @return Base of SPI-unit.
 	 */
-	static void initPins(SpiMosiPin mosiPin, SpiMisoPin misoPin, SpiClkPin clkPin, SpiCsPin csPin);
+	uint32_t base() const { return m_module.base; }
 
-public:
 	/**
 	 * @brief Enables loopback mode.
 	 * @param (none)
@@ -181,9 +181,9 @@ public:
 	 */
 	void enableLoopback() const
 	{
-		SPI_disableModule(module.base);
-		SPI_enableLoopback(module.base);
-		SPI_enableModule(module.base);
+		SPI_disableModule(m_module.base);
+		SPI_enableLoopback(m_module.base);
+		SPI_enableModule(m_module.base);
 	}
 
 	/**
@@ -200,7 +200,7 @@ public:
 			uint16_t byte8[sizeof(T)*2];
 			for (size_t i = 0; i < sizeof(T)*2; ++i)
 			{
-				byte8[i] = SPI_readDataBlockingFIFO(module.base) & 0x00FF;
+				byte8[i] = SPI_readDataBlockingFIFO(m_module.base) & 0x00FF;
 			}
 			emb::c28x::from_8bit_bytes<T>(data, byte8);
 			break;
@@ -209,7 +209,7 @@ public:
 			uint16_t byte16[sizeof(T)];
 			for (size_t i = 0; i < sizeof(T); ++i)
 			{
-				byte16[i] = SPI_readDataBlockingFIFO(module.base);
+				byte16[i] = SPI_readDataBlockingFIFO(m_module.base);
 			}
 			memcpy(&data, byte16, sizeof(T));
 			break;
@@ -231,7 +231,7 @@ public:
 			emb::c28x::to_8bit_bytes<T>(byte8, data);
 			for (size_t i = 0; i < sizeof(T)*2; ++i)
 			{
-				SPI_writeDataBlockingFIFO(module.base, byte8[i] << 8);
+				SPI_writeDataBlockingFIFO(m_module.base, byte8[i] << 8);
 			}
 			break;
 
@@ -240,7 +240,7 @@ public:
 			memcpy(byte16, &data, sizeof(T));
 			for (size_t i = 0; i < sizeof(T); ++i)
 			{
-				SPI_writeDataBlockingFIFO(module.base, byte16[i]);
+				SPI_writeDataBlockingFIFO(m_module.base, byte16[i]);
 			}
 			break;
 		}
@@ -253,10 +253,10 @@ public:
 	 */
 	void registerRxInterruptHandler(void (*handler)(void)) const
 	{
-		SPI_disableModule(module.base);
-		Interrupt_register(module.rxPieIntNo, handler);
-		SPI_enableInterrupt(module.base, SPI_INT_RXFF);
-		SPI_enableModule(module.base);
+		SPI_disableModule(m_module.base);
+		Interrupt_register(m_module.pieRxIntNo, handler);
+		SPI_enableInterrupt(m_module.base, SPI_INT_RXFF);
+		SPI_enableModule(m_module.base);
 	}
 
 	/**
@@ -264,7 +264,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableRxInterrupt() const { Interrupt_enable(module.rxPieIntNo); }
+	void enableRxInterrupt() const { Interrupt_enable(m_module.pieRxIntNo); }
 
 	/**
 	 * @brief Acknowledges interrupt.
@@ -273,7 +273,7 @@ public:
 	 */
 	void acknowledgeRxInterrupt() const
 	{
-		SPI_clearInterruptStatus(module.base, SPI_INT_RXFF);
+		SPI_clearInterruptStatus(m_module.base, SPI_INT_RXFF);
 		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP6);
 	}
 
@@ -284,7 +284,7 @@ public:
 	 */
 	void resetRxFifo() const
 	{
-		SPI_resetRxFIFO(module.base);
+		SPI_resetRxFIFO(m_module.base);
 	}
 
 	/**
@@ -294,19 +294,33 @@ public:
 	 */
 	void resetTxFifo() const
 	{
-		SPI_resetTxFIFO(module.base);
+		SPI_resetTxFIFO(m_module.base);
+	}
+
+protected:
+	static void _initPins(const GpioPinConfig& mosiPin, const GpioPinConfig& misoPin,
+			const GpioPinConfig& clkPin, const GpioPinConfig& csPin)
+	{
+		GPIO_setPinConfig(mosiPin.mux);
+		//GPIO_setPadConfig(mosiPin.no, GPIO_PIN_TYPE_PULLUP);
+		GPIO_setQualificationMode(mosiPin.no, GPIO_QUAL_ASYNC);
+
+		GPIO_setPinConfig(misoPin.mux);
+		//GPIO_setPadConfig(misoPin.no, GPIO_PIN_TYPE_PULLUP);
+		GPIO_setQualificationMode(misoPin.no, GPIO_QUAL_ASYNC);
+
+		GPIO_setPinConfig(clkPin.mux);
+		//GPIO_setPadConfig(clkPin.no, GPIO_PIN_TYPE_PULLUP);
+		GPIO_setQualificationMode(clkPin.no, GPIO_QUAL_ASYNC);
+
+		if (csPin.valid)
+		{
+			GPIO_setPinConfig(csPin.mux);
+			//GPIO_setPadConfig(csPin.no, GPIO_PIN_TYPE_PULLUP);
+			GPIO_setQualificationMode(csPin.no, GPIO_QUAL_ASYNC);
+		}
 	}
 };
-
-
-
-
-
-
-
-
-
-
 
 
 /// @}

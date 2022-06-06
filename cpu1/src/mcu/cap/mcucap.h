@@ -27,38 +27,112 @@ enum CapModule
 {
 	CAP1,
 	CAP2,
-	CAP3
+	CAP3,
+	CAP4,
+	CAP5,
+	CAP6
 };
 
 /**
+ * @brief CAP config.
+ */
+template <unsigned int ChannelCount>
+struct CapConfig
+{
+	CapModule module[ChannelCount];
+	mcu::GpioPin inputPin[ChannelCount];
+};
+
+
+namespace detail {
+/**
  * @brief CAP module implementation.
  */
+template <unsigned int ChannelCount>
 struct CapModuleImpl
 {
-	const uint32_t base;
-	uint32_t inputPin;
-	uint32_t inputPinMux;
-	const XBAR_InputNum xbarInput;
-	const uint32_t pieIntNo;
+	CapModule instance[ChannelCount];
+	uint32_t base[ChannelCount];
+	XBAR_InputNum xbarInput[ChannelCount];
+	uint32_t pieIntNo[ChannelCount];
 };
+
+extern const uint32_t capBases[6];
+extern const XBAR_InputNum capXbarInputs[6];
+extern const uint32_t capPieIntNos[6];
+} // namespace detail
+
 
 /**
  * @brief CAP unit class.
  */
-class CapUnit : public emb::c28x::Singleton<CapUnit>
+template <unsigned int ChannelCount>
+class CapUnit
 {
 private:
+	detail::CapModuleImpl<ChannelCount> m_module;
+
 	CapUnit(const CapUnit& other);			// no copy constructor
 	CapUnit& operator=(const CapUnit& other);	// no copy assignment operator
 public:
-	/// CAP modules
-	static CapModuleImpl module[3];
-
 	/**
 	 * @brief Initializes MCU CAP unit.
-	 * @param pins - array of 3 capture pins
+	 * @param cfg - CAP unit config
 	 */
-	CapUnit(const emb::Array<mcu::GpioPin, 3>& pins);
+	CapUnit(const CapConfig<ChannelCount>& cfg)
+	{
+		EMB_STATIC_ASSERT(ChannelCount > 0);
+		EMB_STATIC_ASSERT(ChannelCount <= 6);
+
+		// XBAR setup
+		for (size_t i = 0; i < ChannelCount; ++i)
+		{
+			m_module.instance[i] = cfg.module[i];
+			m_module.base[i] = detail::capBases[cfg.module[i]];
+			m_module.xbarInput[i] = detail::capXbarInputs[cfg.module[i]];
+			m_module.pieIntNo[i] = detail::capPieIntNos[cfg.module[i]];
+			XBAR_setInputPin(m_module.xbarInput[i], cfg.inputPin[i].config().no);
+		}
+
+		/* ECAP setup */
+		for (size_t i = 0; i < ChannelCount; ++i)
+		{
+			ECAP_disableInterrupt(m_module.base[i],
+								  (ECAP_ISR_SOURCE_CAPTURE_EVENT_1  |
+								   ECAP_ISR_SOURCE_CAPTURE_EVENT_2  |
+								   ECAP_ISR_SOURCE_CAPTURE_EVENT_3  |
+								   ECAP_ISR_SOURCE_CAPTURE_EVENT_4  |
+								   ECAP_ISR_SOURCE_COUNTER_OVERFLOW |
+								   ECAP_ISR_SOURCE_COUNTER_PERIOD   |
+								   ECAP_ISR_SOURCE_COUNTER_COMPARE));
+			ECAP_clearInterrupt(m_module.base[i],
+								(ECAP_ISR_SOURCE_CAPTURE_EVENT_1  |
+								 ECAP_ISR_SOURCE_CAPTURE_EVENT_2  |
+								 ECAP_ISR_SOURCE_CAPTURE_EVENT_3  |
+								 ECAP_ISR_SOURCE_CAPTURE_EVENT_4  |
+								 ECAP_ISR_SOURCE_COUNTER_OVERFLOW |
+								 ECAP_ISR_SOURCE_COUNTER_PERIOD   |
+								 ECAP_ISR_SOURCE_COUNTER_COMPARE));
+
+			ECAP_disableTimeStampCapture(m_module.base[i]);
+
+			ECAP_stopCounter(m_module.base[i]);
+			ECAP_enableCaptureMode(m_module.base[i]);
+			ECAP_setCaptureMode(m_module.base[i], ECAP_CONTINUOUS_CAPTURE_MODE, ECAP_EVENT_2);
+
+
+			ECAP_setEventPolarity(m_module.base[i], ECAP_EVENT_1, ECAP_EVNT_RISING_EDGE);
+			ECAP_setEventPolarity(m_module.base[i], ECAP_EVENT_2, ECAP_EVNT_FALLING_EDGE);
+
+			ECAP_enableCounterResetOnEvent(m_module.base[i], ECAP_EVENT_1);
+			ECAP_enableCounterResetOnEvent(m_module.base[i], ECAP_EVENT_2);
+
+			ECAP_setSyncOutMode(m_module.base[i], ECAP_SYNC_OUT_DISABLED);
+			ECAP_startCounter(m_module.base[i]);
+			ECAP_enableTimeStampCapture(m_module.base[i]);
+			ECAP_reArm(m_module.base[i]);
+		}
+	}
 
 	/**
 	 * @brief Rearms unit.
@@ -67,9 +141,9 @@ public:
 	 */
 	void rearm() const
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < ChannelCount; ++i)
 		{
-			ECAP_reArm(module[i].base);
+			ECAP_reArm(m_module.base[i]);
 		}
 	}
 
@@ -80,11 +154,11 @@ public:
 	 */
 	void enableInterrupts() const
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < ChannelCount; ++i)
 		{
-			ECAP_enableInterrupt(module[i].base, ECAP_ISR_SOURCE_CAPTURE_EVENT_1);
-			ECAP_enableInterrupt(module[i].base, ECAP_ISR_SOURCE_CAPTURE_EVENT_2);
-			ECAP_enableInterrupt(module[i].base, ECAP_ISR_SOURCE_COUNTER_OVERFLOW);
+			ECAP_enableInterrupt(m_module.base[i], ECAP_ISR_SOURCE_CAPTURE_EVENT_1);
+			ECAP_enableInterrupt(m_module.base[i], ECAP_ISR_SOURCE_CAPTURE_EVENT_2);
+			ECAP_enableInterrupt(m_module.base[i], ECAP_ISR_SOURCE_COUNTER_OVERFLOW);
 		}
 	}
 
@@ -95,11 +169,11 @@ public:
 	 */
 	void disableInterrupts() const
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < ChannelCount; ++i)
 		{
-			ECAP_disableInterrupt(module[i].base, ECAP_ISR_SOURCE_CAPTURE_EVENT_1);
-			ECAP_disableInterrupt(module[i].base, ECAP_ISR_SOURCE_CAPTURE_EVENT_2);
-			ECAP_disableInterrupt(module[i].base, ECAP_ISR_SOURCE_COUNTER_OVERFLOW);
+			ECAP_disableInterrupt(m_module.base[i], ECAP_ISR_SOURCE_CAPTURE_EVENT_1);
+			ECAP_disableInterrupt(m_module.base[i], ECAP_ISR_SOURCE_CAPTURE_EVENT_2);
+			ECAP_disableInterrupt(m_module.base[i], ECAP_ISR_SOURCE_COUNTER_OVERFLOW);
 		}
 	}
 
@@ -109,10 +183,17 @@ public:
 	 * @param handler - interrupt handler
 	 * @return (none)
 	 */
-	void registerInterruptHandler(CapModule iCap, void (*handler)(void)) const
+	void registerInterruptHandler(CapModule module, void (*handler)(void)) const
 	{
-		Interrupt_register(module[iCap].pieIntNo, handler);
-		Interrupt_enable(module[iCap].pieIntNo);
+		for (int i = 0; i < ChannelCount; ++i)
+		{
+			if (m_module.instance[i] == module)
+			{
+				Interrupt_register(m_module.pieIntNo[i], handler);
+				Interrupt_enable(m_module.pieIntNo[i]);
+				return;
+			}
+		}
 	}
 };
 

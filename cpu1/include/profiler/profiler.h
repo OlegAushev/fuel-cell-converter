@@ -24,7 +24,7 @@ private:
 	const uint32_t m_pin;
 public:
 	explicit DurationLoggerPin(const mcu::GpioPin& pin)
-	: m_pin(pin.no)
+	: m_pin(pin.config().no)
 	{
 		switch (Mode)
 		{
@@ -54,16 +54,17 @@ public:
 	}
 };
 
+#ifdef CPU1
 /**
  * @brief
  * @param pin
  * @param masterCore
  */
-inline void initDurationLoggerPin(const mcu::GpioPin& pin, GPIO_CoreSelect masterCore)
+inline void initDurationLoggerPin(mcu::GpioPin& pin, GPIO_CoreSelect masterCore)
 {
-	mcu::initGpioPin(pin);
-	mcu::setGpioPinMasterCore(pin, masterCore);
+	pin.setMasterCore(masterCore);
 }
+#endif
 
 
 #define LOG_DURATION_VIA_PIN_ONOFF(pin) \

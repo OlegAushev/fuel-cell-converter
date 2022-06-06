@@ -6,6 +6,7 @@
 #include "mcu/system/mcusystem.h"
 #include "mcu/gpio/mcugpio.h"
 #include "mcu/cputimers/mcucputimers.h"
+#include "mcu/support/mcusupport.h"
 
 
 class McuTest

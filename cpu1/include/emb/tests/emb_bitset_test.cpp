@@ -21,9 +21,7 @@ void EmbTest::BitsetTest()
 	EMB_ASSERT_EQUAL(sizeof(bs48), 3);
 
 	// ctor, operator[]
-	emb::Array<unsigned int, 2> arr1;
-	arr1[0] = 0xAAAA;
-	arr1[1] = 0xFF00;
+	emb::Array<unsigned int, 2> arr1 = {0xAAAA, 0xFF00};
 	emb::Bitset<32> bs1(arr1);
 
 	for (size_t i = 0; i < 15; ++i)

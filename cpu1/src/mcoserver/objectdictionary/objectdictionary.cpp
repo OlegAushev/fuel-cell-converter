@@ -21,17 +21,17 @@ namespace od {
 //		static_cast<acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*>(NULL);
 //
 //SetupManager* setupManager = static_cast<SetupManager*>(NULL);
-//
-//#if (defined(ACIM_MOTOR_SIX_PHASE))
-//static acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive6Ph;
-//static acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*& drive2 = drive6Ph;
-//#elif (defined(ACIM_MOTOR_THREE_PHASE))
-//static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive3Ph_1;
-//static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*& drive2 = drive3Ph_2;
-//#elif (defined(ACIM_TWO_MOTORS))
-//static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive3Ph_1;
-//static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*& drive2 = drive3Ph_2;
-//#endif
+
+#if (defined(ACIM_MOTOR_SIX_PHASE))
+static acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive6Ph;
+static acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*& drive2 = drive6Ph;
+#elif (defined(ACIM_MOTOR_THREE_PHASE))
+static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive3Ph_1;
+static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*& drive2 = drive3Ph_2;
+#elif (defined(ACIM_TWO_MOTORS))
+static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive3Ph_1;
+static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*& drive2 = drive3Ph_2;
+#endif
 
 /* ========================================================================== */
 /* =================== INFO ====================== */
@@ -80,7 +80,9 @@ inline ODAccessStatus getUptime(CobSdoData& dest)
 	return OD_ACCESS_SUCCESS;
 }
 
-#ifdef OD_OBSOLETE
+
+#ifdef OBSOLETE
+
 inline ODAccessStatus getDriveState(CobSdoData& dest)
 {
 	uint32_t state = static_cast<uint32_t>(drive->state());
@@ -240,7 +242,7 @@ inline ODAccessStatus getDriveCurrentQ(CobSdoData& dest)
 
 inline ODAccessStatus getDriveSpeedRpm(CobSdoData& dest)
 {
-	float value = drive->speed().rpm();
+	float value = drive->speed().to_rpm();
 	memcpy(&dest, &value, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }
@@ -287,9 +289,6 @@ inline ODAccessStatus getDrivePowerElec(CobSdoData& dest)
 	return OD_ACCESS_SUCCESS;
 }
 
-#ifdef OBSOLETE
-
-
 inline ODAccessStatus getDriveTempMotorS(CobSdoData& dest)
 {
 	float value = 0; // TODO drive->motor.temperature(srm::Motor::STATOR);
@@ -314,7 +313,7 @@ inline ODAccessStatus getDriveGammaAngle(CobSdoData& dest)
 
 
 
-#endif
+
 
 /* ========================================================================== */
 /* =================== SET VARIABLES ====================== */
@@ -334,22 +333,22 @@ inline ODAccessStatus setDriveTorque(CobSdoData val)
 inline ODAccessStatus setDriveOpenLoopAngle(CobSdoData val)
 {
 	drive->setAngleRef(val.f32);
-	if (drive2 != NULL && drive2->instanceId() != acim::DRIVE_INSTANCE_1)
-	{
-#warning "Test configuration."
-		drive2->setAngleRef(val.f32 + 180);
-	}
+//	if (drive2 != NULL && drive2->instanceId() != acim::DRIVE_INSTANCE_1)
+//	{
+//#warning "Test configuration."
+//		drive2->setAngleRef(val.f32 + 180);
+//	}
 	return OD_ACCESS_SUCCESS;
 }
 
 inline ODAccessStatus setDriveCurrentD(CobSdoData val)
 {
 	drive->setCurrentDRef(val.f32);
-	if (drive2 != NULL && drive2->instanceId() != acim::DRIVE_INSTANCE_1)
-	{
-#warning "Test configuration."
-		drive2->setCurrentDRef(val.f32);
-	}
+//	if (drive2 != NULL && drive2->instanceId() != acim::DRIVE_INSTANCE_1)
+//	{
+//#warning "Test configuration."
+//		drive2->setCurrentDRef(val.f32);
+//	}
 	return OD_ACCESS_SUCCESS;
 }
 
@@ -493,8 +492,8 @@ inline ODAccessStatus setMrasKi(CobSdoData val)
 	drive->model.m_mras.m_controller.setKi(val.f32);
 	return OD_ACCESS_SUCCESS;
 }
+#endif
 
-#endif // OD_OBSOLETE
 } // namespace od
 
 extern ODEntry OBJECT_DICTIONARY[] = {
@@ -577,21 +576,21 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 //{{0x2102, 0x06}, {"CONFIG",	"CONVERTER",	"OTP_CASE",		"°C",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG.otpCase), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
 //{{0x2102, 0x07}, {"CONFIG",	"CONVERTER",	"FAN_TEMP_TH_ON",	"°C",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG.fanTempThOn), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
 //{{0x2102, 0x08}, {"CONFIG",	"CONVERTER",	"FAN_TEMP_TH_OFF",	"°C",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG.fanTempThOff), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
-
+//
 //{{0x2103, 0x00}, {"CONFIG",	"MRAS",		"KP",			"",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.ACIM_MRAS_CONFIG.kP), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
 //{{0x2103, 0x01}, {"CONFIG",	"MRAS",		"KI",			"",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.ACIM_MRAS_CONFIG.kI), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
 //{{0x2103, 0x00}, {"CONFIG",	"MRAS",		"KP",			"",	OD_FLOAT32, 	true,	true,	OD_NO_DIRECT_ACCESS, od::getMrasKp, od::setMrasKp}},
 //{{0x2103, 0x01}, {"CONFIG",	"MRAS",		"KI",			"",	OD_FLOAT32, 	true,	true,	OD_NO_DIRECT_ACCESS, od::getMrasKi, od::setMrasKi}},
-
-
-
+//
+//
+//
 /*
-{{0x2103, 0x00}, {"CONFIG",	"CONTACTOR",	"DCLINK_CHARGE_THRESHOLD",	"V",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkChargeThreshold), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
-{{0x2103, 0x01}, {"CONFIG",	"CONTACTOR",	"DCLINK_CHARGE_TIMEOUT",	"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkChargeTimeout), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
-{{0x2103, 0x02}, {"CONFIG",	"CONTACTOR",	"DCLINK_CONTACTOR_HOLDUP",	"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.chargingContactorHoldup), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
-{{0x2103, 0x03}, {"CONFIG",	"CONTACTOR",	"DCLINK_DISCHARGE_THRESHOLD",	"V",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkDischargeThreshold), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
-{{0x2103, 0x04}, {"CONFIG",	"CONTACTOR",	"DCLINK_DISCHARGE_TIMEOUT",	"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkDischargeTimeout), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
-*/
+//{{0x2103, 0x00}, {"CONFIG",	"CONTACTOR",	"DCLINK_CHARGE_THRESHOLD",	"V",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkChargeThreshold), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
+//{{0x2103, 0x01}, {"CONFIG",	"CONTACTOR",	"DCLINK_CHARGE_TIMEOUT",	"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkChargeTimeout), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
+//{{0x2103, 0x02}, {"CONFIG",	"CONTACTOR",	"DCLINK_CONTACTOR_HOLDUP",	"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.chargingContactorHoldup), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
+//{{0x2103, 0x03}, {"CONFIG",	"CONTACTOR",	"DCLINK_DISCHARGE_THRESHOLD",	"V",	OD_FLOAT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkDischargeThreshold), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
+//{{0x2103, 0x04}, {"CONFIG",	"CONTACTOR",	"DCLINK_DISCHARGE_TIMEOUT",	"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.CONTACTOR_CONFIG.dclinkDischargeTimeout), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
+//*/
 //{{0x2104, 0x00}, {"CONFIG",	"MCOSERVER",	"PERIOD_HB",		"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.MCOSERVER_CONFIG.periodHeartbeat), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
 //{{0x2104, 0x01}, {"CONFIG",	"MCOSERVER",	"PERIOD_TPDO1",		"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.MCOSERVER_CONFIG.periodTpdo1), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},
 //{{0x2104, 0x02}, {"CONFIG",	"MCOSERVER",	"PERIOD_TPDO2",		"ms",	OD_UINT32, 	true,	true,	OD_PTR(&SetupManager::SYSTEM_CONFIG.MCOSERVER_CONFIG.periodTpdo2), OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}},

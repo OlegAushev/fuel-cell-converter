@@ -51,13 +51,17 @@ void EmbTest::FilterTest()
 	/* ExponentialMedianFilter */
 	emb::ExponentialMedianFilter<float, 3> expMedFilter;
 	expMedFilter.setSmoothFactor(0.5);
-	expMedFilter.process(20);
+	expMedFilter.process(16);
 	EMB_ASSERT_EQUAL(expMedFilter.output(), 0);
-	expMedFilter.process(10);
-	EMB_ASSERT_EQUAL(expMedFilter.output(), 5);
+	expMedFilter.process(8);
+	EMB_ASSERT_EQUAL(expMedFilter.output(), 4);
+	expMedFilter.process(32);
+	EMB_ASSERT_EQUAL(expMedFilter.output(), 10);
+	expMedFilter.process(8);
+	EMB_ASSERT_EQUAL(expMedFilter.output(), 9);
 	expMedFilter.setSmoothFactor(1);
-	expMedFilter.process(30);
-	EMB_ASSERT_EQUAL(expMedFilter.output(), 20);
+	expMedFilter.process(19);
+	EMB_ASSERT_EQUAL(expMedFilter.output(), 19);
 	expMedFilter.setOutput(10);
 	EMB_ASSERT_EQUAL(expMedFilter.output(), 10);
 	expMedFilter.process(5);
@@ -65,7 +69,6 @@ void EmbTest::FilterTest()
 	EMB_ASSERT_EQUAL(expMedFilter.output(), 5);
 	expMedFilter.reset();
 	EMB_ASSERT_EQUAL(expMedFilter.output(), 0);
-
 }
 
 
