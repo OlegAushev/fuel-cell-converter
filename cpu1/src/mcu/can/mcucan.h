@@ -29,6 +29,7 @@ enum CanModule
 	CANB
 };
 
+
 /// CAN bitrates
 enum CanBitrate
 {
@@ -36,6 +37,7 @@ enum CanBitrate
 	CAN_BITRATE_500K = 500000,
 	CAN_BITRATE_1M = 1000000,
 };
+
 
 /**
  * @brief CAN message object.
@@ -54,6 +56,8 @@ struct CanMessageObject
 
 
 namespace detail {
+
+
 /**
  * @brief CAN module implementation.
  */
@@ -65,8 +69,11 @@ struct CanModuleImpl
 		: base(_base), pieIntNo(_pieIntNo) {}
 };
 
+
 extern const uint32_t canBases[2];
 extern const uint32_t canPieIntNos[2];
+
+
 } // namespace detail
 
 
@@ -213,6 +220,6 @@ protected:
 
 
 /// @}
-} /* namespace mcu */
+} // namespace mcu
 
 

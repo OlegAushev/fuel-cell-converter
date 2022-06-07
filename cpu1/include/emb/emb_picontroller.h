@@ -10,6 +10,7 @@
 
 namespace emb {
 
+
 /*
  * @brief PI controller interface
  */
@@ -59,6 +60,7 @@ public:
 	float sumI() const { return m_sumI; }
 };
 
+
 /*
  * @brief PI controller with back-calculation
  */
@@ -98,6 +100,7 @@ public:
 		m_sumI = emb::clamp(m_sumI + m_kI * m_dt * error - m_kC * (out - m_out), -FLT_MAX, FLT_MAX);
 	}
 };
+
 
 /*
  * @brief PI controller with clamping
@@ -155,6 +158,7 @@ public:
 		m_out = 0;
 	}
 };
+
 
 } // namespace emb
 

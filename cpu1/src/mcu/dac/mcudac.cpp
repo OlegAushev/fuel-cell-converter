@@ -9,11 +9,16 @@
 
 namespace mcu {
 
+
 namespace detail {
+
+
 const uint32_t dacBases[3] = {DACA_BASE, DACB_BASE, DACC_BASE};
+
+
 }
 
 
-} /* namespace mcu */
+} // namespace mcu
 
 

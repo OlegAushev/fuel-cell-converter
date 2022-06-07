@@ -14,6 +14,7 @@
 
 namespace emb {
 
+
 /**
  * @brief Filter interface
  */
@@ -32,6 +33,7 @@ public:
 	virtual void setOutput(T value) = 0;
 	virtual void reset() = 0;
 };
+
 
 /**
  * @brief Moving average filter
@@ -117,6 +119,7 @@ public:
 	}
 };
 
+
 /**
  * @brief Median filter
  */
@@ -156,6 +159,7 @@ public:
 
 	virtual void reset() { setOutput(0); }
 };
+
 
 /**
  * @brief Exponential filter
@@ -202,6 +206,7 @@ public:
 
 	void setSmoothFactor(float smoothFactor) { m_smoothFactor = smoothFactor; }
 };
+
 
 /**
  * @brief Exponential + Median filter
@@ -258,6 +263,7 @@ public:
 
 	void setSmoothFactor(float smoothFactor) { m_smoothFactor = smoothFactor; }
 };
+
 
 } // namespace emb
 

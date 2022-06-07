@@ -9,6 +9,7 @@
 
 namespace mcu {
 
+
 volatile uint64_t Clock::m_time_ms;
 
 uint64_t Clock::m_taskPeriods[Clock::TASK_COUNT];
@@ -78,13 +79,13 @@ void Clock::init()
 	setInitialized();
 }
 
+
 ///
 ///
 ///
 uint32_t SystickTimer::m_period;
 
 
+} // namespace mcu
 
-
-} /* namespace mcu */
 

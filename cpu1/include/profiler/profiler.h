@@ -14,6 +14,7 @@ enum LoggerPinMode
 	LOGGER_TOGGLE
 };
 
+
 /**
  * @brief
  */
@@ -54,6 +55,7 @@ public:
 	}
 };
 
+
 #ifdef CPU1
 /**
  * @brief
@@ -69,6 +71,7 @@ inline void initDurationLoggerPin(mcu::GpioPin& pin, GPIO_CoreSelect masterCore)
 
 #define LOG_DURATION_VIA_PIN_ONOFF(pin) \
 		volatile DurationLoggerPin<LOGGER_ON_OFF> EMB_UNIQ_ID(__LINE__)(pin);
+
 
 #define LOG_DURATION_VIA_PIN_TOGGLE(pin) \
 		volatile DurationLoggerPin<LOGGER_TOGGLE> EMB_UNIQ_ID(__LINE__)(pin);

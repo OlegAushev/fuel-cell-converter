@@ -17,6 +17,7 @@
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 
+
 namespace mcu {
 /// @addtogroup mcu_cap
 /// @{
@@ -33,6 +34,7 @@ enum CapModule
 	CAP6
 };
 
+
 /**
  * @brief CAP config.
  */
@@ -45,6 +47,8 @@ struct CapConfig
 
 
 namespace detail {
+
+
 /**
  * @brief CAP module implementation.
  */
@@ -57,9 +61,12 @@ struct CapModuleImpl
 	uint32_t pieIntNo[ChannelCount];
 };
 
+
 extern const uint32_t capBases[6];
 extern const XBAR_InputNum capXbarInputs[6];
 extern const uint32_t capPieIntNos[6];
+
+
 } // namespace detail
 
 

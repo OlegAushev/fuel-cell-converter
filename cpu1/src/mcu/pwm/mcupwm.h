@@ -23,6 +23,7 @@ namespace mcu {
 /// @addtogroup mcu_pwm
 /// @{
 
+
 /// PWM modules
 enum PwmModule
 {
@@ -40,6 +41,7 @@ enum PwmModule
 	PWM12
 };
 
+
 /// PWM phases count
 enum PwmPhaseCount
 {
@@ -47,6 +49,7 @@ enum PwmPhaseCount
 	PWM_THREE_PHASE = 3,	///< THREE_PHASE
 	PWM_SIX_PHASE = 6	///< SIX_PHASE
 };
+
 
 /// PWM clock divider
 enum PwmClockDivider
@@ -61,6 +64,7 @@ enum PwmClockDivider
 	PWM_CLOCK_DIVIDER_128 = EPWM_CLOCK_DIVIDER_128		//!< Divide clock by 128
 };
 
+
 /// Pwm hs clock divider
 enum PwmHsClockDivider
 {
@@ -74,12 +78,14 @@ enum PwmHsClockDivider
 	PWM_HSCLOCK_DIVIDER_14 = EPWM_HSCLOCK_DIVIDER_14	//!< Divide clock by 14
 };
 
+
 /// Pwm mode (waveform)
 enum PwmMode
 {
 	ACTIVE_HIGH_COMPLEMENTARY,
 	ACTIVE_LOW_COMPLEMENTARY
 };
+
 
 /**
  * @brief PWM config.
@@ -98,6 +104,8 @@ struct PwmConfig
 
 
 namespace detail {
+
+
 /**
  * @brief PWM module implementation.
  */
@@ -110,11 +118,14 @@ struct PwmModuleImpl
 	uint32_t pieTripIntNo;
 };
 
+
 extern const uint32_t pwmBases[12];
 extern const uint32_t pwmPieIntNos[12];
 extern const uint32_t pwmPieTripIntNos[12];
 extern const uint32_t pwmPinOutAConfigs[12];
 extern const uint32_t pwmPinOutBConfigs[12];
+
+
 } // namespace detail
 
 
@@ -638,6 +649,6 @@ protected:
 
 
 /// @}
-} /* namespace mcu */
+} // namespace mcu
 
 

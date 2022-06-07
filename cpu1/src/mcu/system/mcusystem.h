@@ -51,6 +51,7 @@ inline void initDevice()
 #endif
 }
 
+
 /**
  * @brief Delays for a number of nanoseconds.
  * @param nsDelay - delay in nanoseconds
@@ -71,6 +72,7 @@ inline void delay_ns(uint32_t nsDelay)
 		SysCtl_delay((nsDelay - OVERHEAD_NS) / LOOP_NS);
 	}
 }
+
 
 /**
  * @brief Delays for a number of microseconds.
@@ -93,11 +95,13 @@ inline void bootCpu2() { Device_bootCPU2(C1C2_BROM_BOOTMODE_BOOT_FROM_FLASH); }
 #endif
 //******************************************************************************
 
+
 /**
  * @brief Enables maskable interrupts.
  * @return (none)
  */
 inline void enableMaskableInterrupts() { EINT; }
+
 
 /**
  * @brief Disables maskable interrupts.
@@ -105,11 +109,13 @@ inline void enableMaskableInterrupts() { EINT; }
  */
 inline void disableMaskableInterrupts() { DINT; }
 
+
 /**
  * @brief Enables debug events.
  * @return (none)
  */
 inline void enableDebugEvents() { ERTM; }
+
 
 /**
  * @brief Disables debug events.
@@ -117,11 +123,13 @@ inline void enableDebugEvents() { ERTM; }
  */
 inline void disableDebugEvents() { DRTM; }
 
+
 /**
  * @brief Resets device.
  * @return (none)
  */
 inline void resetDevice() { SysCtl_resetDevice(); }
+
 
 /**
  * @brief Critical Section class.
@@ -134,7 +142,10 @@ public:
 	static void enter() { DINT; }
 	static void leave() { EINT; }
 };
+
+
 #define CRITICAL_SECTION CriticalSection EMB_UNIQ_ID(__LINE__);
+
 
 /**
  * @brief Returns device SYSCLK frequency.

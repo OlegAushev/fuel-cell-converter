@@ -16,6 +16,7 @@
 
 namespace emb {
 
+
 /**
  * @brief
  */
@@ -43,20 +44,24 @@ public:
 	void from_rpm(float value) { m_radps_elec = 2 * PI * POLE_PAIRS * value / 60; }
 };
 
+
 /**
  * @brief
  */
 inline float to_radps(float speed_rpm, int polePairs) { return 2 * PI * polePairs * speed_rpm / 60; }
+
 
 /**
  * @brief
  */
 inline float to_radps(float speed_rpm) { return 2 * PI * speed_rpm / 60; }
 
+
 /**
  * @brief
  */
 inline float to_rpm(float speed_radps, int polePairs) { return 60 * speed_radps / (2 * PI * polePairs); }
+
 
 /**
  * @brief
@@ -118,6 +123,10 @@ inline emb::Array<float, 3> calculate_svpwm(float voltageMag, float voltageAngle
 	return pulseTimes;
 }
 
+
+/**
+ * @brief
+ */
 struct DQPair
 {
 	float d;
@@ -126,6 +135,10 @@ struct DQPair
 	DQPair(float d_, float q_) : d(d_), q(q_) {}
 };
 
+
+/**
+ * @brief
+ */
 struct AlphaBetaPair
 {
 	float alpha;
@@ -133,6 +146,7 @@ struct AlphaBetaPair
 	AlphaBetaPair() {}
 	AlphaBetaPair(float alpha_, float beta_) : alpha(alpha_), beta(beta_) {}
 };
+
 
 /**
  * @brief
@@ -149,6 +163,7 @@ inline DQPair park_transform(float alpha, float beta, float sine, float cosine)
 	runPark(&parkStruct);
 	return DQPair(parkStruct.Ds, parkStruct.Qs);
 }
+
 
 /**
  * @brief

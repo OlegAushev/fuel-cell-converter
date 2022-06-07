@@ -19,6 +19,7 @@ namespace mcu {
 /// @addtogroup mcu_ipc
 /// @{
 
+
 /**
  * @brief Local IPC signal.
  */
@@ -32,6 +33,7 @@ struct LocalIpcSignal
 		assert(flagNo < 32);
 	}
 };
+
 
 /**
  * @brief Remote IPC signal.
@@ -47,6 +49,7 @@ struct RemoteIpcSignal
 	}
 };
 
+
 /**
  * @brief Local-Remote signal pair for objects which are created on both CPUs.
  */
@@ -61,6 +64,7 @@ struct IpcSignalPair
 	{}
 };
 
+
 /**
  * @brief Sends IPC signal by setting local IPC flag.
  * @param ipcFlag
@@ -70,6 +74,7 @@ inline void sendIpcSignal(LocalIpcSignal ipcFlag)
 {
 	IPCLtoRFlagSet(ipcFlag.flag);
 }
+
 
 /**
  * @brief Waits for IPC signal in blocking-mode.
@@ -81,6 +86,7 @@ inline void waitForIpcSignal(RemoteIpcSignal ipcFlag)
 	while(!IPCRtoLFlagBusy(ipcFlag.flag));
 	IPCRtoLFlagAcknowledge(ipcFlag.flag);
 }
+
 
 /**
  * @brief Checks if remote IPC signal has been sent.
@@ -96,6 +102,7 @@ inline bool remoteIpcSignalSent(RemoteIpcSignal ipcFlag)
 	return false;
 }
 
+
 /**
  * @brief Checks if local IPC signal has been sent.
  * @param ipcFlag
@@ -110,6 +117,7 @@ inline bool localIpcSignalSent(LocalIpcSignal ipcFlag)
 	return false;
 }
 
+
 /**
  * @brief Acknowledges remote IPC signal.
  * @param ipcFlag
@@ -119,6 +127,7 @@ inline void acknowledgeRemoteIpcSignal(RemoteIpcSignal ipcFlag)
 {
 	IPCRtoLFlagAcknowledge(ipcFlag.flag);
 }
+
 
 /**
  * @brief Revokes local IPC signal.
@@ -131,6 +140,7 @@ inline void revokeLocalIpcSignal(LocalIpcSignal ipcFlag)
 }
 
 
+/// IPC interrupts
 enum IpcInterrupt
 {
 	IPC_INTERRUPT_0 = INT_IPC_0,
@@ -138,6 +148,7 @@ enum IpcInterrupt
 	IPC_INTERRUPT_2 = INT_IPC_2,
 	IPC_INTERRUPT_3 = INT_IPC_3,
 };
+
 
 /**
  * @brief Registers IPC ISR.
@@ -165,6 +176,7 @@ extern const mcu::RemoteIpcSignal CPU2_BOOTED;
 extern const mcu::RemoteIpcSignal CPU2_PERIPHERY_CONFIGURED;
 #endif
 
+
 #if (defined(DUALCORE) && defined(CPU2))
 extern const mcu::RemoteIpcSignal CPU1_PERIPHERY_CONFIGURED;
 
@@ -172,10 +184,12 @@ extern const mcu::LocalIpcSignal CPU2_BOOTED;
 extern const mcu::LocalIpcSignal CPU2_PERIPHERY_CONFIGURED;
 #endif
 
+
 #if (!defined(DUALCORE) && defined(CPU1))
 extern const mcu::LocalIpcSignal CPU1_PERIPHERY_CONFIGURED;
 #endif
-/// @}
 
+
+/// @}
 
 

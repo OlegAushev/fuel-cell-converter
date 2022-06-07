@@ -8,6 +8,7 @@
 
 namespace emb {
 
+
 enum EepromStatus
 {
 	EEPROM_SUCCESS,

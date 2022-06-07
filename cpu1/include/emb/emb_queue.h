@@ -8,6 +8,7 @@
 
 namespace emb {
 
+
 /**
  * @brief
  */
@@ -73,6 +74,7 @@ public:
 		--m_size;
 	}
 };
+
 
 } // namespace embd
 

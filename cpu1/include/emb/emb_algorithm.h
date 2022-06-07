@@ -9,6 +9,7 @@
 
 namespace emb {
 
+
 /**
  * @brief Returns pointer to the first element in range [first; last) that is equal to value.
  */
@@ -24,6 +25,7 @@ inline It find(It first, It last, const T& value)
 	}
 	return last;
 }
+
 
 /**
  * @brief Returns pointer to the element in range [first; last) that is equal to value.
@@ -56,6 +58,7 @@ inline It binary_find(It first, It last, const T& value)
 	return notFound;
 }
 
+
 /**
  * @brief Assigns the given value to the elements in the range [first, last).
  */
@@ -67,6 +70,7 @@ inline void fill(It first, It last, const T& value)
 		*first = value;
 	}
 }
+
 
 /**
  * @brief Returns the number of elements in the range [first, last) that is equal to value.
@@ -85,6 +89,7 @@ inline size_t count(It first, It last, const T& value)
 	return ret;
 }
 
+
 /**
  * @brief Copies the elements in the range, defined by [first, last), to another range beginning at d_first.
  */
@@ -96,6 +101,7 @@ inline void copy(InputIt first, InputIt last, OutputIt d_first)
 		*d_first = *first;
 	}
 }
+
 
 /**
  * @brief Returns true if the range [first1, last1) is equal to the range [first2, first2 + (last1 - first1)), and false otherwise.
@@ -113,6 +119,7 @@ inline bool equal(It first1, It last1, It first2)
 	return true;
 }
 
+
 /**
  * @brief Clamps a value between a pair of boundary values.
  */
@@ -121,6 +128,7 @@ inline const T& clamp(const T& value, const T& lo, const T& hi)
 {
 	return (value < lo) ? lo : (hi < value) ? hi : value;
 }
+
 
 /**
  * @brief Finds the greatest element in the range [first, last).
@@ -145,6 +153,7 @@ inline It max_element(It first, It last)
 	return largest;
 }
 
+
 /**
  * @brief Finds the smallest element in the range [first, last).
  */
@@ -167,6 +176,7 @@ inline It min_element(It first, It last)
 	}
 	return smallest;
 }
+
 
 /**
  * @brief Finds the smallest and greatest element in the range [first, last).

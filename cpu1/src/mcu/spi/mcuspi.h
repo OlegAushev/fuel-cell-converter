@@ -29,6 +29,7 @@ enum SpiModule
 	SPIC
 };
 
+
 /// SPI protocol
 enum SpiProtocol
 {
@@ -37,6 +38,7 @@ enum SpiProtocol
 	SPI_PROTOCOL_POL1PHA0 = SPI_PROT_POL1PHA0,	//! Mode 2. Polarity 1, phase 0. Falling edge without delay.
 	SPI_PROTOCOL_POL1PHA1 = SPI_PROT_POL1PHA1	//! Mode 3. Polarity 1, phase 1. Falling edge with delay.
 };
+
 
 /// SPI mode
 enum SpiMode
@@ -47,6 +49,7 @@ enum SpiMode
 	SPI_MODE_MASTER_OD = ::SPI_MODE_MASTER_OD	//!< SPI master w/ output (TALK) disabled
 };
 
+
 /// SPI bitrates
 enum SpiBitrate
 {
@@ -54,12 +57,14 @@ enum SpiBitrate
 	SPI_BITRATE_12M5 = 12500000,///< SPI_BITRATE_12M5
 };
 
+
 /// SPI word length
 enum SpiWordLen
 {
 	SPI_WORD_8BIT = 8,
 	SPI_WORD_16BIT = 16
 };
+
 
 /**
  * @brief SPI unit config.
@@ -75,6 +80,8 @@ struct SpiConfig
 
 
 namespace detail {
+
+
 /**
  * @brief SPI module implementation.
  */
@@ -86,8 +93,11 @@ struct SpiModuleImpl
 		: base(_base), pieRxIntNo(_pieRxIntNo) {}
 };
 
+
 extern const uint32_t spiBases[3];
 extern const uint32_t spiRxPieIntNos[3];
+
+
 } // namespace detail
 
 
@@ -324,6 +334,6 @@ protected:
 
 
 /// @}
-} /* namespace mcu */
+} // namespace mcu
 
 

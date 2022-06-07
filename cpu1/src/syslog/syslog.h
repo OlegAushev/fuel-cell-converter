@@ -22,6 +22,8 @@
 
 
 namespace Fault {
+
+
 /// System faults
 enum Fault
 {
@@ -47,6 +49,7 @@ enum Fault
 	EMERGENCY_STOP,
 };
 
+
 const uint32_t CRITICAL_FAULTS = (1UL << DRIVER_ALL_FLT)
 				| (1UL << DRIVER_UVW_FLT)
 				| (1UL << DRIVER_XYZ_FLT)
@@ -58,10 +61,14 @@ const uint32_t CRITICAL_FAULTS = (1UL << DRIVER_ALL_FLT)
 				| (1UL << DRIVER_Z_FLT)
 				| (1UL << EEPROM_ERROR)
 				| (1UL << CURRENT_SENSOR_FAULT);
+
+
 } // namespace Fault
 
 
 namespace Warning {
+
+
 /// System warnings
 enum Warning
 {
@@ -71,8 +78,12 @@ enum Warning
 	FLUX_WEAKENING
 };
 
+
 const uint32_t CRITICAL_WARNINGS = 0;
+
+
 } // namespace Warning
+
 
 /**
  * @brief System logger class.
@@ -476,32 +487,5 @@ public:
 
 
 /// @}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

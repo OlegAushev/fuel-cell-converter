@@ -12,6 +12,7 @@
 
 namespace emb {
 
+
 /**
  * @brief All calculations in ns
  */
@@ -114,6 +115,7 @@ public:
 
 #define EMB_LOG_DURATION_ASYNC_PRINT(message, channel) \
 		volatile emb::DurationLoggerAsyncPrint EMB_UNIQ_ID(__LINE__)(message, channel);
+
 
 } // namespace emb
 

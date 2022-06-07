@@ -5,13 +5,13 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <math.h>
-
 #include "motorcontrol/math.h"
 
 #include "emb_algorithm.h"
 
 
 namespace emb {
+
 
 const float PI = MATH_PI;
 const float PI_OVER_2 = MATH_PI_OVER_TWO;
@@ -23,21 +23,25 @@ const float TWO_PI = MATH_TWO_PI;
 const float SQRT_2 = sqrtf(2.f);
 const float SQRT_3 = sqrtf(3.f);
 
+
 /**
  * @brief
  */
 template <typename T>
 inline int sgn(T value) { return (value > T(0)) - (value < T(0)); }
 
+
 /**
  * @brief
  */
 inline float to_rad(float deg) { return PI * deg / 180; }
 
+
 /**
  * @brief
  */
 inline float to_deg(float rad) { return 180 * rad / PI; }
+
 
 /**
  * @brief
@@ -52,6 +56,7 @@ inline float normalize_2pi(float value)
 	return value;
 }
 
+
 /**
  * @brief
  */
@@ -64,6 +69,7 @@ inline float normalize_pi(float value)
 	}
 	return value - PI;
 }
+
 
 /**
  * @brief
@@ -109,6 +115,7 @@ public:
 		}
 	}
 };
+
 
 /**
  * @brief

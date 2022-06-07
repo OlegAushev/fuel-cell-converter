@@ -29,6 +29,7 @@ enum ClockTaskStatus
 	CLOCK_TASK_FAIL = 1
 };
 
+
 /**
  * @brief Clock class. Based on CPU-Timer0.
  */
@@ -270,6 +271,7 @@ public:
 	}
 };
 
+
 /*####################################################################################################################*/
 /**
  * @brief Systick timer class. Based on CPU-Timer1.
@@ -344,6 +346,7 @@ private:
 	static __interrupt void onInterrupt();
 };
 
+
 /*####################################################################################################################*/
 /**
  * @brief Timeout watchdog class.
@@ -395,7 +398,6 @@ public:
 
 
 /// @}
-} /* namespace mcu */
-
+} // namespace mcu
 
 

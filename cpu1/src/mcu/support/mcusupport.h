@@ -26,6 +26,7 @@ enum LaunchPadLed
 	LED_RED = 34
 };
 
+
 /**
  * @brief Configures LaunchPad LEDs.
  * @param blueLedCore - blue LED controlling CPU
@@ -44,6 +45,7 @@ inline void configureLaunchPadLeds(GPIO_CoreSelect blueLedCore, GPIO_CoreSelect 
 	ledRed.setMasterCore(redLedCore);
 }
 
+
 /**
  * @brief Turns specified LaunchPad LED on.
  * @param led - LaunchPad LED
@@ -51,12 +53,14 @@ inline void configureLaunchPadLeds(GPIO_CoreSelect blueLedCore, GPIO_CoreSelect 
  */
 inline void turnLedOn(LaunchPadLed led) { GPIO_writePin(led, 0); }
 
+
 /**
  * @brief Turns specified LaunchPad LED off.
  * @param led - LaunchPad LED
  * @return (none)
  */
 inline void turnLedOff(LaunchPadLed led) { GPIO_writePin(led, 1); }
+
 
 /**
  * @brief Toggles specified LaunchPad LED.
@@ -68,10 +72,12 @@ inline void toggleLed(LaunchPadLed led) { GPIO_togglePin(led); }
 
 #elif defined(CONTROLCARD)
 
+
 enum ControlCardLed
 {
 	LED_RED = 34
 };
+
 
 /**
  * @brief Configures controlCARD LEDs.
@@ -85,12 +91,14 @@ inline void configureControlCardLeds(GPIO_CoreSelect ledRedCore)
 	ledRed.setMasterCore(ledRedCore);
 }
 
+
 /**
  * @brief Turns specified LaunchPad LED on.
  * @param led - LaunchPad LED
  * @return (none)
  */
 inline void turnLedOn(ControlCardLed led) { GPIO_writePin(led, 0); }
+
 
 /**
  * @brief Turns specified LaunchPad LED off.
@@ -99,12 +107,14 @@ inline void turnLedOn(ControlCardLed led) { GPIO_writePin(led, 0); }
  */
 inline void turnLedOff(ControlCardLed led) { GPIO_writePin(led, 1); }
 
+
 /**
  * @brief Toggles specified LaunchPad LED.
  * @param led - LaunchPad LED
  * @return (none)
  */
 inline void toggleLed(ControlCardLed led) { GPIO_togglePin(led); }
+
 
 #endif
 //******************************************************************************

@@ -12,11 +12,13 @@
  */
 #define EMB_UNUSED(arg) (void)arg;
 
+
 /**
  * @brief UNIQ_ID implementation
  */
 #define EMB_UNIQ_ID_IMPL(line) _a_local_var_##line
 #define EMB_UNIQ_ID(line) EMB_UNIQ_ID_IMPL(line)
+
 
 /**
  * @brief simple static_assert implementation
@@ -28,6 +30,7 @@
 
 namespace emb {
 
+
 /**
  * @brief
  */
@@ -36,6 +39,7 @@ enum MasterSlaveMode
 	MODE_MASTER,
 	MODE_SLAVE
 };
+
 
 /**
  * @brief
@@ -46,6 +50,7 @@ enum ProcessStatus
 	PROCESS_FAIL = 1,
 	PROCESS_IN_PROGRESS = 2,
 };
+
 
 /**
  * @brief
@@ -77,6 +82,7 @@ bool Monostate<T>::s_initialized = false;
 
 
 namespace c28x {
+
 
 /**
  * @brief
@@ -132,6 +138,7 @@ void from_8bit_bytes(T& dest, uint16_t* src)
 	memcpy (&dest, &c28_byte, sizeof(T));
 }
 
+
 /**
  * @brief
  */
@@ -146,6 +153,7 @@ void to_8bit_bytes(uint16_t* dest, const T& src)
 		dest[2*i+1] = c28_byte[i] >> 8;
 	}
 }
+
 
 /**
  * @brief
@@ -169,7 +177,9 @@ bool is_equal(const T& obj1, const T& obj2)
 	return true;
 }
 
+
 } // namespace c28x
+
 
 } // namespace emb
 

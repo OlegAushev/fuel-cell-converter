@@ -8,7 +8,9 @@
 #include "emb_array.h"
 #include <bitset>
 
+
 namespace emb {
+
 
 /**
  * @brief

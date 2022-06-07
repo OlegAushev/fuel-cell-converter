@@ -29,6 +29,7 @@ enum I2CModule
 	I2CB
 };
 
+
 /// Count of bits per data word.
 enum I2CBitCount
 {
@@ -42,12 +43,14 @@ enum I2CBitCount
 	I2C_BITCOUNT_8 = ::I2C_BITCOUNT_8
 };
 
+
 /// I2C clock duty cycle.
 enum I2CDutyCycle
 {
     I2C_DUTYCYCLE_33 = ::I2C_DUTYCYCLE_33,
     I2C_DUTYCYCLE_50 = ::I2C_DUTYCYCLE_50
 };
+
 
 /**
  * @brief I2C unit config.
@@ -62,6 +65,8 @@ struct I2CConfig
 
 
 namespace detail {
+
+
 /**
  * @brief I2C module implementation
  */
@@ -71,7 +76,10 @@ struct I2CModuleImpl
 	I2CModuleImpl(uint32_t _base) : base(_base) {}
 };
 
+
 extern const uint32_t i2cBases[2];
+
+
 } // namespace detail
 
 
@@ -173,7 +181,6 @@ protected:
 
 
 /// @}
-} /* namespace mcu */
-
+} // namespace mcu
 
 

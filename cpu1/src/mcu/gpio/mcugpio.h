@@ -25,6 +25,7 @@ namespace mcu {
 #define PIN_GPIO_CFG_PINMUX_IMPL(pin) GPIO_##pin##_GPIO##pin
 #define PIN_GPIO_CFG_PINMUX(pin) PIN_GPIO_CFG_PINMUX_IMPL(pin)
 
+
 /// Pin active states
 enum PinActiveState
 {
@@ -32,12 +33,14 @@ enum PinActiveState
 	ACTIVE_HIGH = 1
 };
 
+
 /// Pin states
 enum PinState
 {
 	PIN_INACTIVE = 0,
 	PIN_ACTIVE = 1
 };
+
 
 /// Pin types
 enum PinType
@@ -48,12 +51,14 @@ enum PinType
 	PIN_OPENDRAIN = GPIO_PIN_TYPE_OD
 };
 
+
 /// Pin directions
 enum PinDirection
 {
 	PIN_INPUT = GPIO_DIR_MODE_IN,
 	PIN_OUTPUT = GPIO_DIR_MODE_OUT
 };
+
 
 /// Pin qualification modes
 enum PinQualMode
@@ -63,6 +68,7 @@ enum PinQualMode
 	PIN_QUAL_6SAMPLE = GPIO_QUAL_6SAMPLE,
 	PIN_QUAL_ASYNC = GPIO_QUAL_ASYNC
 };
+
 
 /**
  * @brief GPIO pin config.
@@ -134,6 +140,7 @@ struct GpioPinConfig
 	 */
 	GpioPinConfig(tag::not_configured) : valid(false) {}
 };
+
 
 /**
  * @brief GPIO pin class.
@@ -273,6 +280,7 @@ private:
 		GPIO_setMasterCore(m_cfg.no, m_cfg.masterCore);
 	}
 };
+
 
 /**
  * @brief Pin debouncing class.

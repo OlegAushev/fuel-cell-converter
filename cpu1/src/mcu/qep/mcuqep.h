@@ -29,6 +29,7 @@ enum QepModule
 	QEP3
 };
 
+
 /// QEP position counter input mode
 enum QepInputMode
 {
@@ -38,6 +39,7 @@ enum QepInputMode
 	QEP_DOWN_COUNT = EQEP_CONFIG_DOWN_COUNT
 };
 
+
 /// QEP resolution
 enum QepResolution
 {
@@ -45,12 +47,14 @@ enum QepResolution
 	QEP_1X_RESOLUTION = EQEP_CONFIG_1X_RESOLUTION	//!< Count rising edge only
 };
 
+
 /// QEP swap QEPA and QEPB pins mode
 enum QepSwapAB
 {
 	QEP_AB_NO_SWAP = EQEP_CONFIG_NO_SWAP,
 	QEP_AB_SWAP = EQEP_CONFIG_SWAP
 };
+
 
 /// QEP position counter operating (position reset) mode
 enum QepPositionResetMode
@@ -60,6 +64,7 @@ enum QepPositionResetMode
 	QEP_POSITION_RESET_ON_1ST_IDX = EQEP_POSITION_RESET_1ST_IDX,
 	QEP_POSITION_RESET_ON_TIMEOUT = EQEP_POSITION_RESET_UNIT_TIME_OUT
 };
+
 
 /**
  * @brief QEP unit config.
@@ -82,6 +87,8 @@ struct QepConfig
 
 
 namespace detail {
+
+
 /**
  * @brief QEP module implementation.
  */
@@ -94,8 +101,11 @@ struct QepModuleImpl
 		: base(_base), intFlags(_intFlags), pieIntNo(_pieIntNo) {}
 };
 
+
 extern const uint32_t qepBases[3];
 extern const uint32_t qepPieIntNos[3];
+
+
 } // namespace detail
 
 
@@ -206,6 +216,6 @@ protected:
 
 
 /// @}
-} /* namespace mcu */
+} // namespace mcu
 
 

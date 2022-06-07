@@ -8,6 +8,7 @@
 
 namespace emb {
 
+
 /**
  * @brief
  */
@@ -32,6 +33,7 @@ public:
 		return *this;
 	}
 };
+
 
 } // namespace emb
 

@@ -9,6 +9,7 @@
 
 namespace emb {
 
+
 /**
  * @brief
  */
@@ -63,6 +64,7 @@ public:
 		}
 	}
 };
+
 
 } // namespace emb
 

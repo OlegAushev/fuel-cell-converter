@@ -15,6 +15,7 @@ void RUN_TESTS();
 
 namespace emb {
 
+
 /**
  * @brief
  */
@@ -97,6 +98,7 @@ public:
 	}
 };
 
+
 } // namespace emb
 
 
@@ -104,6 +106,7 @@ public:
  * @brief
  */
 #define EMB_RUN_TEST(func) emb::TestRunner::runTest(func, #func)
+
 
 /**
  * @brief
@@ -113,6 +116,7 @@ public:
 	const char* hint = "[  WARN  ] Assertion failed: " #x " != " #y ", file: " __FILE__ ", line: " _STR(__LINE__); \
 	emb::TestRunner::assertEqual(x, y, hint); \
 }
+
 
 /**
  * @brief

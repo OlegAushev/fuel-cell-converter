@@ -31,6 +31,8 @@ enum DacModule
 
 
 namespace detail {
+
+
 /**
  * @brief DAC module implementation.
  */
@@ -40,7 +42,10 @@ struct DacModuleImpl
 	DacModuleImpl(uint32_t _base) : base(_base) {}
 };
 
+
 extern const uint32_t dacBases[3];
+
+
 } // namespace detail
 
 
@@ -71,6 +76,7 @@ public:
 	uint16_t value() const { return m_value; }
 	uint16_t tag() const { return m_tag; }
 };
+
 
 /**
  * @brief DAC unit class.
@@ -111,7 +117,6 @@ public:
 
 
 /// @}
-} /* namespace mcu */
-
+} // namespace mcu
 
 
