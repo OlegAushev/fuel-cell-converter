@@ -154,7 +154,7 @@ void McuTest::ClockTest()
 {
 	mcu::turnLedOff(mcu::LED_RED);
 
-	mcu::Clock::registerDelayedTask(TestingDelayedTask, 200);
+	mcu::SystemClock::registerDelayedTask(TestingDelayedTask, 200);
 	DEVICE_DELAY_US(150000);
 	EMB_ASSERT_EQUAL(GPIO_readPin(34), 1);
 	DEVICE_DELAY_US(100000);

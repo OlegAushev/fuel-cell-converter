@@ -42,24 +42,6 @@ acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive2;
 #endif
 
 
-/**
- * @brief Systick timer ISR.
- * @return (none)
- */
-__interrupt void onSystickInterrupt()
-{
-	static uint64_t counter = 0;
-	float valSin = 200 + 200 * sinf(emb::PI * counter / 1000);
-	float valCos = 400 + 400 * cosf(emb::PI * counter / 1000);
-
-	mcu::DacInput ch1(valSin, mcu::DACA);
-	mcu::DacInput ch2(valCos, mcu::DACB);
-
-	mcu::SpiUnit<mcu::SPIA>::instance()->send<emb::Pair<mcu::DacInput, mcu::DacInput> >
-			(emb::Pair<mcu::DacInput, mcu::DacInput>(ch1, ch2));
-}
-
-
 /* ========================================================================== */
 /* ================================ MAIN ==================================== */
 /* ========================================================================== */
@@ -95,12 +77,9 @@ void main()
 	/*#########*/
 	/*# CLOCK #*/
 	/*#########*/
-	mcu::Clock::init();
-	mcu::Clock::setTaskPeriod(0, 1000);	// Led toggle period
-	mcu::Clock::registerTask(0, taskToggleLed);
-	mcu::SystickTimer::init(100);
-	mcu::SystickTimer::registerInterruptHandler(onSystickInterrupt);
-	mcu::SystickTimer::start();
+	mcu::SystemClock::init();
+	mcu::SystemClock::setTaskPeriod(0, 1000);	// Led toggle period
+	mcu::SystemClock::registerTask(0, taskToggleLed);
 
 /*####################################################################################################################*/
 	/*#################*/
@@ -162,7 +141,7 @@ void main()
 	// END of CPU2 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
 
-	mcu::Clock::reset();
+	mcu::SystemClock::reset();
 	uCanOpenServer.enable();
 	mcu::enableMaskableInterrupts();
 	mcu::enableDebugEvents();
@@ -170,7 +149,7 @@ void main()
 	while (true)
 	{
 		uCanOpenServer.run();
-		mcu::Clock::runPeriodicTasks();
+		mcu::SystemClock::runPeriodicTasks();
 	}
 }
 

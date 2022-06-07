@@ -17,7 +17,7 @@ void RUN_TESTS()
 	mcu::configureLaunchPadLeds(GPIO_CORE_CPU1, GPIO_CORE_CPU1);
 #endif
 	Syslog::init(Syslog::IpcSignals());
-	mcu::Clock::init();
+	mcu::SystemClock::init();
 	mcu::AdcUnit mcuAdcUnit(mcu::ADC_CHANNEL_COUNT);
 	mcuAdcUnit.enableInterrupts();
 

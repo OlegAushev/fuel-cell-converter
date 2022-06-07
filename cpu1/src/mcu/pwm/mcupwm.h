@@ -87,6 +87,15 @@ enum PwmMode
 };
 
 
+/// Pwm counter mode
+enum PwmCounterMode
+{
+	PWM_COUNTER_MODE_UP = EPWM_COUNTER_MODE_UP,
+	PWM_COUNTER_MODE_DOWN = EPWM_COUNTER_MODE_DOWN,
+	PWM_COUNTER_MODE_UP_DOWN = EPWM_COUNTER_MODE_UP_DOWN
+};
+
+
 /**
  * @brief PWM config.
  */
@@ -100,6 +109,8 @@ struct PwmConfig
 	PwmClockDivider clkDivider;
 	PwmHsClockDivider hsclkDivider;
 	PwmMode mode;
+	PwmCounterMode counterMode;
+	uint16_t interruptSource;
 };
 
 
@@ -144,6 +155,7 @@ private:
 	const uint32_t TBCLK_CYCLE_NS;
 
 	detail::PwmModuleImpl<PhaseCount> m_module;
+	PwmCounterMode m_counterMode;
 	float m_switchingFreq;
 	uint16_t m_deadtimeCycles;
 
@@ -161,6 +173,7 @@ public:
 	PwmUnit(const PwmConfig<PhaseCount>& cfg)
 		: TBCLK_FREQ(PWMCLK_FREQ / cfg.clockPrescaler)
 		, TBCLK_CYCLE_NS(PWMCLK_CYCLE_NS * cfg.clockPrescaler)
+		, m_counterMode(cfg.counterMode)
 		, m_switchingFreq(cfg.switchingFreq)
 		, m_deadtimeCycles(cfg.deadtime_ns / TBCLK_CYCLE_NS)
 	{
@@ -188,7 +201,16 @@ public:
 		SysCtl_disablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);	// Disable sync(Freeze clock to PWM as well)
 
 		// Set-up TBCLK
-		m_period = (TBCLK_FREQ / m_switchingFreq) / 2;	// UP-DOWN count - divide by 2
+		switch (cfg.counterMode)
+		{
+		case PWM_COUNTER_MODE_UP:
+		case PWM_COUNTER_MODE_DOWN:
+			m_period = (TBCLK_FREQ / m_switchingFreq) - 1;
+			break;
+		case PWM_COUNTER_MODE_UP_DOWN:
+			m_period = (TBCLK_FREQ / m_switchingFreq) / 2;
+			break;
+		}
 
 		for (size_t i = 0; i < PhaseCount; ++i)
 		{
@@ -206,8 +228,8 @@ public:
 			EPWM_setCounterCompareValue(m_module.base[i], EPWM_COUNTER_COMPARE_A, 0);
 
 			/* ========================================================================== */
-			// Set up counter mode
-			EPWM_setTimeBaseCounterMode(m_module.base[i], EPWM_COUNTER_MODE_UP_DOWN);
+			// Set counter mode
+			EPWM_setTimeBaseCounterMode(m_module.base[i], static_cast<EPWM_TimeBaseCountMode>(cfg.counterMode));
 
 #ifdef CPU1
 			/* ========================================================================== */
@@ -342,21 +364,9 @@ public:
 		}
 
 		/* ========================================================================== */
-		// Configure interrupts
-		switch (PhaseCount)
-		{
-		case PWM_SIX_PHASE:
-		case PWM_THREE_PHASE:
-			// Configure interrupt to change the Compare Values, only phase A interrupt is required
-			EPWM_setInterruptSource(m_module.base[0], EPWM_INT_TBCTR_ZERO_OR_PERIOD);
-			EPWM_setInterruptEventCount(m_module.base[0], 1U);
-			break;
-
-		case PWM_ONE_PHASE:
-			EPWM_setInterruptSource(m_module.base[0], EPWM_INT_TBCTR_ZERO);
-			EPWM_setInterruptEventCount(m_module.base[0], 1U);
-			break;
-		}
+		// Configure interrupts, only interrupt on first phase is required
+		EPWM_setInterruptSource(m_module.base[0], cfg.interruptSource);
+		EPWM_setInterruptEventCount(m_module.base[0], 1U);
 
 		stop();
 		SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);	// Enable sync and clock to PWM
@@ -479,8 +489,17 @@ public:
 	void setFreq(float freq)
 	{
 		m_switchingFreq = freq;
-		// UP-DOWN count - divide by 2
-		m_period = (TBCLK_FREQ / m_switchingFreq) / 2;
+		switch (m_counterMode)
+		{
+		case PWM_COUNTER_MODE_UP:
+		case PWM_COUNTER_MODE_DOWN:
+			m_period = (TBCLK_FREQ / m_switchingFreq) - 1;
+			break;
+		case PWM_COUNTER_MODE_UP_DOWN:
+			m_period = (TBCLK_FREQ / m_switchingFreq) / 2;
+			break;
+		}
+
 		for (size_t i = 0; i < PhaseCount; ++i)
 		{
 			EPWM_setTimeBasePeriod(m_module.base[i], m_period);

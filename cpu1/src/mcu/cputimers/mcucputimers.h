@@ -31,9 +31,9 @@ enum ClockTaskStatus
 
 
 /**
- * @brief Clock class. Based on CPU-Timer0.
+ * @brief System clock class. Based on CPU-Timer0.
  */
-class Clock : public emb::Monostate<Clock>
+class SystemClock : public emb::Monostate<SystemClock>
 {
 private:
 	static volatile uint64_t m_time_ms;
@@ -178,9 +178,9 @@ public:
 	}
 
 private:
-	Clock();				// no constructor
-	Clock(const Clock& other);		// no copy constructor
-	Clock& operator=(const Clock& other);	// no copy assignment operator
+	SystemClock();						// no constructor
+	SystemClock(const SystemClock& other);			// no copy constructor
+	SystemClock& operator=(const SystemClock& other);	// no copy assignment operator
 
 	/**
 	 * @brief
@@ -274,9 +274,9 @@ public:
 
 /*####################################################################################################################*/
 /**
- * @brief Systick timer class. Based on CPU-Timer1.
+ * @brief High resolution clock class. Based on CPU-Timer1.
  */
-class SystickTimer
+class HighResolutionClock : public emb::Monostate<HighResolutionClock>
 {
 private:
 	static uint32_t m_period;
@@ -289,14 +289,18 @@ public:
 	 */
 	static void init(uint32_t period_us)
 	{
+		if (initialized()) return;
+
+		CPUTimer_stopTimer(CPUTIMER1_BASE);             	// Make sure timer is stopped
 		CPUTimer_setPeriod(CPUTIMER1_BASE, 0xFFFFFFFF); 	// Initialize timer period to maximum
 		CPUTimer_setPreScaler(CPUTIMER1_BASE, 0);       	// Initialize pre-scale counter to divide by 1 (SYSCLKOUT)
-		CPUTimer_stopTimer(CPUTIMER1_BASE);             	// Make sure timer is stopped
 		CPUTimer_reloadTimerCounter(CPUTIMER1_BASE);    	// Reload counter register with period value
 
 		m_period = (uint32_t)(mcu::sysclkFreq() / 1000000) * period_us - 1;
 		CPUTimer_setPeriod(CPUTIMER1_BASE, m_period);
 		CPUTimer_setEmulationMode(CPUTIMER1_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
+
+		setInitialized();
 	}
 
 	/**
@@ -364,7 +368,7 @@ public:
 	 */
 	TimeoutWatchdog(uint64_t timeout = 0)
 		: m_timeout(timeout)
-		, m_start(Clock::now())
+		, m_start(SystemClock::now())
 	{}
 
 	/**
@@ -378,7 +382,7 @@ public:
 		{
 			return false;
 		}
-		if ((Clock::now() - m_start) > m_timeout)
+		if ((SystemClock::now() - m_start) > m_timeout)
 		{
 			return true;
 		}
@@ -392,7 +396,7 @@ public:
 	 */
 	void reset() volatile
 	{
-		m_start = Clock::now();
+		m_start = SystemClock::now();
 	}
 };
 

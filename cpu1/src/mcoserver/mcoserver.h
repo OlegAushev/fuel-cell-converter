@@ -247,16 +247,16 @@ public:
 		static uint64_t timeTpdoPrev[4] = {0};
 
 		if ((m_heartbeatPeriod != 0)
-				&& (mcu::Clock::now() >= (timeHbPrev + m_heartbeatPeriod)))
+				&& (mcu::SystemClock::now() >= (timeHbPrev + m_heartbeatPeriod)))
 		{
 			sendHeartbeat();
-			timeHbPrev = mcu::Clock::now();
+			timeHbPrev = mcu::SystemClock::now();
 		}
 
 		for (size_t i = 0; i < 4; ++i)
 		{
 			if ((m_tpdoPeriods[i] != 0)
-					&& (mcu::Clock::now() >= (timeTpdoPrev[i] + m_tpdoPeriods[i])))
+					&& (mcu::SystemClock::now() >= (timeTpdoPrev[i] + m_tpdoPeriods[i])))
 			{
 				switch (i)
 				{
@@ -273,7 +273,7 @@ public:
 					sendTpdo(TPDO_NUM4, m_tpdoService->makeTpdo4());
 					break;
 				}
-				timeTpdoPrev[i] = mcu::Clock::now();
+				timeTpdoPrev[i] = mcu::SystemClock::now();
 			}
 		}
 	}

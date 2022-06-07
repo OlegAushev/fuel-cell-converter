@@ -10,33 +10,30 @@
 namespace mcu {
 
 
-volatile uint64_t Clock::m_time_ms;
+volatile uint64_t SystemClock::m_time_ms;
 
-uint64_t Clock::m_taskPeriods[Clock::TASK_COUNT];
-uint64_t Clock::m_taskTimestamps[Clock::TASK_COUNT];
-bool Clock::m_taskFlags[Clock::TASK_COUNT];
-ClockTaskStatus (*Clock::m_tasks[Clock::TASK_COUNT])();
+uint64_t SystemClock::m_taskPeriods[SystemClock::TASK_COUNT];
+uint64_t SystemClock::m_taskTimestamps[SystemClock::TASK_COUNT];
+bool SystemClock::m_taskFlags[SystemClock::TASK_COUNT];
+ClockTaskStatus (*SystemClock::m_tasks[SystemClock::TASK_COUNT])();
 
-bool Clock::m_watchdogEnabled;
-uint64_t Clock::m_watchdogTimerMs;
-uint64_t Clock::m_watchdogBoundMs;
-bool Clock::m_watchdogTimeoutDetected;
-ClockTaskStatus (*Clock::m_watchdogTask)();
+bool SystemClock::m_watchdogEnabled;
+uint64_t SystemClock::m_watchdogTimerMs;
+uint64_t SystemClock::m_watchdogBoundMs;
+bool SystemClock::m_watchdogTimeoutDetected;
+ClockTaskStatus (*SystemClock::m_watchdogTask)();
 
-uint64_t Clock::m_delayedTaskStart;
-uint64_t Clock::m_delayedTaskDelay;
-void (*Clock::m_delayedTask)();
+uint64_t SystemClock::m_delayedTaskStart;
+uint64_t SystemClock::m_delayedTaskDelay;
+void (*SystemClock::m_delayedTask)();
 
 
 ///
 ///
 ///
-void Clock::init()
+void SystemClock::init()
 {
-	if (initialized())
-	{
-		return;
-	}
+	if (initialized()) return;
 
 	m_time_ms = 0;
 
@@ -48,11 +45,11 @@ void Clock::init()
 	m_delayedTaskStart = 0;
 	m_delayedTaskDelay = 0;
 
-	Interrupt_register(INT_TIMER0, Clock::onInterrupt);
+	Interrupt_register(INT_TIMER0, SystemClock::onInterrupt);
 
+	CPUTimer_stopTimer(CPUTIMER0_BASE);		// Make sure timer is stopped
 	CPUTimer_setPeriod(CPUTIMER0_BASE, 0xFFFFFFFF);	// Initialize timer period to maximum
 	CPUTimer_setPreScaler(CPUTIMER0_BASE, 0);	// Initialize pre-scale counter to divide by 1 (SYSCLKOUT)
-	CPUTimer_stopTimer(CPUTIMER0_BASE);		// Make sure timer is stopped
 	CPUTimer_reloadTimerCounter(CPUTIMER0_BASE);	// Reload counter register with period value
 
 	uint32_t tmp = (uint32_t)((mcu::sysclkFreq() / 1000) * TIME_STEP_ms);
@@ -83,7 +80,7 @@ void Clock::init()
 ///
 ///
 ///
-uint32_t SystickTimer::m_period;
+uint32_t HighResolutionClock::m_period;
 
 
 } // namespace mcu

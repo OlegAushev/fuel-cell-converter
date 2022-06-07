@@ -94,11 +94,11 @@ void main()
 	/*#########*/
 	/*# CLOCK #*/
 	/*#########*/
-	mcu::Clock::init();
-	mcu::SystickTimer::init(1000000);
-	mcu::SystickTimer::start();
-	emb::DurationLogger::init(mcu::SystickTimer::now);
-	emb::DurationLoggerAsyncPrint::init(mcu::SystickTimer::now);
+	mcu::SystemClock::init();
+//	mcu::HighResolutionClock::init(1000000);
+//	mcu::HighResolutionClock::start();
+//	emb::DurationLogger::init(mcu::HighResolutionClock::now);
+//	emb::DurationLoggerAsyncPrint::init(mcu::HighResolutionClock::now);
 
 	// ALL PERFORMANCE TESTS MUST BE PERFORMED AFTER THIS POINT!!!
 
@@ -152,11 +152,11 @@ void main()
 	/*###############*/
 	/*# CLOCK TASKS #*/
 	/*###############*/
-	mcu::Clock::setTaskPeriod(0, 1000);	// Led toggle period
-	mcu::Clock::registerTask(0, taskToggleLed);
+	mcu::SystemClock::setTaskPeriod(0, 1000);	// Led toggle period
+	mcu::SystemClock::registerTask(0, taskToggleLed);
 
-	mcu::Clock::setWatchdogBound(1000);
-	mcu::Clock::registerWatchdogTask(taskWatchdogTimeout);
+	mcu::SystemClock::setWatchdogBound(1000);
+	mcu::SystemClock::registerWatchdogTask(taskWatchdogTimeout);
 
 /*####################################################################################################################*/
 	/*#######*/
@@ -223,7 +223,7 @@ void main()
 
 // END of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
-	mcu::Clock::reset();
+	mcu::SystemClock::reset();
 
 #ifdef DUALCORE
 	// CPU1 has finished all preparations, CPU2 can now enable all interrupts
@@ -234,7 +234,7 @@ void main()
 #ifndef DUALCORE
 	uCanOpenServer.enable();
 #endif
-	mcu::Clock::enableWatchdog();
+	mcu::SystemClock::enableWatchdog();
 
 /*####################################################################################################################*/
 	Syslog::addMessage(Syslog::DEVICE_READY);
@@ -246,7 +246,7 @@ void main()
 #endif
 
 		uCanOpenServer.run();
-		mcu::Clock::runPeriodicTasks();
+		mcu::SystemClock::runPeriodicTasks();
 	}
 }
 

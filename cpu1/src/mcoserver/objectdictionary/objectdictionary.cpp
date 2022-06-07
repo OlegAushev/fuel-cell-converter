@@ -75,7 +75,7 @@ inline ODAccessStatus getSyslogMessage(CobSdoData& dest)
 /* ========================================================================== */
 inline ODAccessStatus getUptime(CobSdoData& dest)
 {
-	float time = mcu::Clock::now() / 1000.f;
+	float time = mcu::SystemClock::now() / 1000.f;
 	memcpy(&dest, &time, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }

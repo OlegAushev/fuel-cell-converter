@@ -16,7 +16,7 @@ mcu::ClockTaskStatus taskToggleLed()
 	const uint64_t periods[4] = {100, 100, 100, 700};
 	static size_t index = 0;
 
-	mcu::Clock::setTaskPeriod(0, periods[index]);
+	mcu::SystemClock::setTaskPeriod(0, periods[index]);
 	if ((index % 2) == 0)
 	{
 		mcu::turnLedOff(mcu::LED_RED);
