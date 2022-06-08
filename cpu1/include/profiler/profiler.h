@@ -38,7 +38,22 @@ public:
 			GPIO_togglePin(m_pin);
 			break;
 		}
+	}
 
+	explicit DurationLoggerPin(uint32_t pinNo)
+		: m_pin(pinNo)
+	{
+		switch (Mode)
+		{
+		case LOGGER_ON_OFF:
+			GPIO_writePin(m_pin, 1);
+			break;
+		case LOGGER_TOGGLE:
+			GPIO_togglePin(m_pin);
+			NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;
+			GPIO_togglePin(m_pin);
+			break;
+		}
 	}
 
 	~DurationLoggerPin()

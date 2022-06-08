@@ -27,7 +27,7 @@ struct Frame
 {
 	uint16_t IFS : 3;		// Inter-frame spacing, Must be recessive (1)
 	uint16_t EOF : 7;		// End-of-frame, Must be recessive (1)
-	uint16_t ACK_Delimiter		// ACK delimiter, Must be recessive (1)
+	uint16_t ACK_Delimiter;		// ACK delimiter, Must be recessive (1)
 	uint16_t ACK: 1;		// ACK slot, Transmitter sends recessive (1) and any receiver can assert a dominant (0)
 	uint16_t CRC_Delimiter : 1;	// CRC delimiter, Must be recessive (1)
 	uint16_t CRC : 15;		// Cyclic redundancy check

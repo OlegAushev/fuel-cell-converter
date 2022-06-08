@@ -1,4 +1,12 @@
 ///
+#ifdef CRD300
+#warning "CRD300-build."
+#endif
+
+#ifndef DUALCORE
+#warning "Singlecore-build."
+#endif
+
 #define NO_EXTERNAL_STORAGE
 #ifdef NO_EXTERNAL_STORAGE
 //#warning "External storage is disabled."
@@ -23,17 +31,27 @@
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
+#include "boostconverter/boostconverter.h"
+
+#ifdef CRD300
+#include "support/crd300/controller.h"
+#endif
 
 #ifdef RUNTESTS
 #include "emb/emb_testrunner/emb_testrunner.h"
 #endif
 
 
+#pragma DATA_SECTION("SHARED_CONVERTER")
+unsigned char converterobj_loc[sizeof(BoostConverter)];
+BoostConverter* converter;
+
+
 /* ========================================================================== */
 /* ============================ SYSTEM INFO ================================= */
 /* ========================================================================== */
 const char* Syslog::DEVICE_NAME = "FCC";
-const uint32_t Syslog::SOFTWARE_VERSION = 2205;
+const uint32_t Syslog::SOFTWARE_VERSION = 2206;
 
 #if defined(RUNTESTS)
 const char* Syslog::BUILD_CONFIGURATION = "TEST";
@@ -111,6 +129,21 @@ void main()
 	/*-----------------------*/
 
 /*####################################################################################################################*/
+#ifdef CRD300
+	/*###################################*/
+	/*# XM3 CONTROLLER & MOSFET DRIVERS #*/
+	/*###################################*/
+	crd300::Controller crd300;
+	crd300.disableDriverLogic();	// Gate driver output will be held low if power supplies are enabled
+	crd300.enableDriverPS();
+	mcu::delay_us(200);
+	crd300.resetDrivers();
+	crd300.enableNeg15V();
+	crd300.enablePos15V();		// current sensor power supply must be enabled before current sensors calibrating
+	mcu::delay_us(1e5);
+#endif
+
+/*####################################################################################################################*/
 	/*#################*/
 	/*# POWERUP DELAY #*/
 	/*#################*/
@@ -144,9 +177,41 @@ void main()
 
 /*####################################################################################################################*/
 	/*#####################*/
-	/*# PWM #*/
+	/*# CONVERTER #*/
 	/*#####################*/
+	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+#ifdef CRD300
+	mcu::GpioPin drvFltPin(drvFltPinCfg);
+#else
+	mcu::GpioPin drvFltPin;
+#endif
 
+	BoostConverterConfig converterCfg = {
+		.uvpIn = 0,
+		.ovpIn = 400,
+		.ocpIn = 400,
+		.otpJunction = 105,
+		.otpCase = 90,
+		.fanTempThOn = 65,
+		.fanTempThOff = 55,
+		.fltPin = drvFltPin,
+	};
+
+	mcu::PwmConfig<mcu::PWM_ONE_PHASE> pwmCfg =
+	{
+		.module = {mcu::PWM1},
+		.switchingFreq = 10000,
+		.deadtime_ns = 1000,
+		.clockPrescaler = 1,
+		.clkDivider = mcu::PWM_CLOCK_DIVIDER_1,
+		.hsclkDivider = mcu::PWM_HSCLOCK_DIVIDER_1,
+		.operatingMode = mcu::PWM_ACTIVE_HIGH_COMPLEMENTARY,
+		.counterMode = mcu::PWM_COUNTER_MODE_UP,
+		.outputSwap = mcu::PWM_OUTPUT_SWAP,
+		.interruptSource = EPWM_INT_TBCTR_ZERO | EPWM_INT_TBCTR_U_CMPA,
+	};
+
+	converter = new(converterobj_loc) BoostConverter(converterCfg, pwmCfg);
 
 /*####################################################################################################################*/
 	/*###############*/
@@ -216,10 +281,10 @@ void main()
 	/*###################*/
 	mcuAdcUnit.enableInterrupts();
 	mcu::delay_us(100);				// wait for pending ADC INTs (after ADC calibrating) be served
-	//drive->phaseCurrentSensor.resetCompleted();	// clear measurements possibly stored in Drive
-	//drive->dcVoltageSensor.resetCompleted();	// clear measurements possibly stored in Drive
-	//drive->converter.pwmUnit.acknowledgeInterrupt();
-	//drive->converter.enablePwmInterrupts();		// now PWM can be launched
+	// TODO drive->phaseCurrentSensor.resetCompleted();	// clear measurements possibly stored in Drive
+	// TODO drive->dcVoltageSensor.resetCompleted();	// clear measurements possibly stored in Drive
+	converter->pwmUnit.acknowledgeInterrupt();
+	converter->pwmUnit.enableInterrupts();		// now PWM can be launched
 
 // END of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
@@ -241,10 +306,7 @@ void main()
 
 	while (true)
 	{
-#ifdef DUALCORE
 		Syslog::processIpcSignals();
-#endif
-
 		uCanOpenServer.run();
 		mcu::SystemClock::runPeriodicTasks();
 	}

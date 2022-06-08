@@ -65,7 +65,7 @@ enum PwmClockDivider
 };
 
 
-/// Pwm hs clock divider
+/// PWM hs clock divider
 enum PwmHsClockDivider
 {
 	PWM_HSCLOCK_DIVIDER_1 = EPWM_HSCLOCK_DIVIDER_1,		//!< Divide clock by 1
@@ -79,20 +79,28 @@ enum PwmHsClockDivider
 };
 
 
-/// Pwm mode (waveform)
-enum PwmMode
+/// PWM mode (waveform)
+enum PwmOperatingMode
 {
-	ACTIVE_HIGH_COMPLEMENTARY,
-	ACTIVE_LOW_COMPLEMENTARY
+	PWM_ACTIVE_HIGH_COMPLEMENTARY,
+	PWM_ACTIVE_LOW_COMPLEMENTARY
 };
 
 
-/// Pwm counter mode
+/// PWM counter mode
 enum PwmCounterMode
 {
 	PWM_COUNTER_MODE_UP = EPWM_COUNTER_MODE_UP,
 	PWM_COUNTER_MODE_DOWN = EPWM_COUNTER_MODE_DOWN,
 	PWM_COUNTER_MODE_UP_DOWN = EPWM_COUNTER_MODE_UP_DOWN
+};
+
+
+/// PWM outputs swap
+enum PwmOutputSwap
+{
+	PWM_OUTPUT_NO_SWAP,
+	PWM_OUTPUT_SWAP
 };
 
 
@@ -108,8 +116,9 @@ struct PwmConfig
 	uint32_t clockPrescaler;	// must be the product of clkDivider and hsclkDivider
 	PwmClockDivider clkDivider;
 	PwmHsClockDivider hsclkDivider;
-	PwmMode mode;
+	PwmOperatingMode operatingMode;
 	PwmCounterMode counterMode;
+	PwmOutputSwap outputSwap;
 	uint16_t interruptSource;
 };
 
@@ -304,6 +313,7 @@ public:
 
 			/* ========================================================================== */
 			// Set CMPA actions
+				// Configure PWMxA
 			EPWM_setActionQualifierAction(m_module.base[i],
 					EPWM_AQ_OUTPUT_A,
 					EPWM_AQ_OUTPUT_HIGH,
@@ -312,6 +322,7 @@ public:
 					EPWM_AQ_OUTPUT_A,
 					EPWM_AQ_OUTPUT_LOW,
 					EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
+				// Configure PWMxB, but only PWMxA is used by dead-band submodule
 			EPWM_setActionQualifierAction(m_module.base[i],
 					EPWM_AQ_OUTPUT_B,
 					EPWM_AQ_OUTPUT_HIGH,
@@ -322,18 +333,18 @@ public:
 					EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);
 
 			/* ========================================================================== */
-			// Set Deadband Active High Complementary
+			// Configure Dead-Band
 			EPWM_setDeadBandControlShadowLoadMode(m_module.base[i], EPWM_DB_LOAD_ON_CNTR_ZERO);
 			EPWM_setDeadBandDelayMode(m_module.base[i], EPWM_DB_FED, true);
 			EPWM_setDeadBandDelayMode(m_module.base[i], EPWM_DB_RED, true);
 
-			switch (cfg.mode)
+			switch (cfg.operatingMode)
 			{
-			case ACTIVE_HIGH_COMPLEMENTARY:
+			case PWM_ACTIVE_HIGH_COMPLEMENTARY:
 				EPWM_setDeadBandDelayPolarity(m_module.base[i], EPWM_DB_RED, EPWM_DB_POLARITY_ACTIVE_HIGH);
 				EPWM_setDeadBandDelayPolarity(m_module.base[i], EPWM_DB_FED, EPWM_DB_POLARITY_ACTIVE_LOW);
 				break;
-			case ACTIVE_LOW_COMPLEMENTARY:
+			case PWM_ACTIVE_LOW_COMPLEMENTARY:
 				EPWM_setDeadBandDelayPolarity(m_module.base[i], EPWM_DB_RED, EPWM_DB_POLARITY_ACTIVE_LOW);
 				EPWM_setDeadBandDelayPolarity(m_module.base[i], EPWM_DB_FED, EPWM_DB_POLARITY_ACTIVE_HIGH);
 				break;
@@ -345,15 +356,27 @@ public:
 			EPWM_setFallingEdgeDelayCount(m_module.base[i], m_deadtimeCycles);
 			EPWM_setDeadBandCounterClock(m_module.base[i], EPWM_DB_COUNTER_CLOCK_FULL_CYCLE);
 
+			switch (cfg.outputSwap)
+			{
+			case PWM_OUTPUT_NO_SWAP:
+				EPWM_setDeadBandOutputSwapMode(m_module.base[i], EPWM_DB_OUTPUT_A, false);
+				EPWM_setDeadBandOutputSwapMode(m_module.base[i], EPWM_DB_OUTPUT_B, false);
+				break;
+			case PWM_OUTPUT_SWAP:
+				EPWM_setDeadBandOutputSwapMode(m_module.base[i], EPWM_DB_OUTPUT_A, true);
+				EPWM_setDeadBandOutputSwapMode(m_module.base[i], EPWM_DB_OUTPUT_B, true);
+				break;
+			}
+
 			/* ========================================================================== */
 			// Configure trip-zone actions
-			switch (cfg.mode)
+			switch (cfg.operatingMode)
 			{
-			case ACTIVE_HIGH_COMPLEMENTARY:
+			case PWM_ACTIVE_HIGH_COMPLEMENTARY:
 				EPWM_setTripZoneAction(m_module.base[i], EPWM_TZ_ACTION_EVENT_TZA, EPWM_TZ_ACTION_LOW);
 				EPWM_setTripZoneAction(m_module.base[i], EPWM_TZ_ACTION_EVENT_TZB, EPWM_TZ_ACTION_LOW);
 				break;
-			case ACTIVE_LOW_COMPLEMENTARY:
+			case PWM_ACTIVE_LOW_COMPLEMENTARY:
 				EPWM_setTripZoneAction(m_module.base[i], EPWM_TZ_ACTION_EVENT_TZA, EPWM_TZ_ACTION_HIGH);
 				EPWM_setTripZoneAction(m_module.base[i], EPWM_TZ_ACTION_EVENT_TZB, EPWM_TZ_ACTION_HIGH);
 				break;
