@@ -12,9 +12,10 @@
 #include "emb/emb_filter.h"
 #include "emb/emb_pair.h"
 #include "mcu/pwm/mcupwm.h"
-
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
+
+#include "profiler/profiler.h"
 
 
 /// @addtogroup boost_converter
@@ -40,7 +41,7 @@ struct BoostConverterConfig
 /**
  * @brief Converter class.
  */
-class BoostConverter
+class BoostConverter : emb::c28x::Singleton<BoostConverter>
 {
 private:
 	const mcu::GpioPin FLT_PIN;
@@ -61,6 +62,9 @@ public:
 	const float FAN_TEMP_TH_OFF;
 
 	mcu::PwmUnit<mcu::PWM_ONE_PHASE> pwmUnit;
+	InVoltageSensor inVoltageSensor;
+	OutVoltageSensor outVoltageSensor;
+	InCurrentSensor inCurrentSensor;
 
 private:
 	BoostConverterState m_state;
@@ -116,8 +120,8 @@ protected:
 	static __interrupt void onPwmTripInterrupt();
 	static __interrupt void onAdcVoltageInInterrupt();
 	static __interrupt void onAdcVoltageOutInterrupt();
-	static __interrupt void onAdcCurrentInInterrupt();
-
+	static __interrupt void onAdcCurrentInFirstInterrupt();
+	static __interrupt void onAdcCurrentInSecondInterrupt();
 };
 
 

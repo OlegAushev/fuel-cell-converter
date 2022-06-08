@@ -35,7 +35,8 @@ enum AdcChannel
 {
 	ADC_VOLTAGE_IN,
 	ADC_VOLTAGE_OUT,
-	ADC_CURRENT_IN,
+	ADC_CURRENT_IN_FIRST,
+	ADC_CURRENT_IN_SECOND,
 
 	ADC_CHANNEL_COUNT
 };
@@ -45,7 +46,8 @@ enum AdcIrq
 {
 	ADC_IRQ_VOLTAGE_IN,
 	ADC_IRQ_VOLTAGE_OUT,
-	ADC_IRQ_CURRENT_IN,
+	ADC_IRQ_CURRENT_IN_FIRST,
+	ADC_IRQ_CURRENT_IN_SECOND,
 
 	ADC_IRQ_COUNT
 };
@@ -192,6 +194,12 @@ public:
 /*============================================================================*/
 /*=========================== Current methods ================================*/
 /*============================================================================*/
+
+	uint16_t result(AdcChannel channel) const
+	{
+		return ADC_readResult(m_channels[channel].resultBase, m_channels[channel].soc);
+	}
+
 	/**
 	 * @brief Launches input current ADC.
 	 * @param (none)
@@ -199,7 +207,7 @@ public:
 	 */
 	void convertCurrentIn() const
 	{
-		ADC_forceSOC(m_channels[ADC_CURRENT_IN].base, m_channels[ADC_CURRENT_IN].soc);
+		ADC_forceSOC(m_channels[ADC_CURRENT_IN_FIRST].base, m_channels[ADC_CURRENT_IN_FIRST].soc);
 	}
 
 	/**
@@ -207,10 +215,10 @@ public:
 	 * @param (none0
 	 * @return Raw ADC-result of input current.
 	 */
-	uint16_t currentIn() const
-	{
-		return ADC_readResult(m_channels[ADC_CURRENT_IN].resultBase, m_channels[ADC_CURRENT_IN].soc);
-	}
+//	uint16_t currentIn() const
+//	{
+//		return 42;//ADC_readResult(m_channels[ADC_CURRENT_IN].resultBase, m_channels[ADC_CURRENT_IN].soc);
+//	}
 
 /*============================================================================*/
 /*=========================== Voltage methods ================================*/

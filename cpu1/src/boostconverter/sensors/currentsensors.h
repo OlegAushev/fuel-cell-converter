@@ -21,9 +21,15 @@
 /**
  * @brief Input current sensor class.
  */
-class InputCurrentSensor
+class InCurrentSensor
 {
 public:
+	enum Measurement
+	{
+		FIRST,
+		SECOND
+	};
+
 	mcu::AdcUnit* adcUnit;
 private:
 	bool m_completed;
@@ -31,14 +37,14 @@ private:
 	static const float PHASE_CALIBRATION_THRESHOLD = 50;
 	static const size_t CALIBRATION_CYCLES = 1000;
 
-	InputCurrentSensor(const InputCurrentSensor& other);		// no copy constructor
-	InputCurrentSensor& operator=(const InputCurrentSensor& other);	// no copy assignment operator
+	InCurrentSensor(const InCurrentSensor& other);			// no copy constructor
+	InCurrentSensor& operator=(const InCurrentSensor& other);	// no copy assignment operator
 public:
 	/**
-	 * @brief Constructs a new PhaseCurrentSensor object and calibrates current sensors.
+	 * @brief Constructs a new InCurrentSensor object and calibrates current sensor.
 	 * @param (none)
 	 */
-	InputCurrentSensor()
+	InCurrentSensor()
 		: adcUnit(mcu::AdcUnit::instance())
 	{
 		m_completed = false;
@@ -54,7 +60,7 @@ public:
 	void convert()
 	{
 		resetCompleted();
-		adcUnit->convertCurrentIn()
+		adcUnit->convertCurrentIn();
 	}
 
 	/**
@@ -62,10 +68,19 @@ public:
 	 * @param phase - phase
 	 * @return Current value.
 	 */
-	float reading() const
+	float reading(Measurement no) const
 	{
+		uint16_t rawData;
 #ifdef CRD300
-		uint16_t rawData = adcUnit->currentIn();
+		switch (no)
+		{
+		case FIRST:
+			rawData = adcUnit->result(mcu::ADC_CURRENT_IN_FIRST);
+			break;
+		case SECOND:
+			rawData = adcUnit->result(mcu::ADC_CURRENT_IN_SECOND);
+			break;
+		}
 		return 800.f * (float(rawData) / 4095.f) - 400.f - m_zeroError;
 #else
 #warning "TODO"
@@ -87,7 +102,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void setCompleted(crd600::Phase phase)
+	void setCompleted()
 	{
 		m_completed = true;
 	}
@@ -110,10 +125,10 @@ private:
 		for (size_t i = 0; i < CALIBRATION_CYCLES; ++i)
 		{
 			convert();
-			while (!adcUnit->interruptPending(mcu::ADC_IRQ_CURRENT_IN))
+			while (!adcUnit->interruptPending(mcu::ADC_IRQ_CURRENT_IN_FIRST))
 			{  /* WAIT */ }
-			sum += reading();
-			adcUnit->clearInterruptStatus(mcu::ADC_IRQ_CURRENT_IN);
+			sum += reading(FIRST);
+			adcUnit->clearInterruptStatus(mcu::ADC_IRQ_CURRENT_IN_FIRST);
 			mcu::delay_us(10);
 		}
 

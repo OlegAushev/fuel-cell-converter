@@ -45,7 +45,7 @@
 #pragma DATA_SECTION("SHARED_CONVERTER")
 unsigned char converterobj_loc[sizeof(BoostConverter)];
 BoostConverter* converter;
-
+float DUTY_CYCLE = 0.25;
 
 /* ========================================================================== */
 /* ============================ SYSTEM INFO ================================= */
@@ -60,6 +60,19 @@ const char* Syslog::BUILD_CONFIGURATION = "DBG";
 #else
 const char* Syslog::BUILD_CONFIGURATION = "RLS";
 #endif
+
+
+/* ========================================================================== */
+/* ============================ PROFILER PINS =============================== */
+/* ========================================================================== */
+const mcu::GpioPinConfig P61_CFG =
+	mcu::GpioPinConfig(61, GPIO_61_GPIO61, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig P123_CFG =
+	mcu::GpioPinConfig(123, GPIO_123_GPIO123, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig P122_CFG =
+	mcu::GpioPinConfig(122, GPIO_122_GPIO122, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig P22_CFG =
+	mcu::GpioPinConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 
 
 /* ========================================================================== */
@@ -92,6 +105,13 @@ void main()
 
 #ifdef RUNTESTS
 	RUN_TESTS();
+#endif
+
+#ifdef CRD300
+	mcu::GpioPin p61(P61_CFG);
+	mcu::GpioPin p123(P123_CFG);
+	mcu::GpioPin p122(P122_CFG);
+	mcu::GpioPin p22(P22_CFG);
 #endif
 
 /*####################################################################################################################*/
@@ -207,8 +227,12 @@ void main()
 		.hsclkDivider = mcu::PWM_HSCLOCK_DIVIDER_1,
 		.operatingMode = mcu::PWM_ACTIVE_HIGH_COMPLEMENTARY,
 		.counterMode = mcu::PWM_COUNTER_MODE_UP,
+#ifdef CRD300
 		.outputSwap = mcu::PWM_OUTPUT_SWAP,
-		.interruptSource = EPWM_INT_TBCTR_ZERO | EPWM_INT_TBCTR_U_CMPA,
+#else
+		.outputSwap = mcu::PWM_OUTPUT_NO_SWAP,
+#endif
+		.interruptSource = EPWM_INT_TBCTR_ZERO,
 	};
 
 	converter = new(converterobj_loc) BoostConverter(converterCfg, pwmCfg);
@@ -304,11 +328,16 @@ void main()
 /*####################################################################################################################*/
 	Syslog::addMessage(Syslog::DEVICE_READY);
 
+
+	converter->start();
+
+
 	while (true)
 	{
 		Syslog::processIpcSignals();
 		uCanOpenServer.run();
 		mcu::SystemClock::runPeriodicTasks();
+		converter->pwmUnit.setDutyCycle(DUTY_CYCLE);
 	}
 }
 

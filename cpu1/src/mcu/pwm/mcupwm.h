@@ -322,6 +322,10 @@ public:
 					EPWM_AQ_OUTPUT_A,
 					EPWM_AQ_OUTPUT_LOW,
 					EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
+			EPWM_setActionQualifierAction(m_module.base[i],
+					EPWM_AQ_OUTPUT_A,
+					EPWM_AQ_OUTPUT_HIGH,
+					EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);
 				// Configure PWMxB, but only PWMxA is used by dead-band submodule
 			EPWM_setActionQualifierAction(m_module.base[i],
 					EPWM_AQ_OUTPUT_B,
@@ -385,6 +389,15 @@ public:
 			EPWM_clearOneShotTripZoneFlag(m_module.base[i], EPWM_TZ_OST_FLAG_OST1);
 			EPWM_clearTripZoneFlag(m_module.base[i], EPWM_TZ_INTERRUPT | EPWM_TZ_FLAG_OST);
 		}
+
+		/* ========================================================================== */
+		// Sic! Additional settings!
+		EPWM_setADCTriggerSource(m_module.base[0], EPWM_SOC_A, EPWM_SOC_TBCTR_ZERO);
+		EPWM_setADCTriggerSource(m_module.base[0], EPWM_SOC_B, EPWM_SOC_TBCTR_U_CMPA);
+		EPWM_setADCTriggerEventPrescale(m_module.base[0], EPWM_SOC_A, 1);
+		EPWM_setADCTriggerEventPrescale(m_module.base[0], EPWM_SOC_B, 1);
+		EPWM_enableADCTrigger(m_module.base[0], EPWM_SOC_A);
+		EPWM_enableADCTrigger(m_module.base[0], EPWM_SOC_B);
 
 		/* ========================================================================== */
 		// Configure interrupts, only interrupt on first phase is required
