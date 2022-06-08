@@ -13,6 +13,9 @@
 #include "emb/emb_pair.h"
 #include "mcu/pwm/mcupwm.h"
 
+#include "sensors/currentsensors.h"
+#include "sensors/voltagesensors.h"
+
 
 /// @addtogroup boost_converter
 /// @{
@@ -77,25 +80,7 @@ public:
 	 * @param pwmConfig - PWM config
 	 */
 	BoostConverter(const BoostConverterConfig& converterConfig,
-			const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
-		: FLT_PIN(converterConfig.fltPin)
-		, m_state(CONVERTER_OFF)
-		, m_voltageIn(VDC_SMOOTH_FACTOR)
-		, m_voltageOut(VDC_SMOOTH_FACTOR)
-		, m_currentIn(0, 0)
-		, OVP_IN_BOUND(converterConfig.ovpIn)
-		, UVP_IN_BOUND(converterConfig.uvpIn)
-		, OCP_IN_BOUND(converterConfig.ocpIn)
-		, OTP_MODULE_BOUND(converterConfig.otpJunction)
-		, OTP_CASE_BOUND(converterConfig.otpCase)
-		, FAN_TEMP_TH_ON(converterConfig.fanTempThOn)
-		, FAN_TEMP_TH_OFF(converterConfig.fanTempThOff)
-		, pwmUnit(pwmConfig)
-	{
-#ifdef CRD300
-		pwmUnit.initTzSubmodule(FLT_PIN, XBAR_INPUT1);
-#endif
-	}
+			const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig);
 
 	/**
 	 * @brief Returns converter state.
@@ -125,6 +110,13 @@ public:
 		pwmUnit.stop();
 		m_state = CONVERTER_OFF;
 	}
+
+protected:
+	static __interrupt void onPwmInterrupt();
+	static __interrupt void onPwmTripInterrupt();
+	static __interrupt void onAdcVoltageInInterrupt();
+	static __interrupt void onAdcVoltageOutInterrupt();
+	static __interrupt void onAdcCurrentInInterrupt();
 
 };
 

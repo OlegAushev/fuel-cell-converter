@@ -33,22 +33,9 @@ enum AdcModule
 /// ADC channels (application-specific)
 enum AdcChannel
 {
-	ADC_CURRENT_PHASE_U,
-	ADC_CURRENT_PHASE_V,
-	ADC_CURRENT_PHASE_W,
-	ADC_CURRENT_PHASE_X,
-	ADC_CURRENT_PHASE_Y,
-	ADC_CURRENT_PHASE_Z,
-
-	ADC_VOLTAGE_DC,
-
-	ADC_TEMPERATURE_PHASE_U,
-	ADC_TEMPERATURE_PHASE_V,
-	ADC_TEMPERATURE_PHASE_W,
-	ADC_TEMPERATURE_PHASE_X,
-	ADC_TEMPERATURE_PHASE_Y,
-	ADC_TEMPERATURE_PHASE_Z,
-	ADC_TEMPERATURE_CASE,
+	ADC_VOLTAGE_IN,
+	ADC_VOLTAGE_OUT,
+	ADC_CURRENT_IN,
 
 	ADC_CHANNEL_COUNT
 };
@@ -56,12 +43,9 @@ enum AdcChannel
 /// ADC interrupt request source (application-specific).
 enum AdcIrq
 {
-	ADC_IRQ_CURRENT_UVW,
-	ADC_IRQ_CURRENT_XYZ,
-	ADC_IRQ_VOLTAGE_DC,
-	ADC_IRQ_TEMPERATURE_UVW,
-	ADC_IRQ_TEMPERATURE_XYZ,
-	ADC_IRQ_TEMPERATURE_CASE,
+	ADC_IRQ_VOLTAGE_IN,
+	ADC_IRQ_VOLTAGE_OUT,
+	ADC_IRQ_CURRENT_IN,
 
 	ADC_IRQ_COUNT
 };
@@ -135,135 +119,22 @@ public:
 	 */
 	AdcUnit(int channelCount);
 
+/*============================================================================*/
+/*============================ Interrupts ====================================*/
+/*============================================================================*/
 	/**
 	 * @brief Enables interrupts.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableInterrupts() const;
-
-/*============================================================================*/
-/*=========================== Current methods ================================*/
-/*============================================================================*/
-	/**
-	 * @brief Launches UVW-phase currents ADCs.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void convertCurrentsUVW() const
+	void enableInterrupts() const
 	{
-		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_U].base, m_channels[ADC_CURRENT_PHASE_U].soc);
-		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_V].base, m_channels[ADC_CURRENT_PHASE_V].soc);
-		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_W].base, m_channels[ADC_CURRENT_PHASE_W].soc);
+		for (size_t i = 0; i < ADC_IRQ_COUNT; ++i)
+		{
+			Interrupt_enable(m_irqs[i].pieIntNo);
+		}
 	}
 
-	/**
-	 * @brief Launches XYZ-phase currents ADCs.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void convertCurrentsXYZ() const
-	{
-		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_X].base, m_channels[ADC_CURRENT_PHASE_X].soc);
-		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_Y].base, m_channels[ADC_CURRENT_PHASE_Y].soc);
-		ADC_forceSOC(m_channels[ADC_CURRENT_PHASE_Z].base, m_channels[ADC_CURRENT_PHASE_Z].soc);
-	}
-
-	/**
-	 * @brief Returns raw ADC-result of current of specified phase.
-	 * @param phase - phase
-	 * @return Raw ADC-result of current of specified phase.
-	 */
-//	uint16_t current(crd600::Phase phase) const
-//	{
-//		size_t id = static_cast<size_t>(ADC_CURRENT_PHASE_U) + static_cast<size_t>(phase);
-//		return ADC_readResult(m_channels[id].resultBase, m_channels[id].soc);
-//	}
-
-/*============================================================================*/
-/*=========================== Voltage methods ================================*/
-/*============================================================================*/
-	/**
-	 * @brief Launch DC-voltage ADC.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void convertVoltageDc() const
-	{
-		ADC_forceSOC(m_channels[ADC_VOLTAGE_DC].base, m_channels[ADC_VOLTAGE_DC].soc);
-	}
-
-	/**
-	 * @brief Returns raw ADC-result of DC-voltage.
-	 * @param (none)
-	 * @return Raw ADC-result of DC-voltage.
-	 */
-	uint16_t voltageDc() const
-	{
-		return ADC_readResult(m_channels[ADC_VOLTAGE_DC].resultBase, m_channels[ADC_VOLTAGE_DC].soc);
-	}
-
-/*============================================================================*/
-/*======================= Temperature methods ================================*/
-/*============================================================================*/
-	/**
-	 * @brief Launch UVW-phase modules temperatures ADCs.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void convertTemperaturesUVW() const
-	{
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_U].base, m_channels[ADC_TEMPERATURE_PHASE_U].soc);
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_V].base, m_channels[ADC_TEMPERATURE_PHASE_V].soc);
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_W].base, m_channels[ADC_TEMPERATURE_PHASE_W].soc);
-	}
-
-	/**
-	 * @brief Launch XYZ-phase modules temperatures ADCs.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void convertTemperaturesXYZ() const
-	{
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_X].base, m_channels[ADC_TEMPERATURE_PHASE_X].soc);
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_Y].base, m_channels[ADC_TEMPERATURE_PHASE_Y].soc);
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_PHASE_Z].base, m_channels[ADC_TEMPERATURE_PHASE_Z].soc);
-	}
-
-	/**
-	 * @brief Launch case temperature ADC.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void convertTemperatureCase() const
-	{
-		ADC_forceSOC(m_channels[ADC_TEMPERATURE_CASE].base, m_channels[ADC_TEMPERATURE_CASE].soc);
-	}
-
-	/**
-	 * @brief Returns raw ADC-result of module temperature of specified phase.
-	 * @param phase - phase
-	 * @return Raw ADC-result of module temperature of specified phase.
-	 */
-//	uint16_t temperatureModule(crd600::Phase phase) const
-//	{
-//		size_t id = static_cast<size_t>(ADC_TEMPERATURE_PHASE_U) + static_cast<size_t>(phase);
-//		return ADC_readResult(m_channels[id].resultBase, m_channels[id].soc);
-//	}
-
-	/**
-	 * @brief Returns raw ADC-result of case temperature.
-	 * @param (none)
-	 * @return Raw ADC-result of case temperature.
-	 */
-	uint16_t temperatureCase() const
-	{
-		return ADC_readResult(m_channels[ADC_TEMPERATURE_CASE].resultBase, m_channels[ADC_TEMPERATURE_CASE].soc);
-	}
-
-/*============================================================================*/
-/*============================ Interrupts ====================================*/
-/*============================================================================*/
 	/**
 	 * @brief Registers ADC ISR
 	 * @param irq - interrupt request
@@ -300,7 +171,7 @@ public:
 	 * @param irq - interrupt request
 	 * @return \c true if the interrupt flag is set and \c false if it is not.
 	 */
-	bool interruptPending(AdcIrq irq)
+	bool interruptPending(AdcIrq irq) const
 	{
 		return ADC_getInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNo);
 	}
@@ -310,9 +181,78 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void clearInterruptStatus(AdcIrq irq)
+	void clearInterruptStatus(AdcIrq irq) const
 	{
 		ADC_clearInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNo);
+	}
+
+/*============================================================================*/
+/*============================= ADC methods ==================================*/
+/*============================================================================*/
+/*============================================================================*/
+/*=========================== Current methods ================================*/
+/*============================================================================*/
+	/**
+	 * @brief Launches input current ADC.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void convertCurrentIn() const
+	{
+		ADC_forceSOC(m_channels[ADC_CURRENT_IN].base, m_channels[ADC_CURRENT_IN].soc);
+	}
+
+	/**
+	 * @brief Returns raw ADC-result of input current.
+	 * @param (none0
+	 * @return Raw ADC-result of input current.
+	 */
+	uint16_t currentIn() const
+	{
+		return ADC_readResult(m_channels[ADC_CURRENT_IN].resultBase, m_channels[ADC_CURRENT_IN].soc);
+	}
+
+/*============================================================================*/
+/*=========================== Voltage methods ================================*/
+/*============================================================================*/
+	/**
+	 * @brief Launch input voltage ADC.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void convertVoltageIn() const
+	{
+		ADC_forceSOC(m_channels[ADC_VOLTAGE_IN].base, m_channels[ADC_VOLTAGE_IN].soc);
+	}
+
+	/**
+	 * @brief Launch output voltage ADC.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void convertVoltageOut() const
+	{
+		ADC_forceSOC(m_channels[ADC_VOLTAGE_OUT].base, m_channels[ADC_VOLTAGE_OUT].soc);
+	}
+
+	/**
+	 * @brief Returns raw ADC-result of input voltage.
+	 * @param (none)
+	 * @return Raw ADC-result of input voltage.
+	 */
+	uint16_t voltageIn() const
+	{
+		return ADC_readResult(m_channels[ADC_VOLTAGE_IN].resultBase, m_channels[ADC_VOLTAGE_IN].soc);
+	}
+
+	/**
+	 * @brief Returns raw ADC-result of output voltage.
+	 * @param (none)
+	 * @return Raw ADC-result of output voltage.
+	 */
+	uint16_t voltageOut() const
+	{
+		return ADC_readResult(m_channels[ADC_VOLTAGE_OUT].resultBase, m_channels[ADC_VOLTAGE_OUT].soc);
 	}
 };
 
