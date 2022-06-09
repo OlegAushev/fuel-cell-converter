@@ -119,7 +119,9 @@ struct PwmConfig
 	PwmOperatingMode operatingMode;
 	PwmCounterMode counterMode;
 	PwmOutputSwap outputSwap;
-	uint16_t interruptSource;
+	uint16_t eventInterruptSource;
+	bool adcTriggerEnable[2];
+	EPWM_ADCStartOfConversionSource adcTriggerSource[2];
 };
 
 
@@ -134,13 +136,13 @@ struct PwmModuleImpl
 {
 	PwmModule instance[PhaseCount];
 	uint32_t base[PhaseCount];
-	uint32_t pieIntNo;
+	uint32_t pieEventIntNo;
 	uint32_t pieTripIntNo;
 };
 
 
 extern const uint32_t pwmBases[12];
-extern const uint32_t pwmPieIntNos[12];
+extern const uint32_t pwmPieEventIntNos[12];
 extern const uint32_t pwmPieTripIntNos[12];
 extern const uint32_t pwmPinOutAConfigs[12];
 extern const uint32_t pwmPinOutBConfigs[12];
@@ -191,7 +193,7 @@ public:
 			m_module.instance[i] = cfg.module[i];
 			m_module.base[i] = detail::pwmBases[cfg.module[i]];
 		}
-		m_module.pieIntNo = detail::pwmPieIntNos[cfg.module[0]];
+		m_module.pieEventIntNo = detail::pwmPieEventIntNos[cfg.module[0]];
 		m_module.pieTripIntNo = detail::pwmPieTripIntNos[cfg.module[0]];
 
 		for (size_t i = 0; i < PhaseCount; ++i)
@@ -206,10 +208,11 @@ public:
 		EMB_UNUSED(detail::pwmPinOutBConfigs);
 #endif
 
-		// Configure EPWM modules
-		SysCtl_disablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);	// Disable sync(Freeze clock to PWM as well)
+		// Disable sync, freeze clock to PWM
+		SysCtl_disablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
 
-		// Set-up TBCLK
+		/* ========================================================================== */
+		// Calculate TBPRD value
 		switch (cfg.counterMode)
 		{
 		case PWM_COUNTER_MODE_UP:
@@ -233,16 +236,16 @@ public:
 					static_cast<EPWM_HSClockDivider>(cfg.hsclkDivider));
 
 			/* ========================================================================== */
-			// Set compare values
+			// Compare values
 			EPWM_setCounterCompareValue(m_module.base[i], EPWM_COUNTER_COMPARE_A, 0);
 
 			/* ========================================================================== */
-			// Set counter mode
+			// Counter mode
 			EPWM_setTimeBaseCounterMode(m_module.base[i], static_cast<EPWM_TimeBaseCountMode>(cfg.counterMode));
 
 #ifdef CPU1
 			/* ========================================================================== */
-			//Configure the sync input source for the EPWM signals
+			// Sync input source for the EPWM signals
 			switch (m_module.base[i])
 			{
 			case EPWM4_BASE:
@@ -260,84 +263,115 @@ public:
 #endif
 
 			/* ========================================================================== */
-			// Set up the sync out pulse event
-			if (PhaseCount != PWM_ONE_PHASE)
+			// Sync out pulse event
+			switch (PhaseCount)
 			{
-				if (i == 0)
+			case PWM_SIX_PHASE:
+			case PWM_THREE_PHASE:
+				if ((i == 0) && (m_module.base[i] == EPWM1_BASE))
 				{
-					// first module is master
+					// EPWM1 is master
 					EPWM_setSyncOutPulseMode(m_module.base[i], EPWM_SYNC_OUT_PULSE_ON_COUNTER_ZERO);
 				}
 				else
 				{
-					// other modules sync is pass-thru
+					// other modules sync is pass-through
 					EPWM_setSyncOutPulseMode(m_module.base[i], EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN);
 				}
-			}
-			else
-			{
-				EPWM_setSyncOutPulseMode(m_module.base[i], EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN);
+				break;
+			case PWM_ONE_PHASE:
+				if (m_module.base[i] == EPWM1_BASE)
+				{
+					EPWM_setSyncOutPulseMode(m_module.base[i], EPWM_SYNC_OUT_PULSE_ON_COUNTER_ZERO);
+				}
+				else
+				{
+					EPWM_setSyncOutPulseMode(m_module.base[i], EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN);
+				}
+				break;
 			}
 
 			/* ========================================================================== */
 			// Time-base counter synchronization and phase shift
 			switch (PhaseCount)
 			{
-			case PWM_THREE_PHASE: case PWM_SIX_PHASE:
+			case PWM_SIX_PHASE:
+			case PWM_THREE_PHASE:
 				if ((i == 0) && (m_module.base[i] == EPWM1_BASE))
 				{
-					// EPWM1 is master, EPWM4,7,10 are synced to it if they are not ONE_PHASE
+					// EPWM1 is master, EPWM4,7,10 are synced to it
+					// master has no phase shift
+					EPWM_disablePhaseShiftLoad(m_module.base[i]);
 					EPWM_setPhaseShift(m_module.base[i], 0);
-					EPWM_disablePhaseShiftLoad(m_module.base[i]);	// master has no phase shift
 				}
 				else
 				{
 					EPWM_enablePhaseShiftLoad(m_module.base[i]);
-					EPWM_setCountModeAfterSync(m_module.base[i],
-							EPWM_COUNT_MODE_UP_AFTER_SYNC);	// start counting up when sync occurs
+					// start counting up when sync occurs
+					// used when the time-base counter is configured in the up-down-count mode
+					EPWM_setCountModeAfterSync(m_module.base[i], EPWM_COUNT_MODE_UP_AFTER_SYNC);
 					// 2 x EPWMCLK - delay from internal master module to slave modules, p.1876
 					EPWM_setPhaseShift(m_module.base[i], 2 + m_phaseShift[i]);
 				}
 				break;
 
 			case PWM_ONE_PHASE:
-				EPWM_disablePhaseShiftLoad(m_module.base[i]);	// ignore the synchronization input pulse
+				if (m_module.base[i] == EPWM1_BASE)
+				{
+					EPWM_disablePhaseShiftLoad(m_module.base[i]);
+					EPWM_setPhaseShift(m_module.base[i], 0);
+				}
+				else
+				{
+					EPWM_enablePhaseShiftLoad(m_module.base[i]);
+					EPWM_setCountModeAfterSync(m_module.base[i], EPWM_COUNT_MODE_UP_AFTER_SYNC);
+					EPWM_setPhaseShift(m_module.base[i], 2 + m_phaseShift[i]);
+				}
 				break;
 			}
 
 			/* ========================================================================== */
-			// Configure shadowing
+			// Shadowing
 			EPWM_selectPeriodLoadEvent(m_module.base[i], EPWM_SHADOW_LOAD_MODE_COUNTER_ZERO);
 			EPWM_setCounterCompareShadowLoadMode(m_module.base[i], EPWM_COUNTER_COMPARE_A, EPWM_COMP_LOAD_ON_CNTR_ZERO);
 			EPWM_setActionQualifierContSWForceShadowMode(m_module.base[i], EPWM_AQ_SW_IMMEDIATE_LOAD);
 
 			/* ========================================================================== */
-			// Set CMPA actions
-				// Configure PWMxA
-			EPWM_setActionQualifierAction(m_module.base[i],
-					EPWM_AQ_OUTPUT_A,
-					EPWM_AQ_OUTPUT_HIGH,
-					EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);
-			EPWM_setActionQualifierAction(m_module.base[i],
-					EPWM_AQ_OUTPUT_A,
-					EPWM_AQ_OUTPUT_LOW,
-					EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
-			EPWM_setActionQualifierAction(m_module.base[i],
-					EPWM_AQ_OUTPUT_A,
-					EPWM_AQ_OUTPUT_HIGH,
-					EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);
-				// Configure PWMxB, but only PWMxA is used by dead-band submodule
-			EPWM_setActionQualifierAction(m_module.base[i],
-					EPWM_AQ_OUTPUT_B,
-					EPWM_AQ_OUTPUT_HIGH,
-					EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
-			EPWM_setActionQualifierAction(m_module.base[i],
-					EPWM_AQ_OUTPUT_B,
-					EPWM_AQ_OUTPUT_LOW,
-					EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);
+			// CMPA actions
+				// PWMxA configuration for typical waveforms, change this if other is needed
+			switch (cfg.operatingMode)
+			{
+			case PWM_COUNTER_MODE_UP:
+				EPWM_setActionQualifierAction(m_module.base[i],	EPWM_AQ_OUTPUT_A,
+						EPWM_AQ_OUTPUT_HIGH, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);
+				EPWM_setActionQualifierAction(m_module.base[i], EPWM_AQ_OUTPUT_A,
+						EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
+				break;
+			case PWM_COUNTER_MODE_DOWN:
+				EPWM_setActionQualifierAction(m_module.base[i],	EPWM_AQ_OUTPUT_A,
+						EPWM_AQ_OUTPUT_HIGH, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);
+				EPWM_setActionQualifierAction(m_module.base[i], EPWM_AQ_OUTPUT_A,
+						EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);
+				break;
+			case PWM_COUNTER_MODE_UP_DOWN:
+				EPWM_setActionQualifierAction(m_module.base[i], EPWM_AQ_OUTPUT_A,
+						EPWM_AQ_OUTPUT_HIGH, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);
+				EPWM_setActionQualifierAction(m_module.base[i], EPWM_AQ_OUTPUT_A,
+						EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
+				break;
+			}
+				// LEGACY PWMxB configuration, but only PWMxA is used by dead-band submodule
+//			EPWM_setActionQualifierAction(m_module.base[i],
+//					EPWM_AQ_OUTPUT_B,
+//					EPWM_AQ_OUTPUT_HIGH,
+//					EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);
+//			EPWM_setActionQualifierAction(m_module.base[i],
+//					EPWM_AQ_OUTPUT_B,
+//					EPWM_AQ_OUTPUT_LOW,
+//					EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);
 
 			/* ========================================================================== */
-			// Configure Dead-Band
+			// Dead-Band
 			EPWM_setDeadBandControlShadowLoadMode(m_module.base[i], EPWM_DB_LOAD_ON_CNTR_ZERO);
 			EPWM_setDeadBandDelayMode(m_module.base[i], EPWM_DB_FED, true);
 			EPWM_setDeadBandDelayMode(m_module.base[i], EPWM_DB_RED, true);
@@ -373,7 +407,7 @@ public:
 			}
 
 			/* ========================================================================== */
-			// Configure trip-zone actions
+			// Trip-Zone actions
 			switch (cfg.operatingMode)
 			{
 			case PWM_ACTIVE_HIGH_COMPLEMENTARY:
@@ -391,21 +425,30 @@ public:
 		}
 
 		/* ========================================================================== */
-		// Sic! Additional settings!
-		EPWM_setADCTriggerSource(m_module.base[0], EPWM_SOC_A, EPWM_SOC_TBCTR_ZERO);
-		EPWM_setADCTriggerSource(m_module.base[0], EPWM_SOC_B, EPWM_SOC_TBCTR_U_CMPA);
-		EPWM_setADCTriggerEventPrescale(m_module.base[0], EPWM_SOC_A, 1);
-		EPWM_setADCTriggerEventPrescale(m_module.base[0], EPWM_SOC_B, 1);
-		EPWM_enableADCTrigger(m_module.base[0], EPWM_SOC_A);
-		EPWM_enableADCTrigger(m_module.base[0], EPWM_SOC_B);
+		// ADC Trigger configuration, only first module triggers ADC
+		if (cfg.adcTriggerEnable[0])
+		{
+			EPWM_setADCTriggerSource(m_module.base[0], EPWM_SOC_A, cfg.adcTriggerSource[0]);
+			EPWM_setADCTriggerEventPrescale(m_module.base[0], EPWM_SOC_A, 1);
+			EPWM_enableADCTrigger(m_module.base[0], EPWM_SOC_A);
+		}
+
+		if (cfg.adcTriggerEnable[1])
+		{
+			EPWM_setADCTriggerSource(m_module.base[0], EPWM_SOC_B, cfg.adcTriggerSource[1]);
+			EPWM_setADCTriggerEventPrescale(m_module.base[0], EPWM_SOC_B, 1);
+			EPWM_enableADCTrigger(m_module.base[0], EPWM_SOC_B);
+		}
 
 		/* ========================================================================== */
-		// Configure interrupts, only interrupt on first phase is required
-		EPWM_setInterruptSource(m_module.base[0], cfg.interruptSource);
+		// Interrupts, only interrupt on first module is required
+		EPWM_setInterruptSource(m_module.base[0], cfg.eventInterruptSource);
 		EPWM_setInterruptEventCount(m_module.base[0], 1U);
 
 		stop();
-		SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);	// Enable sync and clock to PWM
+
+		// Enable sync and clock to PWM
+		SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
 	}
 
 #ifdef CPU1
@@ -484,17 +527,6 @@ public:
 		SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);	// Enable sync and clock to PWM
 	}
 #endif
-
-	/**
-	 * @brief Enables PWM and trip-zone interrupts.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void enableInterrupts() const
-	{
-		EPWM_enableInterrupt(m_module.base[0]);
-		EPWM_enableTripZoneInterrupt(m_module.base[0], EPWM_TZ_INTERRUPT_OST);
-	}
 
 	/**
 	 * @brief Returns base of PWM-unit.
@@ -645,14 +677,25 @@ public:
 /*============================ Interrupts ====================================*/
 /*============================================================================*/
 	/**
+	 * @brief Enables PWM and trip-zone interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void enableInterrupts() const
+	{
+		EPWM_enableInterrupt(m_module.base[0]);
+		EPWM_enableTripZoneInterrupt(m_module.base[0], EPWM_TZ_INTERRUPT_OST);
+	}
+
+	/**
 	 * @param Registers time-base interrupt handler
 	 * @param handler - pointer to handler
 	 * @return (none)
 	 */
-	void registerInterruptHandler(void (*handler)(void)) const
+	void registerEventInterruptHandler(void (*handler)(void)) const
 	{
-		Interrupt_register(m_module.pieIntNo, handler);
-		Interrupt_enable(m_module.pieIntNo);
+		Interrupt_register(m_module.pieEventIntNo, handler);
+		Interrupt_enable(m_module.pieEventIntNo);
 	}
 
 	/**

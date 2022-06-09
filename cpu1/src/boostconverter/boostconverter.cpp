@@ -30,7 +30,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 #ifdef CRD300
 	pwmUnit.initTzSubmodule(FLT_PIN, XBAR_INPUT1);
 #endif
-	pwmUnit.registerInterruptHandler(onPwmInterrupt);
+	pwmUnit.registerEventInterruptHandler(onPwmInterrupt);
 	pwmUnit.registerTripInterruptHandler(onPwmTripInterrupt);
 
 	inVoltageSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_IN, onAdcVoltageInInterrupt);

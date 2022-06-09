@@ -32,6 +32,7 @@
 #include "syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
 #include "boostconverter/boostconverter.h"
+#include "setupmanager/setupmanager.h"
 
 #ifdef CRD300
 #include "support/crd300/controller.h"
@@ -176,6 +177,21 @@ void main()
 	}
 
 /*####################################################################################################################*/
+	/*#################*/
+	/*# SETUP MANAGER #*/
+	/*#################*/
+	SetupManager setupManager;
+	SetupManager::SYSTEM_CONFIG = SetupManager::DEFAULT_CONFIG;
+
+#ifdef CRD300
+	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioPin drvFltPin(drvFltPinCfg);
+#else
+	mcu::GpioPin drvFltPin;
+#endif
+	SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
+
+/*####################################################################################################################*/
 	/*#############*/
 	/*# BOOT CPU2 #*/
 	/*#############*/
@@ -199,43 +215,9 @@ void main()
 	/*#####################*/
 	/*# CONVERTER #*/
 	/*#####################*/
-	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-#ifdef CRD300
-	mcu::GpioPin drvFltPin(drvFltPinCfg);
-#else
-	mcu::GpioPin drvFltPin;
-#endif
-
-	BoostConverterConfig converterCfg = {
-		.uvpIn = 0,
-		.ovpIn = 400,
-		.ocpIn = 400,
-		.otpJunction = 105,
-		.otpCase = 90,
-		.fanTempThOn = 65,
-		.fanTempThOff = 55,
-		.fltPin = drvFltPin,
-	};
-
-	mcu::PwmConfig<mcu::PWM_ONE_PHASE> pwmCfg =
-	{
-		.module = {mcu::PWM1},
-		.switchingFreq = 10000,
-		.deadtime_ns = 1000,
-		.clockPrescaler = 1,
-		.clkDivider = mcu::PWM_CLOCK_DIVIDER_1,
-		.hsclkDivider = mcu::PWM_HSCLOCK_DIVIDER_1,
-		.operatingMode = mcu::PWM_ACTIVE_HIGH_COMPLEMENTARY,
-		.counterMode = mcu::PWM_COUNTER_MODE_UP,
-#ifdef CRD300
-		.outputSwap = mcu::PWM_OUTPUT_SWAP,
-#else
-		.outputSwap = mcu::PWM_OUTPUT_NO_SWAP,
-#endif
-		.interruptSource = EPWM_INT_TBCTR_ZERO,
-	};
-
-	converter = new(converterobj_loc) BoostConverter(converterCfg, pwmCfg);
+	converter = new(converterobj_loc) BoostConverter(
+			SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG,
+			SetupManager::SYSTEM_CONFIG.PWM_CONFIG);
 
 /*####################################################################################################################*/
 	/*###############*/
