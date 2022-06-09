@@ -4,20 +4,20 @@
  */
 
 
-#include "setupmanager.h"
+#include "settings.h"
 
 
 ///
 ///
 ///
 #pragma DATA_SECTION("SHARED_SYSTEMCONFIG")
-SetupManager::SystemConfig SetupManager::SYSTEM_CONFIG;
+Settings::SystemConfig Settings::SYSTEM_CONFIG;
 
 
 ///
 ///
 ///
-const SetupManager::SystemConfig SetupManager::DEFAULT_CONFIG = {
+const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 /* ========================================================================== */
 /* ========================================================================== */
 /* ========================================================================== */

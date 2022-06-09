@@ -32,7 +32,7 @@
 #include "syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
 #include "boostconverter/boostconverter.h"
-#include "setupmanager/setupmanager.h"
+#include "settings/settings.h"
 
 #ifdef CRD300
 #include "support/crd300/controller.h"
@@ -180,11 +180,12 @@ void main()
 	}
 
 /*####################################################################################################################*/
-	/*#################*/
-	/*# SETUP MANAGER #*/
-	/*#################*/
-	SetupManager setupManager;
-	SetupManager::SYSTEM_CONFIG = SetupManager::DEFAULT_CONFIG;
+	/*############*/
+	/*# SETTINGS #*/
+	/*############*/
+	Settings::init();
+	Settings settings;
+	Settings::SYSTEM_CONFIG = Settings::DEFAULT_CONFIG;
 
 #ifdef CRD300
 	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
@@ -192,7 +193,7 @@ void main()
 #else
 	mcu::GpioPin drvFltPin;
 #endif
-	SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
+	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
 
 /*####################################################################################################################*/
 	/*#############*/
@@ -219,8 +220,10 @@ void main()
 	/*# CONVERTER #*/
 	/*#####################*/
 	converter = new(converterobj_loc) BoostConverter(
-			SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG,
-			SetupManager::SYSTEM_CONFIG.PWM_CONFIG);
+			Settings::SYSTEM_CONFIG.CONVERTER_CONFIG,
+			Settings::SYSTEM_CONFIG.PWM_CONFIG);
+
+	settings.registerObjects(converter);
 
 #ifdef CRD300
 	crd300.enableDriverLogic();	// PWM outputs now ready

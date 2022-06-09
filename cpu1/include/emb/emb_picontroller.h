@@ -38,7 +38,7 @@ protected:
 	float m_outMax;		// PI output maximum limit
 	float m_out;		// PI output;
 
-	float _error(float ref, float meas);
+	static float _error(float ref, float meas);
 public:
 	IPiController(float kP, float kI, float dt, float outMin, float outMax)
 		: m_kP(kP)
@@ -96,23 +96,24 @@ public:
 
 	virtual void process(float ref, float meas)
 	{
-		float error = _error(ref, meas);
-		float out = emb::clamp(error * m_kP + m_sumI, -FLT_MAX, FLT_MAX);
+		float error = IPiController<Logic>::_error(ref, meas);
+		float out = emb::clamp(error * this->m_kP + this->m_sumI, -FLT_MAX, FLT_MAX);
 
-		if (out > m_outMax)
+		if (out > this->m_outMax)
 		{
-			m_out = m_outMax;
+			this->m_out = this->m_outMax;
 		}
-		else if (out < m_outMin)
+		else if (out < this->m_outMin)
 		{
-			m_out = m_outMin;
+			this->m_out = this->m_outMin;
 		}
 		else
 		{
-			m_out = out;
+			this->m_out = out;
 		}
 
-		m_sumI = emb::clamp(m_sumI + m_kI * m_dt * error - m_kC * (out - m_out), -FLT_MAX, FLT_MAX);
+		this->m_sumI = emb::clamp(this->m_sumI + this->m_kI * this->m_dt * error - m_kC * (out - this->m_out),
+				-FLT_MAX, FLT_MAX);
 	}
 };
 
@@ -138,7 +139,7 @@ public:
 
 	virtual void process(float ref, float meas)
 	{
-		float error = this->_error(ref, meas);
+		float error = IPiController<Logic>::_error(ref, meas);
 		float outp = error * this->m_kP;
 		float sumI = (error + m_error) * 0.5f * this->m_kI * this->m_dt + this->m_sumI;
 		m_error = error;
@@ -146,7 +147,7 @@ public:
 
 		if (out > this->m_outMax)
 		{
-			this->m_out =  this->m_outMax;
+			this->m_out = this->m_outMax;
 			if (outp < this->m_outMax)
 			{
 				this->m_sumI = this->m_outMax - outp;
@@ -154,7 +155,7 @@ public:
 		}
 		else if (out < this->m_outMin)
 		{
-			this->m_out =  this->m_outMin;
+			this->m_out = this->m_outMin;
 			if (outp > this->m_outMin)
 			{
 				this->m_sumI = this->m_outMin - outp;
