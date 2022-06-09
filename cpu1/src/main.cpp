@@ -46,7 +46,7 @@
 #pragma DATA_SECTION("SHARED_CONVERTER")
 unsigned char converterobj_loc[sizeof(BoostConverter)];
 BoostConverter* converter;
-float DUTY_CYCLE = 0.25;
+
 
 /* ========================================================================== */
 /* ============================ SYSTEM INFO ================================= */
@@ -74,6 +74,8 @@ const mcu::GpioPinConfig P122_CFG =
 	mcu::GpioPinConfig(122, GPIO_122_GPIO122, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioPinConfig P22_CFG =
 	mcu::GpioPinConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig P111_CFG =
+	mcu::GpioPinConfig(111, GPIO_111_GPIO111, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 
 
 /* ========================================================================== */
@@ -113,6 +115,7 @@ void main()
 	mcu::GpioPin p123(P123_CFG);
 	mcu::GpioPin p122(P122_CFG);
 	mcu::GpioPin p22(P22_CFG);
+	mcu::GpioPin p111(P111_CFG);
 #endif
 
 /*####################################################################################################################*/
@@ -219,6 +222,10 @@ void main()
 			SetupManager::SYSTEM_CONFIG.CONVERTER_CONFIG,
 			SetupManager::SYSTEM_CONFIG.PWM_CONFIG);
 
+#ifdef CRD300
+	crd300.enableDriverLogic();	// PWM outputs now ready
+#endif
+
 /*####################################################################################################################*/
 	/*###############*/
 	/*# CLOCK TASKS #*/
@@ -315,7 +322,6 @@ void main()
 		Syslog::processIpcSignals();
 		uCanOpenServer.run();
 		mcu::SystemClock::runPeriodicTasks();
-		converter->pwmUnit.setDutyCycle(DUTY_CYCLE);
 	}
 }
 

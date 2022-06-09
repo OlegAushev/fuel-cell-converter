@@ -11,9 +11,18 @@
 namespace emb {
 
 
+/// Controller logic
+enum ControllerLogic
+{
+	CONTROLLER_DIRECT,
+	CONTROLLER_INVERSE
+};
+
+
 /*
  * @brief PI controller interface
  */
+template <ControllerLogic Logic>
 class IPiController
 {
 private:
@@ -29,6 +38,7 @@ protected:
 	float m_outMax;		// PI output maximum limit
 	float m_out;		// PI output;
 
+	float _error(float ref, float meas);
 public:
 	IPiController(float kP, float kI, float dt, float outMin, float outMax)
 		: m_kP(kP)
@@ -61,10 +71,15 @@ public:
 };
 
 
+inline float IPiController<CONTROLLER_DIRECT>::_error(float ref, float meas) { return ref - meas; }
+inline float IPiController<CONTROLLER_INVERSE>::_error(float ref, float meas) { return meas - ref; }
+
+
 /*
  * @brief PI controller with back-calculation
  */
-class PiControllerBC : public IPiController
+template <ControllerLogic Logic>
+class PiControllerBC : public IPiController<Logic>
 {
 private:
 	PiControllerBC(const PiControllerBC& other);		// no copy constructor
@@ -75,13 +90,13 @@ protected:
 
 public:
 	PiControllerBC(float kP, float kI, float dt, float kC, float outMin, float outMax)
-		: IPiController(kP, kI, dt, outMin, outMax)
+		: IPiController<Logic>(kP, kI, dt, outMin, outMax)
 		, m_kC(kC)
 	{}
 
 	virtual void process(float ref, float meas)
 	{
-		float error = ref - meas;
+		float error = _error(ref, meas);
 		float out = emb::clamp(error * m_kP + m_sumI, -FLT_MAX, FLT_MAX);
 
 		if (out > m_outMax)
@@ -105,7 +120,8 @@ public:
 /*
  * @brief PI controller with clamping
  */
-class PiControllerCl : public IPiController
+template <ControllerLogic Logic>
+class PiControllerCl : public IPiController<Logic>
 {
 private:
 	PiControllerCl(const PiControllerCl& other);		// no copy constructor
@@ -116,46 +132,46 @@ protected:
 
 public:
 	PiControllerCl(float kP, float kI, float dt, float outMin, float outMax)
-		: IPiController(kP, kI, dt, outMin, outMax)
+		: IPiController<Logic>(kP, kI, dt, outMin, outMax)
 		, m_error(0)
 	{}
 
 	virtual void process(float ref, float meas)
 	{
-		float error = ref - meas;
-		float outp = error * m_kP;
-		float sumI = (error + m_error) * 0.5f * m_kI * m_dt + m_sumI;
+		float error = this->_error(ref, meas);
+		float outp = error * this->m_kP;
+		float sumI = (error + m_error) * 0.5f * this->m_kI * this->m_dt + this->m_sumI;
 		m_error = error;
 		float out = outp + sumI;
 
-		if (out > m_outMax)
+		if (out > this->m_outMax)
 		{
-			m_out =  m_outMax;
-			if (outp < m_outMax)
+			this->m_out =  this->m_outMax;
+			if (outp < this->m_outMax)
 			{
-				m_sumI = m_outMax - outp;
+				this->m_sumI = this->m_outMax - outp;
 			}
 		}
-		else if (out < m_outMin)
+		else if (out < this->m_outMin)
 		{
-			m_out =  m_outMin;
-			if (outp > m_outMin)
+			this->m_out =  this->m_outMin;
+			if (outp > this->m_outMin)
 			{
-				m_sumI = m_outMin - outp;
+				this->m_sumI = this->m_outMin - outp;
 			}
 		}
 		else
 		{
-			m_out = out;
-			m_sumI = sumI;
+			this->m_out = out;
+			this->m_sumI = sumI;
 		}
 	}
 
 	virtual void reset()
 	{
-		m_sumI = 0;
+		this->m_sumI = 0;
 		m_error = 0;
-		m_out = 0;
+		this->m_out = 0;
 	}
 };
 

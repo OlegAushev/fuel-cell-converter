@@ -26,13 +26,24 @@ const SetupManager::SystemConfig SetupManager::DEFAULT_CONFIG = {
 /*#############*/
 .CONVERTER_CONFIG =
 {
-	.uvpIn = 0,
-	.ovpIn = 400,
-	.ocpIn = 400,
+	.uvpIn = 2,
+	.ovpIn = 200,
+	.ucpIn = 3,
+	.ocpIn = 45,
 	.otpJunction = 105,
 	.otpCase = 90,
 	.fanTempThOn = 65,
 	.fanTempThOff = 55,
+
+	.kP_dutycycle = 0.001,
+	.kI_dutycucle = 0.1,
+	.kP_current = 1,
+	.kI_current = 10,
+
+	.cvIn = 15.5,
+	.ccIn = 10.0,
+	.cvOut = 40.0,
+
 	.fltPin = mcu::GpioPin(),
 },
 
@@ -45,7 +56,7 @@ const SetupManager::SystemConfig SetupManager::DEFAULT_CONFIG = {
 .PWM_CONFIG =
 {
 	.module = {mcu::PWM1},
-	.switchingFreq = 10000,
+	.switchingFreq = 20000,
 	.deadtime_ns = 1000,
 	.clockPrescaler = 1,
 	.clkDivider = mcu::PWM_CLOCK_DIVIDER_1,
