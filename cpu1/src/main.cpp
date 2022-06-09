@@ -249,8 +249,8 @@ void main()
 	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> uCanOpenServer(NULL, &rpdoService, &sdoService, canIpcSignals);
 #else
 	microcanopen::SdoService<mcu::CANA> sdoService;
-	microcanopen::TpdoService<mcu::CANA> tpdoService;
-	microcanopen::RpdoService<mcu::CANA> rpdoService;
+	microcanopen::TpdoService<mcu::CANA> tpdoService(converter);
+	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
 	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(
 			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
 			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
@@ -261,7 +261,7 @@ void main()
 	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
 	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM2, 1000);
 	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM3, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM4, 10000);
+	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM4, 1000);
 
 	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM1, 0x194);
 	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
@@ -309,10 +309,6 @@ void main()
 
 /*####################################################################################################################*/
 	Syslog::addMessage(Syslog::DEVICE_READY);
-
-
-	converter->start();
-
 
 	while (true)
 	{

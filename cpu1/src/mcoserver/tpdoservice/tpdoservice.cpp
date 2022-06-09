@@ -32,29 +32,9 @@ uint64_t TpdoService<Module>::makeTpdo1()
 	switch (Module)
 	{
 	case MCO_CAN1:
-//		saveDriveState(msg, DRIVE(Module)->state());
-//		saveRunStatus(msg, DRIVE(Module)->converter.state());
-//		saveFaultStatus(msg, Syslog::faults());
-//		saveWarningStatus(msg, Syslog::warnings());
-//		// TODO tpdoService.saveOverheatStatus(msg,
-//		saveReferenceType(msg, DRIVE(Module)->model.reference());
-//		saveControlLoopType(msg, DRIVE(Module)->model.controlLoopType());
-		/* TODO
-		tpdoService.saveTorquePU(msg, m_drive->model.torque() * m_drive->positionSensor.signOfPositiveDirection() / m_drive->model.torqueMax());
-		tpdoService.saveSpeed(msg, m_drive->positionSensor.speed(srm::PositionSensor::CAPTURE_BASIS).rpm() * m_drive->positionSensor.signOfPositiveDirection());
-		tpdoService.saveStatorCurrent(msg, m_drive->model.currentPhaseRms());
-		tpdoService.savePower(msg, m_drive->powerMech());
-		tpdoService.saveDcVoltage(msg, m_drive->converter.voltageDC());
-		tpdoService.saveFieldCurrent(msg, m_drive->converter.currents()[srm::CURRENT_FIELD]);
-		tpdoService.saveRunStatus(msg, m_drive->converter.state());
-		tpdoService.saveFaultStatus(msg, syslog.faults());
-		tpdoService.saveWarningStatus(msg, syslog.warnings());
-		tpdoService.saveOverheatStatus(msg,
-				syslog.hasWarning(Warning::JUNCTION_OVERHEATING)
-				|| syslog.hasWarning(Warning::CASE_AIR_OVERHEATING)
-				|| syslog.hasWarning(Warning::STATOR_OVERHEATING)
-				|| syslog.hasWarning(Warning::FIELD_WINDING_OVERHEATING));
-		*/
+		saveRunStatus(msg, converter->state());
+		saveFaultStatus(msg, Syslog::faults());
+		saveWarningStatus(msg, Syslog::warnings());
 		break;
 	case MCO_CAN2:
 		// RESERVED;
@@ -78,18 +58,7 @@ uint64_t TpdoService<Module>::makeTpdo2()
 	switch (Module)
 	{
 	case MCO_CAN1:
-		/* TODO
-		tpdoService.saveMotorTemp(msg, m_drive->motor.temperature(srm::Motor::STATOR));
-		tpdoService.saveOutputVoltagePU(msg, m_drive->model.pwmDutyCycle());
-		tpdoService.saveTorqueLimitationStatus(msg, 0);	// TODO
-		tpdoService.saveFwMotorTemp(msg, m_drive->motor.temperature(srm::Motor::FIELD_WINDING));
-		#ifdef CRD300
-		tpdoService.saveHeatsinkTemp(msg, m_drive->converter.temperature(srm::Converter::MODULE_PHASE_B));
-		#else
-		tpdoService.saveHeatsinkTemp(msg, m_drive->converter.temperature(srm::Converter::AIR));
-		#endif
-		tpdoService.saveCaseAirTemp(msg, m_drive->converter.temperature(srm::Converter::AIR));
-		*/
+		// TODO
 		break;
 	case MCO_CAN2:
 		// RESERVED;
@@ -113,17 +82,7 @@ uint64_t TpdoService<Module>::makeTpdo3()
 	switch (Module)
 	{
 	case MCO_CAN1:
-		/* TODO
-		tpdoService.savePosHousingVoltage(msg, m_drive->converter.voltageDC()/2);
-		tpdoService.saveNegHousingVoltage(msg, m_drive->converter.voltageDC()/2);
-		tpdoService.saveInsulationLowStatus(msg, 0);
-		tpdoService.saveInsulationLowStatusWoFilter(msg, 0);
-		tpdoService.saveDcCurrent(msg, m_drive->converter.currents()[srm::CURRENT_DC]);
-
-		Syslog syslog;
-		msg.syslogInfo = static_cast<uint32_t>(syslog.readMessage());
-		syslog.popMessage();
-		*/
+		// TODO
 		break;
 	case MCO_CAN2:
 		// RESERVED;

@@ -19,6 +19,7 @@
 #include "mcu/ipc/mcuipc.h"
 #include "mcu/gpio/mcugpio.h"
 #include "mcu/cputimers/mcucputimers.h"
+#include "boostconverter/boostconverter.h"
 
 
 namespace microcanopen {
@@ -197,16 +198,13 @@ public:
 	 * @ingroup mco_app_spec
 	 * @brief Configures service.
 	 */
-	RpdoService()
+	RpdoService(BoostConverter* _converter)
 	{
-//		drive6Ph = _drive6Ph;
-//		drive3Ph_1 = _drive3Ph_1;
-//		drive3Ph_2 = _drive3Ph_2;
+		converter = _converter;
 	}
 
-//	acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive6Ph;
-//	acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive3Ph_1;
-//	acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive3Ph_2;
+private:
+	BoostConverter* converter;
 #endif
 
 private:
@@ -234,7 +232,5 @@ private:
 
 /// @}
 } // namespace microcanopen
-
-
 
 

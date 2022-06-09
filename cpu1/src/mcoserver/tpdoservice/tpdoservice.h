@@ -16,6 +16,7 @@
 #include "../mcodef.h"
 #include "mcu/can/mcucan.h"
 #include "syslog/syslog.h"
+#include "boostconverter/boostconverter.h"
 
 
 namespace microcanopen {
@@ -234,16 +235,13 @@ public:
 	 * @ingroup mco_app_spec
 	 * @brief Configures service.
 	 */
-	TpdoService()
+	TpdoService(BoostConverter* _converter)
 	{
-//		drive6Ph = _drive6Ph;
-//		drive3Ph_1 = _drive3Ph_1;
-//		drive3Ph_2 = _drive3Ph_2;
+		converter = _converter;
 	}
 
-//	const acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive6Ph;
-//	const acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive3Ph_1;
-//	const acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive3Ph_2;
+private:
+	BoostConverter* converter;
 
 private:
 	static const float SPEED_RPM_LIMIT = 8000;

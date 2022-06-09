@@ -178,34 +178,15 @@ void RpdoService<Module>::_respondToProcessedRpdo1()
 	switch (Module)
 	{
 	case MCO_CAN1:
-//		mcu::Clock::resetWatchdogTimer();	// phew! CAN bus is OK
-//		if (rpdoProcessedData.bitEmergencyStop == true)
-//		{
-//			DRIVE(Module)->emergencyStop();
-//			if (DRIVE2(Module) != NULL)
-//			{
-//				DRIVE2(Module)->emergencyStop();
-//			}
-//		}
-//		else
-//		{
-//			if (rpdoProcessedData.bitRun == true)
-//			{
-//				DRIVE(Module)->start();
-//				if (DRIVE2(Module) != NULL)
-//				{
-//					DRIVE2(Module)->start();
-//				}
-//			}
-//			else
-//			{
-//				DRIVE(Module)->stop();
-//				if (DRIVE2(Module) != NULL)
-//				{
-//					DRIVE2(Module)->stop();
-//				}
-//			}
-//		}
+		mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
+		if (rpdoProcessedData.bitRun == true)
+		{
+			converter->start();
+		}
+		else
+		{
+			converter->stop();
+		}
 		break;
 	case MCO_CAN2:
 		// RESERVED;
