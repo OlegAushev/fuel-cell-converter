@@ -114,13 +114,16 @@ __interrupt void BoostConverter::onAdcCurrentInFirstInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(123);
 	BoostConverter* converter = BoostConverter::instance();
-	converter->m_currentIn.first = -1.f * converter->inCurrentSensor.reading(InCurrentSensor::FIRST);
+#ifdef CRD300
+	converter->m_currentIn.first = -1.f * converter->inCurrentSensor.read(InCurrentSensor::FIRST);
+#else
+	converter->m_currentIn.first = converter->inCurrentSensor.read(InCurrentSensor::FIRST);
+#endif
 
 	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_FIRST);
 }
 
-float VIN = 0;
-float IIN = 0;
+
 ///
 ///
 ///
@@ -128,13 +131,12 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(122);
 	BoostConverter* converter = BoostConverter::instance();
-	converter->m_currentIn.second = -1.f * converter->inCurrentSensor.reading(InCurrentSensor::SECOND);
+#ifdef CRD300
+	converter->m_currentIn.second = -1.f * converter->inCurrentSensor.read(InCurrentSensor::SECOND);
+#else
+	converter->m_currentIn.second = converter->inCurrentSensor.read(InCurrentSensor::SECOND);
+#endif
 	converter->m_currentInAvg = (converter->m_currentIn.first + converter->m_currentIn.second) / 2;
-
-	// TEST
-	//converter->m_voltageIn.setOutput(VIN);
-	//converter->m_currentInAvg = IIN;
-	// TEST
 
 	converter->m_currentController.process(converter->CV_IN_BOUND, converter->m_voltageIn.output());
 	converter->m_dutycycleController.process(converter->m_currentController.output(),

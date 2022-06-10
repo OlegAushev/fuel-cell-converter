@@ -60,7 +60,7 @@ private:
 
 	bool m_txActive;
 	uint64_t m_txError;
-	unsigned int m_txBitCounter;
+	unsigned int m_txBitPointer;
 
 public:
 	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, uint32_t bitrate);

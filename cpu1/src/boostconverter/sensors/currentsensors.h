@@ -68,10 +68,9 @@ public:
 	 * @param phase - phase
 	 * @return Current value.
 	 */
-	float reading(Measurement no) const
+	float read(Measurement no) const
 	{
 		uint16_t rawData;
-#ifdef CRD300
 		switch (no)
 		{
 		case FIRST:
@@ -81,9 +80,10 @@ public:
 			rawData = adcUnit->result(mcu::ADC_CURRENT_IN_SECOND);
 			break;
 		}
+#ifdef CRD300
 		return 800.f * (float(rawData) / 4095.f) - 400.f - m_zeroError;
 #else
-#warning "TODO"
+		return float(rawData) * 0.102564f - 200 - m_zeroError;
 #endif
 	}
 
@@ -127,7 +127,7 @@ private:
 			convert();
 			while (!adcUnit->interruptPending(mcu::ADC_IRQ_CURRENT_IN_FIRST))
 			{  /* WAIT */ }
-			sum += reading(FIRST);
+			sum += read(FIRST);
 			adcUnit->clearInterruptStatus(mcu::ADC_IRQ_CURRENT_IN_FIRST);
 			mcu::delay_us(10);
 		}

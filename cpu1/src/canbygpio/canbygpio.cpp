@@ -32,9 +32,19 @@ void Transceiver::send(uint64_t data)
 		++m_txError;
 		return;
 	}
-
+	//emb::c28x::to_8bit_bytes(dest, src)
 
 }
+
+
+///
+///
+///
+__interrupt void onClockInterrupt()
+{
+
+}
+
 
 
 

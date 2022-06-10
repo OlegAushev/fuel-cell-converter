@@ -192,10 +192,10 @@ void main()
 
 #ifdef CRD300
 	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-	mcu::GpioPin drvFltPin(drvFltPinCfg);
 #else
-	mcu::GpioPin drvFltPin;
+	mcu::GpioPinConfig drvFltPinCfg(24, GPIO_24_GPIO24, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #endif
+	mcu::GpioPin drvFltPin;
 	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
 
 /*####################################################################################################################*/
@@ -258,7 +258,7 @@ void main()
 
 #ifdef DUALCORE
 	microcanopen::SdoService<mcu::CANA> sdoService;
-	microcanopen::RpdoService<mcu::CANA> rpdoService;
+	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
 	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> uCanOpenServer(NULL, &rpdoService, &sdoService, canIpcSignals);
 #else
 	microcanopen::SdoService<mcu::CANA> sdoService;
