@@ -32,7 +32,7 @@ public:
 
 	mcu::AdcUnit* adcUnit;
 private:
-	bool m_completed;
+	bool m_ready;
 	float m_zeroError;
 	static const float PHASE_CALIBRATION_THRESHOLD = 50;
 	static const size_t CALIBRATION_CYCLES = 1000;
@@ -47,7 +47,7 @@ public:
 	InCurrentSensor()
 		: adcUnit(mcu::AdcUnit::instance())
 	{
-		m_completed = false;
+		m_ready = false;
 		m_zeroError = 0;
 		calibrate();
 	}
@@ -57,10 +57,9 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void convert()
+	void run() const
 	{
-		resetCompleted();
-		adcUnit->convertCurrentIn();
+		adcUnit->startCurrentIn();
 	}
 
 	/**
@@ -74,10 +73,10 @@ public:
 		switch (no)
 		{
 		case FIRST:
-			rawData = adcUnit->result(mcu::ADC_CURRENT_IN_FIRST);
+			rawData = adcUnit->read(mcu::ADC_CURRENT_IN_FIRST);
 			break;
 		case SECOND:
-			rawData = adcUnit->result(mcu::ADC_CURRENT_IN_SECOND);
+			rawData = adcUnit->read(mcu::ADC_CURRENT_IN_SECOND);
 			break;
 		}
 #ifdef CRD300
@@ -92,29 +91,29 @@ public:
 	 * @param (none)
 	 * @return \c true if all current measurements are done, \c false otherwise.
 	 */
-	bool completed() const
+	bool ready() const
 	{
-		return m_completed;
+		return m_ready;
 	}
 
 	/**
-	 * @brief Sets completed-flag.
+	 * @brief Sets ready-flag.
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void setCompleted()
+	void setReady()
 	{
-		m_completed = true;
+		m_ready = true;
 	}
 
 	/**
-	 * @brief Resets completed-flags.
+	 * @brief Resets ready-flag.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void resetCompleted()
+	void resetReady()
 	{
-		m_completed = false;
+		m_ready = false;
 	}
 
 private:
@@ -124,7 +123,7 @@ private:
 
 		for (size_t i = 0; i < CALIBRATION_CYCLES; ++i)
 		{
-			convert();
+			run();
 			while (!adcUnit->interruptPending(mcu::ADC_IRQ_CURRENT_IN_FIRST))
 			{  /* WAIT */ }
 			sum += read(FIRST);

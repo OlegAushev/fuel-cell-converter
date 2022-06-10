@@ -45,7 +45,7 @@ public:
 	void convert()
 	{
 		resetCompleted();
-		adcUnit->convertVoltageIn();
+		adcUnit->startVoltageIn();
 	}
 
 	/**
@@ -59,7 +59,8 @@ public:
 #ifdef CRD300
 		return 2400.f * (float(rawData) / 4095.f) - 1200.f;
 #else
-#warning "TODO"
+#warning "Fix later"
+		return 3.f * (float(rawData) / 4095.f) * 48.f;
 #endif
 	}
 
@@ -103,7 +104,7 @@ class OutVoltageSensor
 public:
 	mcu::AdcUnit* adcUnit;
 private:
-	bool m_completed;
+	bool m_ready;
 	OutVoltageSensor(const OutVoltageSensor& other);			// no copy constructor
 	OutVoltageSensor& operator=(const OutVoltageSensor& other);	// no copy assignment operator
 public:
@@ -114,7 +115,7 @@ public:
 	OutVoltageSensor()
 		: adcUnit(mcu::AdcUnit::instance())
 	{
-		m_completed = false;
+		m_ready = false;
 	}
 
 	/**
@@ -122,10 +123,9 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void convert()
+	void run() const
 	{
-		resetCompleted();
-		adcUnit->convertVoltageOut();
+		adcUnit->startVoltageOut();
 	}
 
 	/**
@@ -133,13 +133,14 @@ public:
 	 * @param (none)
 	 * @return DC-voltage value.
 	 */
-	float reading() const
+	float read() const
 	{
 		uint16_t rawData = adcUnit->voltageOut();
 #ifdef CRD300
 		return 1200.f * (float(rawData) / 4095.f);
 #else
-#warning "TODO"
+#warning "Fix later"
+		return 3.f * (float(rawData) / 4095.f) * 121.f;
 #endif
 	}
 
@@ -148,29 +149,29 @@ public:
 	 * @param (none)
 	 * @return \c true if DC-voltage measurement is done, \c false otherwise.
 	 */
-	bool completed() const
+	bool ready() const
 	{
-		return m_completed;
+		return m_ready;
 	}
 
 	/**
-	 * @brief Sets completed-flag.
+	 * @brief Sets ready-flag.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void setCompleted()
+	void setReady()
 	{
-		m_completed = true;
+		m_ready = true;
 	}
 
 	/**
-	 * @brief Resets completed-flag.
+	 * @brief Resets ready-flag.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void resetCompleted()
+	void resetReady()
 	{
-		m_completed = false;
+		m_ready = false;
 	}
 };
 

@@ -195,7 +195,7 @@ public:
 /*=========================== Current methods ================================*/
 /*============================================================================*/
 
-	uint16_t result(AdcChannel channel) const
+	uint16_t read(AdcChannel channel) const
 	{
 		return ADC_readResult(m_channels[channel].resultBase, m_channels[channel].soc);
 	}
@@ -205,7 +205,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void convertCurrentIn() const
+	void startCurrentIn() const
 	{
 		ADC_forceSOC(m_channels[ADC_CURRENT_IN_FIRST].base, m_channels[ADC_CURRENT_IN_FIRST].soc);
 	}
@@ -228,7 +228,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void convertVoltageIn() const
+	void startVoltageIn() const
 	{
 		ADC_forceSOC(m_channels[ADC_VOLTAGE_IN].base, m_channels[ADC_VOLTAGE_IN].soc);
 	}
@@ -238,7 +238,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void convertVoltageOut() const
+	void startVoltageOut() const
 	{
 		ADC_forceSOC(m_channels[ADC_VOLTAGE_OUT].base, m_channels[ADC_VOLTAGE_OUT].soc);
 	}

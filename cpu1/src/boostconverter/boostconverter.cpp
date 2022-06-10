@@ -101,7 +101,7 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(111)
 	BoostConverter* converter = BoostConverter::instance();
-	converter->m_voltageOut.process(converter->outVoltageSensor.reading());
+	converter->m_voltageOut.process(converter->outVoltageSensor.read());
 
 	converter->outVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_OUT);
 }
