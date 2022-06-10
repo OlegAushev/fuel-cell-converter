@@ -10,16 +10,15 @@
 namespace mcu {
 
 
-volatile uint64_t SystemClock::m_time_ms;
+volatile uint64_t SystemClock::m_time;
 
 uint64_t SystemClock::m_taskPeriods[SystemClock::TASK_COUNT];
 uint64_t SystemClock::m_taskTimestamps[SystemClock::TASK_COUNT];
-bool SystemClock::m_taskFlags[SystemClock::TASK_COUNT];
 ClockTaskStatus (*SystemClock::m_tasks[SystemClock::TASK_COUNT])();
 
 bool SystemClock::m_watchdogEnabled;
-uint64_t SystemClock::m_watchdogTimerMs;
-uint64_t SystemClock::m_watchdogBoundMs;
+uint64_t SystemClock::m_watchdogTimer;
+uint64_t SystemClock::m_watchdogPeriod;
 bool SystemClock::m_watchdogTimeoutDetected;
 ClockTaskStatus (*SystemClock::m_watchdogTask)();
 
@@ -35,11 +34,11 @@ void SystemClock::init()
 {
 	if (initialized()) return;
 
-	m_time_ms = 0;
+	m_time = 0;
 
 	m_watchdogEnabled = false;
-	m_watchdogTimerMs = 0;
-	m_watchdogBoundMs = 0;
+	m_watchdogTimer = 0;
+	m_watchdogPeriod = 0;
 	m_watchdogTimeoutDetected = false;
 
 	m_delayedTaskStart = 0;
@@ -52,7 +51,7 @@ void SystemClock::init()
 	CPUTimer_setPreScaler(CPUTIMER0_BASE, 0);	// Initialize pre-scale counter to divide by 1 (SYSCLKOUT)
 	CPUTimer_reloadTimerCounter(CPUTIMER0_BASE);	// Reload counter register with period value
 
-	uint32_t tmp = (uint32_t)((mcu::sysclkFreq() / 1000) * TIME_STEP_ms);
+	uint32_t tmp = (uint32_t)((mcu::sysclkFreq() / 1000) * TIME_STEP);
 	CPUTimer_setPeriod(CPUTIMER0_BASE, tmp - 1);
 	CPUTimer_setEmulationMode(CPUTIMER0_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
 

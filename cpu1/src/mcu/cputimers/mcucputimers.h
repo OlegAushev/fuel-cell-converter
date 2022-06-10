@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include "F2837xD_Ipc_drivers.h"
 #include "driverlib.h"
 #include "device.h"
 #include "emb/emb_common.h"
@@ -36,25 +35,18 @@ enum ClockTaskStatus
 class SystemClock : public emb::Monostate<SystemClock>
 {
 private:
-	static volatile uint64_t m_time_ms;
-	static const uint32_t TIME_STEP_ms = 1;
+	static volatile uint64_t m_time;
+	static const uint32_t TIME_STEP = 1;
+	static const size_t TASK_COUNT = 4;
 
 /* ========================================================================== */
 /* = Periodic Tasks = */
 /* ========================================================================== */
 private:
-	static const size_t TASK_COUNT = 4;
 	static uint64_t m_taskPeriods[TASK_COUNT];
 	static uint64_t m_taskTimestamps[TASK_COUNT];	// timestamp of executed task
-	static bool m_taskFlags[TASK_COUNT];
 	static ClockTaskStatus (*m_tasks[TASK_COUNT])();
-
 	static ClockTaskStatus emptyTask() { return CLOCK_TASK_SUCCESS; }
-
-	static bool isTaskFlagSet(size_t index) { return m_taskFlags[index]; }
-	static void setTaskFlag(size_t index) { m_taskFlags[index] = true; }
-	static void resetTaskFlag(size_t index) { m_taskFlags[index] = false; }
-
 public:
 	/**
 	 * @brief Set task period.
@@ -73,21 +65,32 @@ public:
 	static void registerTask(size_t index, ClockTaskStatus (*task)()) { m_tasks[index] = task; }
 
 	/**
-	 * @brief Checks and runs periodic tasks.
+	 * @brief Checks and runs periodic and delayed tasks.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void runPeriodicTasks()
+	static void runTasks()
 	{
 		for (size_t i = 0; i < TASK_COUNT; ++i)
 		{
-			if (isTaskFlagSet(i))
+			if (m_taskPeriods[i] != 0)
 			{
-				if (m_tasks[i]() == CLOCK_TASK_SUCCESS)
+				if (now() >= (m_taskTimestamps[i] + m_taskPeriods[i]))
 				{
-					resetTaskFlag(i);
-					m_taskTimestamps[i] = now();
+					if (m_tasks[i]() == CLOCK_TASK_SUCCESS)
+					{
+						m_taskTimestamps[i] = now();
+					}
 				}
+			}
+		}
+
+		if (m_delayedTaskDelay != 0)
+		{
+			if (now() >= (m_delayedTaskStart + m_delayedTaskDelay))
+			{
+				m_delayedTask();
+				m_delayedTaskDelay = 0;
 			}
 		}
 	}
@@ -97,11 +100,10 @@ public:
 /* ========================================================================== */
 private:
 	static bool m_watchdogEnabled;
-	static uint64_t m_watchdogTimerMs;
-	static uint64_t m_watchdogBoundMs;
+	static uint64_t m_watchdogTimer;
+	static uint64_t m_watchdogPeriod;
 	static bool m_watchdogTimeoutDetected;
 	static ClockTaskStatus (*m_watchdogTask)();
-
 public:
 	/**
 	 * @brief Enable watchdog.
@@ -122,14 +124,14 @@ public:
 	 * @param watchdogBoundMsec - bound in milliseconds
 	 * @return (none)
 	 */
-	static void setWatchdogBound(uint64_t watchdogBoundMsec) { m_watchdogBoundMs = watchdogBoundMsec; }
+	static void setWatchdogPeriod(uint64_t watchdogBound_ms) { m_watchdogPeriod = watchdogBound_ms; }
 
 	/**
 	 * @brief Resets watchdog timer.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void resetWatchdogTimer() { m_watchdogTimerMs = 0; }
+	static void resetWatchdogTimer() { m_watchdogTimer = 0; }
 
 	/**
 	 * @brief Checks if watchdog timeout is detected.
@@ -181,56 +183,27 @@ private:
 	SystemClock();						// no constructor
 	SystemClock(const SystemClock& other);			// no copy constructor
 	SystemClock& operator=(const SystemClock& other);	// no copy assignment operator
-
-	/**
-	 * @brief
-	 */
-	static void tick()
-	{
-		m_time_ms += TIME_STEP_ms;
-
-		for (size_t i = 0; i < TASK_COUNT; ++i)
-		{
-			if ((m_taskPeriods[i] != 0)
-				&& (now() >= (m_taskTimestamps[i] + m_taskPeriods[i])))
-			{
-				setTaskFlag(i);
-			}
-		}
-
-		if ((m_watchdogEnabled == true) && (m_watchdogTimerMs < m_watchdogBoundMs))
-		{
-			m_watchdogTimerMs += TIME_STEP_ms;
-			if (m_watchdogTimerMs >= m_watchdogBoundMs)
-			{
-				m_watchdogTimeoutDetected = true;
-			}
-		}
-
-		if (watchdogTimeoutDetected())
-		{
-			if (m_watchdogTask() == CLOCK_TASK_SUCCESS)
-			{
-				resetWatchdog();
-			}
-		}
-
-		if (m_delayedTaskDelay != 0)
-		{
-			if (now() >= (m_delayedTaskStart + m_delayedTaskDelay))
-			{
-				m_delayedTask();
-				m_delayedTaskDelay = 0;
-			}
-		}
-	}
-
+protected:
 	/**
 	 * @brief
 	 */
 	static __interrupt void onInterrupt()
 	{
-		tick();
+		m_time += TIME_STEP;
+
+		if (m_watchdogEnabled == true)
+		{
+			m_watchdogTimer += TIME_STEP;
+			if (m_watchdogTimer >= m_watchdogPeriod)
+			{
+				m_watchdogTimeoutDetected = true;
+				if (m_watchdogTask() == CLOCK_TASK_SUCCESS)
+				{
+					resetWatchdog();
+				}
+			}
+		}
+
 		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 	}
 
@@ -247,14 +220,14 @@ public:
 	 * @param (none)
 	 * @return A time point representing the current time in milliseconds.
 	 */
-	static uint64_t now() { return m_time_ms; }
+	static uint64_t now() { return m_time; }
 
 	/**
 	 * @brief Returns clock step.
 	 * @param (none)
 	 * @return Clock step in milliseconds.
 	 */
-	static uint32_t step() { return TIME_STEP_ms; }
+	static uint32_t step() { return TIME_STEP; }
 
 	/**
 	 * @brief Resets clock.
@@ -263,10 +236,10 @@ public:
 	 */
 	static void reset()
 	{
-		m_time_ms = 0;
+		m_time = 0;
 		for (size_t i = 0; i < TASK_COUNT; ++i)
 		{
-			resetTaskFlag(i);
+			m_taskTimestamps[i] = now();
 		}
 	}
 };

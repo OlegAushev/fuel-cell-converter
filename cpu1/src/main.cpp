@@ -76,6 +76,8 @@ const mcu::GpioPinConfig P22_CFG =
 	mcu::GpioPinConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioPinConfig P111_CFG =
 	mcu::GpioPinConfig(111, GPIO_111_GPIO111, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig P56_CFG =
+	mcu::GpioPinConfig(56, GPIO_56_GPIO56, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 
 
 /* ========================================================================== */
@@ -116,6 +118,7 @@ void main()
 	mcu::GpioPin p122(P122_CFG);
 	mcu::GpioPin p22(P22_CFG);
 	mcu::GpioPin p111(P111_CFG);
+	mcu::GpioPin p56(P56_CFG);
 #endif
 
 /*####################################################################################################################*/
@@ -236,7 +239,7 @@ void main()
 	mcu::SystemClock::setTaskPeriod(0, 1000);	// Led toggle period
 	mcu::SystemClock::registerTask(0, taskToggleLed);
 
-	mcu::SystemClock::setWatchdogBound(1000);
+	mcu::SystemClock::setWatchdogPeriod(1000);
 	mcu::SystemClock::registerWatchdogTask(taskWatchdogTimeout);
 
 /*####################################################################################################################*/
@@ -324,7 +327,7 @@ void main()
 	{
 		Syslog::processIpcSignals();
 		uCanOpenServer.run();
-		mcu::SystemClock::runPeriodicTasks();
+		mcu::SystemClock::runTasks();
 	}
 }
 
