@@ -132,7 +132,7 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 	converter->m_currentInAvg = (converter->m_currentIn.first + converter->m_currentIn.second) / 2;
 
 	// TEST
-	converter->m_voltageIn.setOutput(VIN);
+	//converter->m_voltageIn.setOutput(VIN);
 	//converter->m_currentInAvg = IIN;
 	// TEST
 
