@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <algorithm>
 
+#include "emb_common.h"
 #include "emb_array.h"
 #include "emb_circularbuffer.h"
 #include "emb_algorithm.h"

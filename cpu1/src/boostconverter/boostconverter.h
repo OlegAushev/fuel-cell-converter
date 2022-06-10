@@ -86,9 +86,9 @@ public:
 private:
 	BoostConverterState m_state;
 
-	static const float VDC_SMOOTH_FACTOR = 0.1;
-	emb::ExponentialFilter<float> m_voltageIn;
-	emb::ExponentialFilter<float> m_voltageOut;
+	static const float VDC_SMOOTH_FACTOR = 0.001;
+	emb::ExponentialMedianFilter<float, 3> m_voltageIn;
+	emb::ExponentialMedianFilter<float, 3> m_voltageOut;
 	emb::Pair<float, float> m_currentIn;	// inductor current measured twice per PWM period
 	float m_currentInAvg;
 
