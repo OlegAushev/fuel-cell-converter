@@ -151,7 +151,9 @@ void main()
 	/*-------------------------*/
 	/* PERFORMANCE TESTS BEGIN */
 	/*-------------------------*/
-	//canbygpio::Transceiver cbgTranceiver(mcu::GpioPin(), mcu::GpioPin(), 125000);
+#ifdef DEBUG
+	canbygpio::Transceiver cbgTranceiver(mcu::GpioPin(), mcu::GpioPin(), 125000);
+#endif
 	/*-----------------------*/
 	/* PERFORMANCE TESTS END */
 	/*-----------------------*/
