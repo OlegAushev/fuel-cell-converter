@@ -193,7 +193,7 @@ void main()
 #ifdef CRD300
 	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #else
-	mcu::GpioPinConfig drvFltPinCfg(24, GPIO_24_GPIO24, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioPinConfig drvFltPinCfg();
 #endif
 	mcu::GpioPin drvFltPin;
 	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
@@ -323,10 +323,14 @@ void main()
 /*####################################################################################################################*/
 	Syslog::addMessage(Syslog::DEVICE_READY);
 
+#warning "TEST: no control"
+	converter->start();
+	converter->pwmUnit.setDutyCycle(0.5);
+
 	while (true)
 	{
 		Syslog::processIpcSignals();
-		uCanOpenServer.run();
+		//uCanOpenServer.run();
 		mcu::SystemClock::runTasks();
 	}
 }

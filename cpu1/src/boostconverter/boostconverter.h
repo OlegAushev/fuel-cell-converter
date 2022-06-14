@@ -57,6 +57,10 @@ class BoostConverter : emb::c28x::Singleton<BoostConverter>
 {
 private:
 	const mcu::GpioPin FLT_PIN;
+#ifndef CRD300
+	const mcu::GpioPin RST_PIN;
+	const mcu::GpioPin ERR_PIN;
+#endif
 public:
 	/// Converter states
 	enum BoostConverterState

@@ -7,6 +7,12 @@
 #include "boostconverter.h"
 
 
+#ifndef CRD300
+const mcu::GpioPinConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+#endif
+
+
 ///
 ///
 ///
@@ -14,6 +20,8 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 		const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
 	: emb::c28x::Singleton<BoostConverter>(this)
 	, FLT_PIN(converterConfig.fltPin)
+	, RST_PIN(rstPinCfg)
+	, ERR_PIN(errPinCfg)
 	, UVP_IN_BOUND(converterConfig.uvpIn)
 	, OVP_IN_BOUND(converterConfig.ovpIn)
 	, UCP_IN_BOUND(converterConfig.ucpIn)
@@ -45,6 +53,11 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	outVoltageSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_OUT, onAdcVoltageOutInterrupt);
 	inCurrentSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_FIRST, onAdcCurrentInFirstInterrupt);
 	inCurrentSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_SECOND, onAdcCurrentInSecondInterrupt);
+
+#ifndef CRD300
+	RST_PIN.set();
+	ERR_PIN.set();
+#endif
 }
 
 
@@ -141,7 +154,9 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 	converter->m_currentController.process(converter->CV_IN_BOUND, converter->m_voltageIn.output());
 	converter->m_dutycycleController.process(converter->m_currentController.output(),
 			converter->m_currentInAvg);
-	converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
+
+#warning "TEST: no control"
+	//converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
 
 	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_SECOND);
 }

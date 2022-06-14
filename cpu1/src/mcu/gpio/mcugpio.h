@@ -215,7 +215,7 @@ public:
 	 * @param state - pin state
 	 * @return (none)
 	 */
-	void set(PinState state = PIN_ACTIVE)
+	void set(PinState state = PIN_ACTIVE) const
 	{
 		assert(m_initialized);
 		GPIO_writePin(m_cfg.no, 1
@@ -227,7 +227,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void reset(PinState state = PIN_ACTIVE)
+	void reset() const
 	{
 		assert(m_initialized);
 		set(PIN_INACTIVE);
@@ -238,7 +238,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void toggle()
+	void toggle() const
 	{
 		assert(m_initialized);
 		GPIO_togglePin(m_cfg.no);
