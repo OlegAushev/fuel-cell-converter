@@ -323,10 +323,6 @@ void main()
 /*####################################################################################################################*/
 	Syslog::addMessage(Syslog::DEVICE_READY);
 
-#warning "TEST: no control"
-	converter->start();
-	converter->pwmUnit.setDutyCycle(0.5);
-
 	while (true)
 	{
 		Syslog::processIpcSignals();

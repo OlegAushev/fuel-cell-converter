@@ -156,8 +156,7 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 	converter->m_dutycycleController.process(converter->m_currentController.output(),
 			converter->m_currentInAvg);
 
-#warning "TEST: no control"
-	//converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
+	converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
 
 	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_SECOND);
 }
