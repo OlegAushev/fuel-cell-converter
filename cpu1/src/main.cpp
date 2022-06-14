@@ -326,7 +326,7 @@ void main()
 	while (true)
 	{
 		Syslog::processIpcSignals();
-		//uCanOpenServer.run();
+		uCanOpenServer.run();
 		mcu::SystemClock::runTasks();
 	}
 }
