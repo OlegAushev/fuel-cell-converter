@@ -57,6 +57,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 #ifndef CRD300
 	RST_PIN.set();
 	ERR_PIN.set();
+	mcu::delay_us(100000);
 #endif
 }
 
