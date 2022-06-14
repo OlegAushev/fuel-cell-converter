@@ -54,13 +54,15 @@ struct Frame
  * @brief CAN-by-GPIO transceiver.
  * Uses mcu::Systick
  */
-class Transceiver
+class Transceiver : emb::c28x::Singleton<Transceiver>
 {
 private:
 	mcu::GpioPin m_txPin;
 	mcu::GpioPin m_rxPin;
 
 	bool m_txActive;
+	int m_txBitCount;
+	int m_txIdx;
 	uint64_t m_txError;
 
 	uint16_t txData[8];
@@ -68,7 +70,25 @@ private:
 
 public:
 	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, uint32_t bitrate);
-	void send(uint64_t data);
+	void reset();
+
+	template <typename T>
+	void send(T data, unsigned int frameId)
+	{
+		EMB_STATIC_ASSERT(sizeof(T) <= 4);
+
+		if (m_txActive)
+		{
+			++m_txError;
+			return;
+		}
+
+		uint16_t dataBytes[2 * sizeof(T)];
+		emb::c28x::to_8bit_bytes(dataBytes, data);
+		m_txBitCount = _generateTxCanFrame(dataBytes, 2 * sizeof(T), frameId);
+		m_txActive = true;
+	}
+
 protected:
 	int _generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsigned int frameId);
 	static __interrupt void onClockInterrupt();

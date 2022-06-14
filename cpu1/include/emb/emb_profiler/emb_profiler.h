@@ -16,7 +16,7 @@ namespace emb {
 /**
  * @brief All calculations in ns
  */
-class DurationLogger
+class DurationLogger_us
 {
 private:
 	static uint64_t (*m_timeNowFunc)();
@@ -24,13 +24,13 @@ private:
 	volatile uint64_t m_start;
 
 public:
-	explicit DurationLogger(const char* message)
+	explicit DurationLogger_us(const char* message)
 	{
 		strcpy(m_message, message);
 		m_start = m_timeNowFunc();
 	}
 
-	~DurationLogger()
+	~DurationLogger_us()
 	{
 		volatile uint64_t finish = m_timeNowFunc();
 		if (finish < m_start)
@@ -50,14 +50,55 @@ public:
 };
 
 
-#define EMB_LOG_DURATION(message) \
-		volatile emb::DurationLogger EMB_UNIQ_ID(__LINE__)(message);
+#define EMB_LOG_DURATION_us(message) \
+		volatile emb::DurationLogger_us EMB_UNIQ_ID(__LINE__)(message);
+
+
+/**
+ * @brief All calculations in clock cycles
+ */
+class DurationLogger_clk
+{
+private:
+	static uint32_t (*m_timeNowFunc)();
+	char m_message[32];
+	volatile uint32_t m_start;
+
+public:
+	explicit DurationLogger_clk(const char* message)
+	{
+		strcpy(m_message, message);
+		m_start = m_timeNowFunc();
+	}
+
+	~DurationLogger_clk()
+	{
+		volatile uint32_t finish = m_timeNowFunc();
+		if (finish > m_start)
+		{
+			printf("%s: timer overflow\n", m_message);
+		}
+		else
+		{
+			printf("%s: %lu clock cycles\n", m_message, m_start - finish);
+		}
+	}
+
+	static void init(uint32_t (*timeNowFunc)(void))
+	{
+		m_timeNowFunc = timeNowFunc;
+	}
+};
+
+
+#define EMB_LOG_DURATION_clk(message) \
+		volatile emb::DurationLogger_clk EMB_UNIQ_ID(__LINE__)(message);
 
 
 /**
  * @brief All calculations in ns
  */
-class DurationLoggerAsyncPrint
+class DurationLoggerAsync_us
 {
 private:
 	static uint64_t (*m_timeNowFunc)();
@@ -75,14 +116,14 @@ private:
 	const size_t m_channel;
 	volatile uint64_t m_start;
 public:
-	DurationLoggerAsyncPrint(const char* message, size_t channel)
+	DurationLoggerAsync_us(const char* message, size_t channel)
 		: m_channel(channel)
 	{
 		m_durationsUs[m_channel].message = message;
 		m_start = m_timeNowFunc();
 	}
 
-	~DurationLoggerAsyncPrint()
+	~DurationLoggerAsync_us()
 	{
 		volatile uint64_t finish = m_timeNowFunc();
 		if (finish < m_start)
@@ -113,8 +154,8 @@ public:
 };
 
 
-#define EMB_LOG_DURATION_ASYNC_PRINT(message, channel) \
-		volatile emb::DurationLoggerAsyncPrint EMB_UNIQ_ID(__LINE__)(message, channel);
+#define EMB_LOG_DURATION_ASYNC_us(message, channel) \
+		volatile emb::DurationLoggerAsync_us EMB_UNIQ_ID(__LINE__)(message, channel);
 
 
 } // namespace emb

@@ -141,10 +141,10 @@ void main()
 	/*# CLOCK #*/
 	/*#########*/
 	mcu::SystemClock::init();
-//	mcu::HighResolutionClock::init(1000000);
-//	mcu::HighResolutionClock::start();
-//	emb::DurationLogger::init(mcu::HighResolutionClock::now);
-//	emb::DurationLoggerAsyncPrint::init(mcu::HighResolutionClock::now);
+	//mcu::HighResolutionClock::init(1000000);
+	//mcu::HighResolutionClock::start();
+	emb::DurationLogger_us::init(mcu::HighResolutionClock::now);
+	emb::DurationLogger_clk::init(mcu::HighResolutionClock::counter);
 
 	// ALL PERFORMANCE TESTS MUST BE PERFORMED AFTER THIS POINT!!!
 

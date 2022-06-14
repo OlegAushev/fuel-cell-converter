@@ -5,15 +5,22 @@
 namespace emb {
 
 
-uint64_t timeNowFuncNone_()
+uint64_t timeNowFuncNone_us()
 {
 	return 0;
 }
-uint64_t (*DurationLogger::m_timeNowFunc)() = timeNowFuncNone_;
+uint64_t (*DurationLogger_us::m_timeNowFunc)() = timeNowFuncNone_us;
 
 
-uint64_t (*DurationLoggerAsyncPrint::m_timeNowFunc)() = timeNowFuncNone_;
-DurationLoggerAsyncPrint::DurationData DurationLoggerAsyncPrint::m_durationsUs[CAPACITY];
+uint32_t timeNowFuncNone_clk()
+{
+	return 0;
+}
+uint32_t (*DurationLogger_clk::m_timeNowFunc)() = timeNowFuncNone_clk;
+
+
+uint64_t (*DurationLoggerAsync_us::m_timeNowFunc)() = timeNowFuncNone_us;
+DurationLoggerAsync_us::DurationData DurationLoggerAsync_us::m_durationsUs[CAPACITY];
 
 
 }

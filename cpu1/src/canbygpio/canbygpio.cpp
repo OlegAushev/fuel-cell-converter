@@ -21,26 +21,27 @@ static emb::Array<int, STREAM_SIZE> rxCanBitStream;
 ///
 ///
 Transceiver::Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, uint32_t bitrate)
-	: m_txPin(txPin)
+	: emb::c28x::Singleton<Transceiver>(this)
+	, m_txPin(txPin)
 	, m_rxPin(rxPin)
 {
+	reset();
+
 	mcu::HighResolutionClock::init(1000000 / (2 * bitrate));
 	mcu::HighResolutionClock::registerInterruptHandler(onClockInterrupt);
+	mcu::HighResolutionClock::start();
 }
 
 
 ///
 ///
 ///
-void Transceiver::send(uint64_t data)
+void Transceiver::reset()
 {
-	if (m_txActive)
-	{
-		++m_txError;
-		return;
-	}
-	//emb::c28x::to_8bit_bytes(dest, src)
-
+	m_txActive = false;
+	m_txBitCount = 0;
+	m_txIdx = 0;
+	m_txError = 0;
 }
 
 
@@ -49,7 +50,19 @@ void Transceiver::send(uint64_t data)
 ///
 __interrupt void Transceiver::onClockInterrupt()
 {
+	Transceiver* tranceiver = Transceiver::instance();
 
+	if (tranceiver->m_txActive)
+	{
+		if (tranceiver->m_txIdx < tranceiver->m_txBitCount)
+		{
+			GPIO_writePin(tranceiver->m_txPin.config().no, txCanBitStream[tranceiver->m_txIdx++]);
+		}
+		else
+		{
+			tranceiver->m_txActive = false;
+		}
+	}
 }
 
 
