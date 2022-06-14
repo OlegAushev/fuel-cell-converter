@@ -10,6 +10,8 @@
 
 
 #include "emb/emb_common.h"
+#include "emb/emb_array.h"
+#include "emb/emb_math.h"
 
 #include "mcu/gpio/mcugpio.h"
 #include "mcu/cputimers/mcucputimers.h"
@@ -26,8 +28,8 @@ namespace canbygpio {
 struct Frame
 {
 	uint16_t IFS : 3;		// Inter-frame spacing, Must be recessive (1)
-	uint16_t EOF : 7;		// End-of-frame, Must be recessive (1)
-	uint16_t ACK_Delimiter;		// ACK delimiter, Must be recessive (1)
+	uint16_t EndOfFrame : 7;	// End-of-frame, Must be recessive (1)
+	uint16_t ACK_Delimiter : 1;	// ACK delimiter, Must be recessive (1)
 	uint16_t ACK: 1;		// ACK slot, Transmitter sends recessive (1) and any receiver can assert a dominant (0)
 	uint16_t CRC_Delimiter : 1;	// CRC delimiter, Must be recessive (1)
 	uint16_t CRC : 15;		// Cyclic redundancy check
@@ -44,7 +46,7 @@ struct Frame
 	uint16_t IDE : 1;		// Identifier extension bit, Must be dominant (0) for base frame format with 11-bit identifiers
 	uint16_t RTR : 1;		// Must be dominant (0) for data frames
 	uint16_t ID : 11;		// Identifier
-	uint16_t SOF : 1;		// Start-of-frame = 0
+	uint16_t StartOfFrame : 1;	// Start-of-frame = 0
 };
 
 
@@ -60,12 +62,15 @@ private:
 
 	bool m_txActive;
 	uint64_t m_txError;
-	unsigned int m_txBitPointer;
+
+	uint16_t txData[8];
+	uint16_t rxData[8];
 
 public:
 	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, uint32_t bitrate);
 	void send(uint64_t data);
-private:
+protected:
+	int _generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsigned int frameId);
 	static __interrupt void onClockInterrupt();
 
 

@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <math.h>
 #include "motorcontrol/math.h"
+#include "limits.h"
+#include "float.h"
 
 #include "emb_algorithm.h"
 

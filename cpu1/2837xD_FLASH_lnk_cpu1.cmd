@@ -60,7 +60,7 @@ PAGE 1 : /* Data Memory */
    RAMGS4      : origin = 0x010000, length = 0x001000	/* RFTT data */
    RAMGS5      : origin = 0x011000, length = 0x001000
    RAMGS6      : origin = 0x012000, length = 0x001000
-   RAMGS7      : origin = 0x013000, length = 0x001000
+   RAMGS7      : origin = 0x013000, length = 0x001000	/* CPU1 SETTINGS */
    RAMGS8      : origin = 0x014000, length = 0x001000	/* CPU2 bss */
    RAMGS9      : origin = 0x015000, length = 0x001000	/* CPU1-RW / CPU2-R */
    RAMGS10     : origin = 0x016000, length = 0x001000	/* CPU1-R / CPU2-RW */

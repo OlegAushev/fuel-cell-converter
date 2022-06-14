@@ -33,6 +33,7 @@
 #include "clocktasks/cpu1clocktasks.h"
 #include "boostconverter/boostconverter.h"
 #include "settings/settings.h"
+#include "canbygpio/canbygpio.h"
 
 #ifdef CRD300
 #include "support/crd300/controller.h"
@@ -92,7 +93,7 @@ void main()
 	/*# SYSTEM #*/
 	/*##########*/
 	mcu::initDevice();
-	MemCfg_setGSRAMMasterSel(MEMCFG_SECT_GS7, MEMCFG_GSRAMMASTER_CPU1);	// configs are placed here
+	MemCfg_setGSRAMMasterSel(MEMCFG_SECT_GS7, MEMCFG_GSRAMMASTER_CPU1);	// settings are placed here
 	MemCfg_setGSRAMMasterSel(MEMCFG_SECT_GS8, MEMCFG_GSRAMMASTER_CPU2);	// CPU2 .bss is placed here
 	MemCfg_setGSRAMMasterSel(MEMCFG_SECT_GS9, MEMCFG_GSRAMMASTER_CPU1);	// CPU1 to CPU2 data is placed here
 	MemCfg_setGSRAMMasterSel(MEMCFG_SECT_GS10, MEMCFG_GSRAMMASTER_CPU2);	// CPU2 to CPU1 data is placed here
@@ -150,7 +151,7 @@ void main()
 	/*-------------------------*/
 	/* PERFORMANCE TESTS BEGIN */
 	/*-------------------------*/
-
+	//canbygpio::Transceiver cbgTranceiver(mcu::GpioPin(), mcu::GpioPin(), 125000);
 	/*-----------------------*/
 	/* PERFORMANCE TESTS END */
 	/*-----------------------*/
