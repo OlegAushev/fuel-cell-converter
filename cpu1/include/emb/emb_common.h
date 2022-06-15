@@ -128,7 +128,7 @@ bool Singleton<T>::s_created = false;
  * @brief
  */
 template <typename T>
-void from_8bit_bytes(T& dest, uint16_t* src)
+void from_8bit_bytes(T& dest, const uint16_t* src)
 {
 	uint16_t c28_byte[sizeof(T)];
 	for (size_t i = 0; i < sizeof(T); ++i)

@@ -117,7 +117,7 @@ void main()
 	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(
 			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
 			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
-			mcu::CAN_BITRATE_500K, microcanopen::NodeId(1),
+			mcu::CAN_BITRATE_125K, microcanopen::NodeId(1),
 			&tpdoService, &rpdoService, &sdoService, canIpcSignals);
 
 	uCanOpenServer.setHeartbeatPeriod(1000);
