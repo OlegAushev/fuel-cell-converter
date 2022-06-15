@@ -22,6 +22,7 @@
 #include "mcu/can/mcucan.h"
 #include "mcu/ipc/mcuipc.h"
 #include "syslog/syslog.h"
+#include "boostconverter/boostconverter.h"
 
 
 namespace microcanopen {
@@ -110,15 +111,9 @@ public:
 	 * @ingroup mco_app_spec
 	 * @brief Configures service.
 	 */
-	SdoService(/*acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive6Ph,
-			acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive3Ph_1,
-			acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive3Ph_2,
-			SetupManager* setupManager*/)
+	SdoService(BoostConverter* converter)
 	{
-//		od::drive6Ph = drive6Ph;
-//		od::drive3Ph_1 = drive3Ph_1;
-//		od::drive3Ph_2 = drive3Ph_2;
-//		od::setupManager = setupManager;
+		od::converter = converter;
 
 		std::sort(OBJECT_DICTIONARY, OBJECT_DICTIONARY_END);
 

@@ -60,6 +60,7 @@ private:
 #ifndef CRD300
 	const mcu::GpioPin RST_PIN;
 	const mcu::GpioPin ERR_PIN;
+	const mcu::GpioPin REL_PIN;
 #endif
 public:
 	/// Converter states
@@ -146,6 +147,11 @@ public:
 	 * @return (none)
 	 */
 	void reset();
+
+	float voltageIn() const { return m_voltageIn.output(); }
+	float voltageOut() const { return m_voltageOut.output(); }
+	void relOn() const { REL_PIN.set(); }
+	void relOff() const { REL_PIN.reset(); }
 
 protected:
 	static __interrupt void onPwmEventInterrupt();

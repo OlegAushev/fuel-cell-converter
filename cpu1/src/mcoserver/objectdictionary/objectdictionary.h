@@ -17,6 +17,7 @@
 #include "mcu/system/mcusystem.h"
 #include "mcu/cputimers/mcucputimers.h"
 #include "syslog/syslog.h"
+#include "boostconverter/boostconverter.h"
 
 
 namespace microcanopen {
@@ -43,10 +44,9 @@ namespace od {
 /// @addtogroup mco_od
 /// @{
 
-//extern acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive6Ph;
-//extern acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive3Ph_1;
-//extern acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive3Ph_2;
-//extern SetupManager* setupManager;
+
+extern BoostConverter* converter;
+
 
 /// @}
 } // namespace od

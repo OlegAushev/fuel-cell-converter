@@ -59,8 +59,7 @@ public:
 #ifdef CRD300
 		return 2400.f * (float(rawData) / 4095.f) - 1200.f;
 #else
-#warning "Fix later"
-		return 3.f * (float(rawData) / 4095.f) * 48.f;
+		return 3.f * (float(rawData) / 4095.f) * 108.f;
 #endif
 	}
 
@@ -139,8 +138,7 @@ public:
 #ifdef CRD300
 		return 1200.f * (float(rawData) / 4095.f);
 #else
-#warning "Fix later"
-		return 3.f * (float(rawData) / 4095.f) * 121.f;
+		return 3.f * (float(rawData) / 4095.f) * 250.f;
 #endif
 	}
 

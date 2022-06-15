@@ -27,8 +27,8 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 .CONVERTER_CONFIG =
 {
 	.uvpIn = 2,
-	.ovpIn = 200,
-	.ucpIn = 3,
+	.ovpIn = 350,
+	.ucpIn = 0.3,
 	.ocpIn = 45,
 	.otpJunction = 105,
 	.otpCase = 90,
@@ -40,9 +40,9 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.kP_current = 1,
 	.kI_current = 10,
 
-	.cvIn = 15.5,
-	.ccIn = 10.0,
-	.cvOut = 40.0,
+	.cvIn = 160,
+	.ccIn = 10,
+	.cvOut = 365.0,
 
 	.fltPin = mcu::GpioPin(),
 },

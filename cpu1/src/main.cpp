@@ -260,11 +260,11 @@ void main()
 	};
 
 #ifdef DUALCORE
-	microcanopen::SdoService<mcu::CANA> sdoService;
+	microcanopen::SdoService<mcu::CANA> sdoService(converter);
 	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
 	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> uCanOpenServer(NULL, &rpdoService, &sdoService, canIpcSignals);
 #else
-	microcanopen::SdoService<mcu::CANA> sdoService;
+	microcanopen::SdoService<mcu::CANA> sdoService(converter);
 	microcanopen::TpdoService<mcu::CANA> tpdoService(converter);
 	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
 	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(

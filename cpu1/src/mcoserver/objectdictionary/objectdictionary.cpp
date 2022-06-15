@@ -11,27 +11,9 @@ namespace microcanopen {
 
 namespace od {
 
-//acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive6Ph =
-//		static_cast<acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*>(NULL);
-//
-//acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive3Ph_1 =
-//		static_cast<acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*>(NULL);
-//
-//acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive3Ph_2 =
-//		static_cast<acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*>(NULL);
-//
-//SetupManager* setupManager = static_cast<SetupManager*>(NULL);
 
-#if (defined(ACIM_MOTOR_SIX_PHASE))
-static acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive6Ph;
-static acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*& drive2 = drive6Ph;
-#elif (defined(ACIM_MOTOR_THREE_PHASE))
-static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive3Ph_1;
-static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*& drive2 = drive3Ph_2;
-#elif (defined(ACIM_TWO_MOTORS))
-static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>*& drive = drive3Ph_1;
-static acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>*& drive2 = drive3Ph_2;
-#endif
+BoostConverter* converter = static_cast<BoostConverter*>(NULL);
+
 
 /* ========================================================================== */
 /* =================== INFO ====================== */
@@ -79,6 +61,47 @@ inline ODAccessStatus getUptime(CobSdoData& dest)
 	memcpy(&dest, &time, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }
+
+inline ODAccessStatus getConverterVoltageIn(CobSdoData& dest)
+{
+	float value = converter->voltageIn();
+	memcpy(&dest, &value, sizeof(uint32_t));
+	return OD_ACCESS_SUCCESS;
+}
+
+inline ODAccessStatus getConverterVoltageOut(CobSdoData& dest)
+{
+	float value = converter->voltageOut();
+	memcpy(&dest, &value, sizeof(uint32_t));
+	return OD_ACCESS_SUCCESS;
+}
+
+//////////////
+///
+
+inline ODAccessStatus converterPowerUp(CobSdoData val)
+{
+	converter->relOn();
+	return OD_ACCESS_SUCCESS;
+}
+
+inline ODAccessStatus converterPowerDown(CobSdoData val)
+{
+	converter->relOff();
+	return OD_ACCESS_SUCCESS;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #ifdef OBSOLETE
@@ -501,9 +524,25 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x5FFF, 0x00}, {"SYSTEM", "INFO", "SOFTWARE_VERSION", "", OD_UINT32, true, false, OD_NO_DIRECT_ACCESS, od::getSoftwareVersion, OD_NO_WRITE_ACCESS}},
 {{0x5FFF, 0x01}, {"SYSTEM", "INFO", "BUILD_CONFIGURATION", "", OD_STRING, true, false, OD_NO_DIRECT_ACCESS, od::getBuildConfiguration, OD_NO_WRITE_ACCESS}},
 
-{{0x2000, 0x00}, {"SYSTEM", "SYSLOG", "SYSLOG_MSG", "", OD_UINT32, true, false, OD_NO_DIRECT_ACCESS, od::getSyslogMessage, OD_NO_WRITE_ACCESS}},
 
-{{0x5000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	true,	false,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_WRITE_ACCESS}},
+
+{{0x2000, 0x00}, {"WATCH",	"WATCH", "UPTIME",	"s",	OD_FLOAT32,	true,	false,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_WRITE_ACCESS}},
+{{0x2000, 0x03}, {"WATCH",	"WATCH", "DC_VOLTAGE",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_WRITE_ACCESS}},
+{{0x2000, 0x04}, {"WATCH",	"WATCH", "DC_CURRENT",	"A",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_WRITE_ACCESS}},
+
+
+{{0x2001, 0x00}, {"DRIVE CONTROL", 	"DRIVE CONTROL", "POWER UP DRIVE", 	"",	OD_TASK,	false,	true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterPowerUp}},
+{{0x2001, 0x01}, {"DRIVE CONTROL",	"DRIVE CONTROL", "POWER DOWN DRIVE",	"",	OD_TASK, 	false,	true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterPowerDown}},
+
+
+
+
+
+
+
+//{{0x2000, 0x00}, {"SYSTEM", "SYSLOG", "SYSLOG_MSG", "", OD_UINT32, true, false, OD_NO_DIRECT_ACCESS, od::getSyslogMessage, OD_NO_WRITE_ACCESS}},
+
+//{{0x5000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	true,	false,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_WRITE_ACCESS}},
 //{{0x5000, 0x01}, {"WATCH", "WATCH", "DRIVE_STATE",	"",	OD_ENUM16,	true,	false,	OD_NO_DIRECT_ACCESS,	od::getDriveState,		OD_NO_WRITE_ACCESS}},
 //{{0x5000, 0x02}, {"WATCH", "WATCH", "VOLTAGE_DC",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getDriveVoltageDc,		OD_NO_WRITE_ACCESS}},
 //{{0x5000, 0x03}, {"WATCH", "WATCH", "CURRENT_PHU",	"A",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getDriveCurrentPhU,		OD_NO_WRITE_ACCESS}},

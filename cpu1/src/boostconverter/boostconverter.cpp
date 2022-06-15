@@ -10,6 +10,7 @@
 #ifndef CRD300
 const mcu::GpioPinConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioPinConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioPinConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #endif
 
 
@@ -22,6 +23,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, FLT_PIN(converterConfig.fltPin)
 	, RST_PIN(rstPinCfg)
 	, ERR_PIN(errPinCfg)
+	, REL_PIN(relPinCfg)
 	, UVP_IN_BOUND(converterConfig.uvpIn)
 	, OVP_IN_BOUND(converterConfig.ovpIn)
 	, UCP_IN_BOUND(converterConfig.ucpIn)
@@ -39,7 +41,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, m_voltageOut(VDC_SMOOTH_FACTOR)
 	, m_currentIn(0, 0)
 	, m_dutycycleController(converterConfig.kP_dutycycle, converterConfig.kI_dutycucle,
-			1 / pwmConfig.switchingFreq, 0, 0.9f)
+			1 / pwmConfig.switchingFreq, 0, 0.4f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
 			1 / pwmConfig.switchingFreq, converterConfig.ucpIn, converterConfig.ccIn)
 {
@@ -116,6 +118,11 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 	LOG_DURATION_VIA_PIN_ONOFF(111)
 	BoostConverter* converter = BoostConverter::instance();
 	converter->m_voltageOut.process(converter->outVoltageSensor.read());
+
+	if (converter->m_voltageOut.output() > converter->CV_OUT_BOUND)
+	{
+		converter->stop();
+	}
 
 	converter->outVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_OUT);
 }
