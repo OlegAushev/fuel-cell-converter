@@ -26,12 +26,13 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 /*#############*/
 .CONVERTER_CONFIG =
 {
-	.uvpIn = 2,
-	.ovpIn = 350,
-	.ucpIn = 0.3,
-	.ocpIn = 45,
-	.otpJunction = 105,
-	.otpCase = 90,
+	.uvpVoltageIn = 2,
+	.ovpVoltageIn = 350,
+	.ovpVoltageOut = 500,
+	.ocpCurrentIn = 45,
+
+	.otpTempJunction = 105,
+	.otpTempCase = 90,
 	.fanTempThOn = 65,
 	.fanTempThOff = 55,
 
@@ -40,9 +41,11 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.kP_current = 1,
 	.kI_current = 10,
 
-	.cvIn = 160,
-	.ccIn = 10,
-	.cvOut = 365.0,
+	.fuelCellVoltageMin = 120,
+	.cvVoltageIn = 160,
+	.currentInMin = 0.3,
+	.currentInMax = 10,
+	.batteryChargedVoltage = 365.0,
 
 	.fltPin = mcu::GpioPin(),
 },

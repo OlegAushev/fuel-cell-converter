@@ -24,17 +24,6 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, RST_PIN(rstPinCfg)
 	, ERR_PIN(errPinCfg)
 	, REL_PIN(relPinCfg)
-	, UVP_IN_BOUND(converterConfig.uvpIn)
-	, OVP_IN_BOUND(converterConfig.ovpIn)
-	, UCP_IN_BOUND(converterConfig.ucpIn)
-	, OCP_IN_BOUND(converterConfig.ocpIn)
-	, OTP_MODULE_BOUND(converterConfig.otpJunction)
-	, OTP_CASE_BOUND(converterConfig.otpCase)
-	, FAN_TEMP_TH_ON(converterConfig.fanTempThOn)
-	, FAN_TEMP_TH_OFF(converterConfig.fanTempThOff)
-	, CV_IN_BOUND(converterConfig.cvIn)
-	, CC_IN_BOUND(converterConfig.ccIn)
-	, CV_OUT_BOUND(converterConfig.cvOut)
 	, m_state(CONVERTER_OFF)
 	, pwmUnit(pwmConfig)
 	, m_voltageIn(VDC_SMOOTH_FACTOR)
@@ -43,7 +32,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, m_dutycycleController(converterConfig.kP_dutycycle, converterConfig.kI_dutycucle,
 			1 / pwmConfig.switchingFreq, 0, 0.4f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
-			1 / pwmConfig.switchingFreq, converterConfig.ucpIn, converterConfig.ccIn)
+			1 / pwmConfig.switchingFreq, converterConfig.currentInMin, converterConfig.currentInMax)
 {
 #ifdef CRD300
 	pwmUnit.initTzSubmodule(FLT_PIN, XBAR_INPUT1);
@@ -80,10 +69,6 @@ void BoostConverter::reset()
 __interrupt void BoostConverter::onPwmEventInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(22);
-	//BoostConverter::instance()->inCurrentSensor.convert();
-	//BoostConverter::instance()->inVoltageSensor.convert();
-	//BoostConverter::instance()->outVoltageSensor.convert();
-
 	BoostConverter::instance()->pwmUnit.acknowledgeInterrupt();
 }
 
@@ -119,7 +104,7 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 	BoostConverter* converter = BoostConverter::instance();
 	converter->m_voltageOut.process(converter->outVoltageSensor.read());
 
-	if (converter->m_voltageOut.output() > converter->CV_OUT_BOUND)
+	if (converter->m_voltageOut.output() > converter->m_config.batteryChargedVoltage)
 	{
 		converter->stop();
 	}
@@ -159,7 +144,10 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 #endif
 	converter->m_currentInAvg = (converter->m_currentIn.first + converter->m_currentIn.second) / 2;
 
-	converter->m_currentController.process(converter->CV_IN_BOUND, converter->m_voltageIn.output());
+	// run current controller to achieve cvVoltageIn
+	converter->m_currentController.process(converter->m_config.cvVoltageIn, converter->m_voltageIn.output());
+
+	// run duty cycle controller to achieve needed current
 	converter->m_dutycycleController.process(converter->m_currentController.output(),
 			converter->m_currentInAvg);
 

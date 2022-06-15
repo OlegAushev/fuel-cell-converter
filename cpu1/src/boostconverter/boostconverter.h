@@ -28,12 +28,13 @@
  */
 struct BoostConverterConfig
 {
-	float uvpIn;
-	float ovpIn;
-	float ucpIn;
-	float ocpIn;
-	float otpJunction;
-	float otpCase;
+	float uvpVoltageIn;
+	float ovpVoltageIn;
+	float ovpVoltageOut;
+	float ocpCurrentIn;
+
+	float otpTempJunction;
+	float otpTempCase;
 	float fanTempThOn;
 	float fanTempThOff;
 
@@ -42,9 +43,11 @@ struct BoostConverterConfig
 	float kP_current;
 	float kI_current;
 
-	float cvIn;
-	float ccIn;
-	float cvOut;
+	float fuelCellVoltageMin;
+	float cvVoltageIn;
+	float currentInMin;
+	float currentInMax;
+	float batteryChargedVoltage;
 
 	mcu::GpioPin fltPin;
 };
@@ -56,6 +59,8 @@ struct BoostConverterConfig
 class BoostConverter : emb::c28x::Singleton<BoostConverter>
 {
 private:
+	BoostConverterConfig m_config;
+
 	const mcu::GpioPin FLT_PIN;
 #ifndef CRD300
 	const mcu::GpioPin RST_PIN;
@@ -69,19 +74,6 @@ public:
 		CONVERTER_OFF,
 		CONVERTER_ON
 	};
-
-	const float UVP_IN_BOUND;
-	const float OVP_IN_BOUND;
-	const float UCP_IN_BOUND;
-	const float OCP_IN_BOUND;
-	const float OTP_MODULE_BOUND;
-	const float OTP_CASE_BOUND;
-	const float FAN_TEMP_TH_ON;
-	const float FAN_TEMP_TH_OFF;
-
-	const float CV_IN_BOUND;
-	const float CC_IN_BOUND;
-	const float CV_OUT_BOUND;
 
 	mcu::PwmUnit<mcu::PWM_ONE_PHASE> pwmUnit;
 	InVoltageSensor inVoltageSensor;
