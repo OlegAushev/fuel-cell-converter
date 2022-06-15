@@ -15,6 +15,7 @@
 #include "mcu/pwm/mcupwm.h"
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
+#include "syslog/syslog.h"
 
 #include "profiler/profiler.h"
 

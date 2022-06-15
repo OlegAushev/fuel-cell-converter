@@ -27,6 +27,12 @@ namespace Fault {
 /// System faults
 enum Fault
 {
+	OVP_IN,
+	UVP_IN,
+	OVP_OUT,
+	OCP_IN,
+
+
 	DC_UNDERVOLTAGE,
 	DC_OVERVOLTAGE,
 	PHASE_OVERCURRENT,

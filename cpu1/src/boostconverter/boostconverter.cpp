@@ -89,7 +89,17 @@ __interrupt void BoostConverter::onAdcVoltageInInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(61);
 	BoostConverter* converter = BoostConverter::instance();
-	converter->m_voltageIn.process(converter->inVoltageSensor.reading());
+
+	float vIn = converter->inVoltageSensor.read();
+	if (vIn > converter->m_config.ovpVoltageIn)
+	{
+		Syslog::setFault(Fault::OVP_IN);
+	}
+	else if (vIn < converter->m_config.uvpVoltageIn)
+	{
+		Syslog::setFault(Fault::UVP_IN);
+	}
+	converter->m_voltageIn.process(vIn);
 
 	converter->inVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_IN);
 }
@@ -102,11 +112,17 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(111)
 	BoostConverter* converter = BoostConverter::instance();
-	converter->m_voltageOut.process(converter->outVoltageSensor.read());
 
+	float vOut = converter->outVoltageSensor.read();
+	if (vOut > converter->m_config.ovpVoltageOut)
+	{
+		Syslog::setFault(Fault::OVP_OUT);
+	}
+
+	converter->m_voltageOut.process(vOut);
 	if (converter->m_voltageOut.output() > converter->m_config.batteryChargedVoltage)
 	{
-		converter->stop();
+		converter->stop();	// TODO
 	}
 
 	converter->outVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_OUT);
@@ -126,6 +142,11 @@ __interrupt void BoostConverter::onAdcCurrentInFirstInterrupt()
 	converter->m_currentIn.first = converter->inCurrentSensor.read(InCurrentSensor::FIRST);
 #endif
 
+	if (converter->m_currentIn.first > converter->m_config.ocpCurrentIn)
+	{
+		Syslog::setFault(Fault::OCP_IN);
+	}
+
 	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_FIRST);
 }
 
@@ -142,6 +163,12 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 #else
 	converter->m_currentIn.second = converter->inCurrentSensor.read(InCurrentSensor::SECOND);
 #endif
+
+	if (converter->m_currentIn.second > converter->m_config.ocpCurrentIn)
+	{
+		Syslog::setFault(Fault::OCP_IN);
+	}
+
 	converter->m_currentInAvg = (converter->m_currentIn.first + converter->m_currentIn.second) / 2;
 
 	// run current controller to achieve cvVoltageIn

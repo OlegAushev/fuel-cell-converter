@@ -23,7 +23,7 @@ class InVoltageSensor
 public:
 	mcu::AdcUnit* adcUnit;
 private:
-	bool m_completed;
+	bool m_ready;
 	InVoltageSensor(const InVoltageSensor& other);			// no copy constructor
 	InVoltageSensor& operator=(const InVoltageSensor& other);	// no copy assignment operator
 public:
@@ -34,7 +34,7 @@ public:
 	InVoltageSensor()
 		: adcUnit(mcu::AdcUnit::instance())
 	{
-		m_completed = false;
+		m_ready = false;
 	}
 
 	/**
@@ -42,9 +42,8 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void convert()
+	void run()
 	{
-		resetCompleted();
 		adcUnit->startVoltageIn();
 	}
 
@@ -53,7 +52,7 @@ public:
 	 * @param (none)
 	 * @return DC-voltage value.
 	 */
-	float reading() const
+	float read() const
 	{
 		uint16_t rawData = adcUnit->voltageIn();
 #ifdef CRD300
@@ -68,29 +67,29 @@ public:
 	 * @param (none)
 	 * @return \c true if DC-voltage measurement is done, \c false otherwise.
 	 */
-	bool completed() const
+	bool ready() const
 	{
-		return m_completed;
+		return m_ready;
 	}
 
 	/**
-	 * @brief Sets completed-flag.
+	 * @brief Sets ready-flag.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void setCompleted()
+	void setReady()
 	{
-		m_completed = true;
+		m_ready = true;
 	}
 
 	/**
-	 * @brief Resets completed-flag.
+	 * @brief Resets ready-flag.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void resetCompleted()
+	void resetReady()
 	{
-		m_completed = false;
+		m_ready = false;
 	}
 };
 
