@@ -321,7 +321,9 @@ void main()
 #ifndef DUALCORE
 	uCanOpenServer.enable();
 #endif
-	mcu::SystemClock::enableWatchdog();
+
+#warning "Watchdog disabled"
+	//mcu::SystemClock::enableWatchdog();
 
 /*####################################################################################################################*/
 	Syslog::addMessage(Syslog::DEVICE_READY);

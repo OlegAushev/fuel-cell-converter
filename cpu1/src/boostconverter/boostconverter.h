@@ -119,8 +119,11 @@ public:
 	 */
 	void start()
 	{
-		m_state = CONVERTER_ON;
-		pwmUnit.start();
+		if ((Syslog::faults() == 0) && (m_state == CONVERTER_OFF))
+		{
+			m_state = CONVERTER_ON;
+			pwmUnit.start();
+		}
 	}
 
 	/**

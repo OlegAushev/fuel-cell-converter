@@ -8,8 +8,6 @@
 #include "mcoserver_test/rpdoservice_test/rpdoservice_test.h"
 #include "mcoserver_test/sdoservice_test/sdoservice_test.h"
 
-#include "syslog_test/syslog_test.h"
-
 
 void RUN_TESTS()
 {
@@ -47,8 +45,6 @@ void RUN_TESTS()
 	EMB_RUN_TEST(microcanopen::TpdoServiceTest::MessageProcessingTest);
 	EMB_RUN_TEST(microcanopen::RpdoServiceTest::MessageProcessingTest);
 	EMB_RUN_TEST(microcanopen::SdoServiceTest::MessageProcessingTest);
-
-	EMB_RUN_TEST(SyslogTest::Test);
 
 
 	emb::TestRunner::printResult();

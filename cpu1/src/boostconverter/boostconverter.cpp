@@ -136,6 +136,7 @@ __interrupt void BoostConverter::onAdcCurrentInFirstInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(123);
 	BoostConverter* converter = BoostConverter::instance();
+
 #ifdef CRD300
 	converter->m_currentIn.first = -1.f * converter->inCurrentSensor.read(InCurrentSensor::FIRST);
 #else
@@ -158,6 +159,7 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(122);
 	BoostConverter* converter = BoostConverter::instance();
+
 #ifdef CRD300
 	converter->m_currentIn.second = -1.f * converter->inCurrentSensor.read(InCurrentSensor::SECOND);
 #else
@@ -169,6 +171,7 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 		Syslog::setFault(Fault::OCP_IN);
 	}
 
+	// calculate average inductor current
 	converter->m_currentInAvg = (converter->m_currentIn.first + converter->m_currentIn.second) / 2;
 
 	// run current controller to achieve cvVoltageIn
