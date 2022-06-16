@@ -20,10 +20,12 @@ static emb::Array<int, STREAM_SIZE> rxCanBitStream;
 ///
 ///
 ///
-Transceiver::Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, uint32_t bitrate)
+Transceiver::Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
+		mcu::GpioPin& clkPin, uint32_t bitrate)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, m_txPin(txPin)
 	, m_rxPin(rxPin)
+	, m_clkPin(clkPin)
 {
 	reset();
 
@@ -50,13 +52,18 @@ void Transceiver::reset()
 ///
 __interrupt void Transceiver::onClockInterrupt()
 {
+	static unsigned int oddFlag = 0;
+	oddFlag = 1 - oddFlag;
 	Transceiver* tranceiver = Transceiver::instance();
 
-	if (tranceiver->m_txActive)
+	GPIO_togglePin(tranceiver->m_clkPin.config().no);
+
+	if ((tranceiver->m_txActive) && oddFlag)
 	{
 		if (tranceiver->m_txIdx < tranceiver->m_txBitCount)
 		{
-			GPIO_writePin(tranceiver->m_txPin.config().no, txCanBitStream[tranceiver->m_txIdx++]);
+			uint32_t out = (txCanBitStream[tranceiver->m_txIdx++] == 0) ? 0 : 1;
+			GPIO_writePin(tranceiver->m_txPin.config().no, out);
 		}
 		else
 		{

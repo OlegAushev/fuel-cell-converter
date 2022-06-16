@@ -274,7 +274,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableRxInterrupt() const { Interrupt_enable(m_module.pieRxIntNo); }
+	void enableRxInterrupts() const { Interrupt_enable(m_module.pieRxIntNo); }
 
 	/**
 	 * @brief Acknowledges interrupt.

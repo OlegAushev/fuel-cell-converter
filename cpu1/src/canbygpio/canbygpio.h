@@ -59,6 +59,7 @@ class Transceiver : emb::c28x::Singleton<Transceiver>
 private:
 	mcu::GpioPin m_txPin;
 	mcu::GpioPin m_rxPin;
+	mcu::GpioPin m_clkPin;
 
 	bool m_txActive;
 	int m_txBitCount;
@@ -69,7 +70,8 @@ private:
 	uint16_t rxData[8];
 
 public:
-	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, uint32_t bitrate);
+	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
+			mcu::GpioPin& clkPin, uint32_t bitrate);
 	void reset();
 
 	template <typename T>
@@ -86,6 +88,7 @@ public:
 		uint16_t dataBytes[2 * sizeof(T)];
 		emb::c28x::to_8bit_bytes(dataBytes, data);
 		m_txBitCount = _generateTxCanFrame(dataBytes, 2 * sizeof(T), frameId);
+		m_txIdx = 0;
 		m_txActive = true;
 	}
 

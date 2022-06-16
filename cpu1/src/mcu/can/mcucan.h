@@ -39,6 +39,17 @@ enum CanBitrate
 };
 
 
+///
+enum CanMode
+{
+	CAN_NORMAL_MODE = 0,
+	CAN_SILENT_MODE = CAN_TEST_SILENT,
+	CAN_LOOPBACK_MODE = CAN_TEST_LBACK,
+	CAN_EXLOOPBACK_MODE = CAN_TEST_EXL,
+	CAN_SILENTLOOPBACK_MODE = CAN_TEST_SILENT | CAN_TEST_LBACK
+};
+
+
 /**
  * @brief CAN message object.
  */
@@ -95,7 +106,8 @@ public:
 	 * @param rxPin	- MCU CAN-RX pin config
 	 * @param bitrate - CAN bus bitrate
 	 */
-	CanUnit(const GpioPinConfig& txPin, const GpioPinConfig& rxPin, CanBitrate bitrate)
+	CanUnit(const GpioPinConfig& txPin, const GpioPinConfig& rxPin,
+			CanBitrate bitrate, CanMode mode)
 		: emb::c28x::Singleton<CanUnit<Module> >(this)
 		, m_module(detail::canBases[Module], detail::canPieIntNos[Module])
 	{
@@ -119,6 +131,11 @@ public:
 
 		CAN_setAutoBusOnTime(m_module.base, 0);
 		CAN_enableAutoBusOn(m_module.base);
+
+		if (mode != CAN_NORMAL_MODE)
+		{
+			CAN_enableTestMode(m_module.base, static_cast<uint16_t>(mode));
+		}
 
 		CAN_startModule(m_module.base);
 	}
@@ -183,11 +200,11 @@ public:
 	}
 
 	/**
-	 * @brief Registers Rx-interrupt handler.
+	 * @brief Registers interrupt handler.
 	 * @param handler - pointer to interrupt handler
 	 * @return (none)
 	 */
-	void registerRxInterruptHandler(void (*handler)(void)) const
+	void registerInterruptHandler(void (*handler)(void)) const
 	{
 		Interrupt_register(m_module.pieIntNo, handler);
 		CAN_enableInterrupt(m_module.base, CAN_INT_IE0 | CAN_INT_ERROR | CAN_INT_STATUS);
@@ -195,18 +212,18 @@ public:
 	}
 
 	/**
-	 * @brief Enables Rx-interrupt.
+	 * @brief Enables interrupts.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableRxInterrupt() const { Interrupt_enable(m_module.pieIntNo); }
+	void enableInterrupts() const { Interrupt_enable(m_module.pieIntNo); }
 
 	/**
-	 * @brief Disables Rx-interrupt.
+	 * @brief Disables interrupts.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disableRxInterrupt() const { Interrupt_disable(m_module.pieIntNo); }
+	void disableInterrupts() const { Interrupt_disable(m_module.pieIntNo); }
 
 protected:
 #ifdef CPU1

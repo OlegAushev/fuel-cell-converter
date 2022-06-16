@@ -75,7 +75,9 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(TpdoService<Module>* tpdoService, RpdoService<Module>* rpdoService, SdoService<Module>* sdoService,
+	McoServer(TpdoService<Module>* tpdoService,
+			RpdoService<Module>* rpdoService,
+			SdoService<Module>* sdoService,
 			const IpcSignals& ipcSignals)
 		: emb::c28x::Singleton<McoServer<Module, Mode> >(this)
 		, m_canUnit(NULL)
@@ -108,8 +110,12 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(mcu::GpioPinConfig txPin, mcu::GpioPinConfig rxPin, mcu::CanBitrate bitrate, NodeId nodeId,
-			TpdoService<Module>* tpdoService, RpdoService<Module>* rpdoService, SdoService<Module>* sdoService,
+	McoServer(mcu::GpioPinConfig txPin, mcu::GpioPinConfig rxPin,
+			mcu::CanBitrate bitrate, mcu::CanMode mode,
+			NodeId nodeId,
+			TpdoService<Module>* tpdoService,
+			RpdoService<Module>* rpdoService,
+			SdoService<Module>* sdoService,
 			const IpcSignals& ipcSignals)
 		: emb::c28x::Singleton<McoServer<Module, Mode> >(this)
 		, m_tpdoService(tpdoService)
@@ -131,7 +137,7 @@ public:
 		sdoService->initIpcSignals(&RSDO_RECEIVED, &TSDO_READY);
 
 		m_state = INITIALIZING;
-		m_canUnit = new mcu::CanUnit<Module>(txPin, rxPin, bitrate);
+		m_canUnit = new mcu::CanUnit<Module>(txPin, rxPin, bitrate, mode);
 
 		initMsgObjects();
 		for (size_t i = 1; i < COB_TYPE_COUNT; ++i)
@@ -142,7 +148,7 @@ public:
 		m_heartbeatPeriod = 0;
 		m_tpdoPeriods.fill(0);
 
-		m_canUnit->registerRxInterruptHandler(onFrameReceived);
+		m_canUnit->registerInterruptHandler(onFrameReceived);
 		m_state = PRE_OPERATIONAL;
 	}
 
@@ -200,7 +206,7 @@ public:
 	 */
 	void enable()
 	{
-		m_canUnit->enableRxInterrupt();
+		m_canUnit->enableInterrupts();
 		m_state = OPERATIONAL;
 	}
 

@@ -1,4 +1,6 @@
 ///
+#define CAN_BY_GPIO
+
 #ifdef CRD300
 #warning "CRD300-build."
 #endif
@@ -151,13 +153,15 @@ void main()
 	/*-------------------------*/
 	/* PERFORMANCE TESTS BEGIN */
 	/*-------------------------*/
-#ifdef DEBUG
+#ifdef CAN_BY_GPIO
 	mcu::GpioPinConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 	mcu::GpioPinConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1);
+	mcu::GpioPinConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
 	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
+	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
 
-	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, 125000);
+	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000);
 
 	microcanopen::IpcSignals canIpcSignalsTest =
 	{
@@ -172,20 +176,22 @@ void main()
 	microcanopen::SdoService<mcu::CANB> sdoServiceTest(NULL);
 	microcanopen::TpdoService<mcu::CANB> tpdoServiceTest(NULL);
 	microcanopen::RpdoService<mcu::CANB> rpdoServiceTest(NULL);
-	microcanopen::McoServer<mcu::CANB, emb::MODE_MASTER> uCanOpenServerTest(
+	microcanopen::McoServer<mcu::CANB, emb::MODE_MASTER> mcoServerTest(
 			mcu::GpioPinConfig(6, GPIO_6_CANTXB),
 			mcu::GpioPinConfig(7, GPIO_7_CANRXB),
-			mcu::CAN_BITRATE_125K, microcanopen::NodeId(0x01),
+			mcu::CAN_BITRATE_125K, mcu::CAN_SILENT_MODE,
+			microcanopen::NodeId(0x02),
 			&tpdoServiceTest, &rpdoServiceTest, &sdoServiceTest, canIpcSignalsTest);
 
-	uCanOpenServerTest.setHeartbeatPeriod(1000);
-	uCanOpenServerTest.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
-	uCanOpenServerTest.setTpdoPeriod(microcanopen::TPDO_NUM2, 1000);
-	uCanOpenServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 1000);
-	uCanOpenServerTest.setTpdoPeriod(microcanopen::TPDO_NUM4, 1000);
+	mcoServerTest.setHeartbeatPeriod(1000);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM2, 0);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 0);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM4, 0);
 
-	uCanOpenServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x200);
-	uCanOpenServerTest.enable();
+	mcoServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x182);
+	mcoServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x200);
+	mcoServerTest.enable();
 #endif
 	/*-----------------------*/
 	/* PERFORMANCE TESTS END */
@@ -295,25 +301,26 @@ void main()
 #ifdef DUALCORE
 	microcanopen::SdoService<mcu::CANA> sdoService(converter);
 	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
-	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> uCanOpenServer(NULL, &rpdoService, &sdoService, canIpcSignals);
+	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> mcoServer(NULL, &rpdoService, &sdoService, canIpcSignals);
 #else
 	microcanopen::SdoService<mcu::CANA> sdoService(converter);
 	microcanopen::TpdoService<mcu::CANA> tpdoService(converter);
 	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
-	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(
+	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> mcoServer(
 			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
 			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
-			mcu::CAN_BITRATE_125K, microcanopen::NodeId(0x01),
+			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
+			microcanopen::NodeId(0x01),
 			&tpdoService, &rpdoService, &sdoService, canIpcSignals);
 
-	uCanOpenServer.setHeartbeatPeriod(1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM2, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM3, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM4, 1000);
+	mcoServer.setHeartbeatPeriod(1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM2, 1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM3, 1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM4, 1000);
 
-	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM1, 0x194);
-	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
+	mcoServer.setRpdoId(microcanopen::RPDO_NUM1, 0x194);
+	mcoServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
 #endif
 
 /*####################################################################################################################*/
@@ -352,7 +359,7 @@ void main()
 	Syslog::addMessage(Syslog::DEVICE_CPU1_READY);
 
 #ifndef DUALCORE
-	uCanOpenServer.enable();
+	mcoServer.enable();
 #endif
 
 #warning "Watchdog disabled"
@@ -364,10 +371,10 @@ void main()
 	while (true)
 	{
 		Syslog::processIpcSignals();
-		uCanOpenServer.run();
+		mcoServer.run();
 		mcu::SystemClock::runTasks();
 
-#ifdef DEBUG
+#ifdef CAN_BY_GPIO
 		const char* testText = "DEADBEEF";
 		uint16_t testData[8];
 		memcpy(testData, testText, 8);
@@ -375,8 +382,8 @@ void main()
 		uint64_t testDataRaw;
 		emb::c28x::from_8bit_bytes(testDataRaw, testData);
 		cbgTranceiver.send<uint64_t>(testDataRaw, 0x200);
-		mcu::delay_us(100000);
-		uCanOpenServerTest.run();
+		mcu::delay_us(10000);
+		mcoServerTest.run();
 #endif
 	}
 }

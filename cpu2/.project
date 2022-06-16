@@ -36,6 +36,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/cpu1/include</locationURI>
 		</link>
 		<link>
+			<name>src/canbygpio</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/canbygpio</locationURI>
+		</link>
+		<link>
 			<name>src/mcoserver</name>
 			<type>2</type>
 			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/mcoserver</locationURI>

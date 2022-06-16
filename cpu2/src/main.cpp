@@ -18,28 +18,9 @@
 #include "clocktasks/cpu2clocktasks.h"
 
 
-/* ========================================================================== */
-/* =========================== DRIVE POINTERS =============================== */
-/* ========================================================================== */
-#if (defined(ACIM_MOTOR_SIX_PHASE))
-#pragma DATA_SECTION("DRIVE")
-unsigned char driveobj_loc[sizeof(acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>)];
-acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>* drive;
-
-#elif (defined(ACIM_MOTOR_THREE_PHASE))
-#pragma DATA_SECTION("DRIVE")
-unsigned char driveobj_loc[sizeof(acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>)];
-acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive;
-
-#elif (defined(ACIM_TWO_MOTORS))
-#pragma DATA_SECTION("DRIVE")
-unsigned char driveobj_loc[sizeof(acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>)];
-acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_1>* drive;
-
-#pragma DATA_SECTION("DRIVE2")
-unsigned char drive2obj_loc[sizeof(acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>)];
-acim::Drive<acim::THREE_PHASE, acim::DRIVE_INSTANCE_2>* drive2;
-#endif
+#pragma DATA_SECTION("SHARED_CONVERTER")
+unsigned char converterobj_loc[sizeof(BoostConverter)];
+BoostConverter* converter;
 
 
 /* ========================================================================== */
@@ -93,9 +74,9 @@ void main()
 
 /*####################################################################################################################*/
 	/*#####################*/
-	/*# PWM #*/
+	/*# CONVERTER #*/
 	/*#####################*/
-
+	converter = reinterpret_cast<BoostConverter*>(converterobj_loc);
 
 /*####################################################################################################################*/
 	/*#######*/
@@ -111,23 +92,24 @@ void main()
 		.tsdo = mcu::IpcSignalPair(9),
 	};
 
-	microcanopen::TpdoService<mcu::CANA> tpdoService;
+	microcanopen::TpdoService<mcu::CANA> tpdoService(converter);
 	microcanopen::RpdoService<mcu::CANA> rpdoService;
 	microcanopen::SdoService<mcu::CANA> sdoService;
-	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> uCanOpenServer(
+	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> mcoServer(
 			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
 			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
-			mcu::CAN_BITRATE_125K, microcanopen::NodeId(1),
+			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
+			microcanopen::NodeId(1),
 			&tpdoService, &rpdoService, &sdoService, canIpcSignals);
 
-	uCanOpenServer.setHeartbeatPeriod(1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM2, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM3, 1000);
-	uCanOpenServer.setTpdoPeriod(microcanopen::TPDO_NUM4, 1000);
+	mcoServer.setHeartbeatPeriod(1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM2, 1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM3, 1000);
+	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM4, 1000);
 
-	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM1, 0x194);
-	uCanOpenServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
+	mcoServer.setRpdoId(microcanopen::RPDO_NUM1, 0x194);
+	mcoServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
 
 /*####################################################################################################################*/
 	/*##################*/
@@ -142,14 +124,14 @@ void main()
 /*####################################################################################################################*/
 
 	mcu::SystemClock::reset();
-	uCanOpenServer.enable();
+	mcoServer.enable();
 	mcu::enableMaskableInterrupts();
 	mcu::enableDebugEvents();
 
 	while (true)
 	{
-		uCanOpenServer.run();
-		mcu::SystemClock::runPeriodicTasks();
+		mcoServer.run();
+		mcu::SystemClock::runTasks();
 	}
 }
 
