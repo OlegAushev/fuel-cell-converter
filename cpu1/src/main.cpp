@@ -1,5 +1,5 @@
 ///
-#define CAN_BY_GPIO
+//#define CAN_BY_GPIO
 
 #ifdef CRD300
 #warning "CRD300-build."

@@ -119,7 +119,9 @@ public:
 	 */
 	void start()
 	{
-		if ((Syslog::faults() == 0) && (m_state == CONVERTER_OFF))
+		if ((Syslog::faults() == 0)
+				&& (!Syslog::hasWarning(Warning::BATTERY_CHARGED)
+				&& (m_state == CONVERTER_OFF)))
 		{
 			m_state = CONVERTER_ON;
 			pwmUnit.start();

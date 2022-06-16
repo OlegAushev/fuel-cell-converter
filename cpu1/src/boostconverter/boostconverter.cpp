@@ -122,7 +122,12 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 	converter->m_voltageOut.process(vOut);
 	if (converter->m_voltageOut.output() > converter->m_config.batteryChargedVoltage)
 	{
-		converter->stop();	// TODO
+		Syslog::setWarning(Warning::BATTERY_CHARGED);
+		converter->stop();
+	}
+	else if (converter->m_voltageOut.output() < converter->m_config.batteryChargedVoltage - 10)
+	{
+		Syslog::resetWarning(Warning::BATTERY_CHARGED);
 	}
 
 	converter->outVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_OUT);

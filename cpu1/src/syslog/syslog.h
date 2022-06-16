@@ -54,10 +54,10 @@ namespace Warning {
 /// System warnings
 enum Warning
 {
+	BATTERY_CHARGED,
 	CAN_BUS_WARNING,
 	MODULE_OVERHEATING,
 	CASE_OVERHEATING,
-	FLUX_WEAKENING
 };
 
 
