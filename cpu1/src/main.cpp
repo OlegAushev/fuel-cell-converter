@@ -3,6 +3,9 @@
 
 
 //#define CAN_BY_GPIO
+#ifdef CAN_BY_GPIO
+#warning "CAN_BY_GPIO test build."
+#endif
 
 #ifdef CRD300
 #warning "CRD300-build."
@@ -163,8 +166,9 @@ void main()
 	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
 	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
-
-	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000);
+	canbygpioTx.setMasterCore(GPIO_CORE_CPU2);
+	canbygpioRx.setMasterCore(GPIO_CORE_CPU2);
+	canbygpioClk.setMasterCore(GPIO_CORE_CPU2);
 
 	microcanopen::IpcSignals canIpcSignalsTest =
 	{
@@ -176,10 +180,10 @@ void main()
 		.tsdo = mcu::IpcSignalPair(19),
 	};
 
-	microcanopen::SdoService<mcu::CANB> sdoServiceTest(NULL);
-	microcanopen::TpdoService<mcu::CANB> tpdoServiceTest(NULL);
-	microcanopen::RpdoService<mcu::CANB> rpdoServiceTest(NULL);
-	microcanopen::McoServer<mcu::CANB, emb::MODE_MASTER> mcoServerTest(
+	microcanopen::SdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoServiceTest(NULL);
+	microcanopen::TpdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoServiceTest(NULL);
+	microcanopen::RpdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> rpdoServiceTest(NULL);
+	microcanopen::McoServer<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> mcoServerTest(
 			mcu::GpioPinConfig(6, GPIO_6_CANTXB),
 			mcu::GpioPinConfig(7, GPIO_7_CANRXB),
 			mcu::CAN_BITRATE_125K, mcu::CAN_SILENT_MODE,
@@ -192,7 +196,6 @@ void main()
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 0);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM4, 0);
 
-	mcoServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x182);
 	mcoServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x200);
 	mcoServerTest.enable();
 #endif
@@ -238,7 +241,7 @@ void main()
 #ifdef CRD300
 	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #else
-	mcu::GpioPinConfig drvFltPinCfg();
+	mcu::GpioPinConfig drvFltPinCfg;
 #endif
 	mcu::GpioPin drvFltPin(drvFltPinCfg);
 	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
@@ -367,14 +370,6 @@ void main()
 		mcu::SystemClock::runTasks();
 
 #ifdef CAN_BY_GPIO
-		const char* testText = "DEADBEEF";
-		uint16_t testData[8];
-		memcpy(testData, testText, 8);
-
-		uint64_t testDataRaw;
-		emb::c28x::from_8bit_bytes(testDataRaw, testData);
-		cbgTranceiver.send<uint64_t>(testDataRaw, 0x200);
-		mcu::delay_us(10000);
 		mcoServerTest.run();
 #endif
 	}

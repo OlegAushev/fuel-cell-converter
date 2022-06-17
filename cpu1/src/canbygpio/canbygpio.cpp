@@ -56,7 +56,10 @@ __interrupt void Transceiver::onClockInterrupt()
 	oddFlag = 1 - oddFlag;
 	Transceiver* tranceiver = Transceiver::instance();
 
-	GPIO_togglePin(tranceiver->m_clkPin.config().no);
+	if (oddFlag)
+	{
+		GPIO_togglePin(tranceiver->m_clkPin.config().no);
+	}
 
 	if ((tranceiver->m_txActive) && oddFlag)
 	{

@@ -1,6 +1,10 @@
 ///
 //#define CAN_BY_GPIO
 
+#ifdef CAN_BY_GPIO
+#warning "CAN_BY_GPIO test build."
+#endif
+
 
 #include "F28x_Project.h"
 #include "device.h"
@@ -17,6 +21,7 @@
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu2clocktasks.h"
+#include "canbygpio/canbygpio.h"
 
 
 #pragma DATA_SECTION("SHARED_CONVERTER")
@@ -80,7 +85,16 @@ void main()
 	/*###############*/
 	/*# CAN BY GPIO #*/
 	/*###############*/
+#ifdef CAN_BY_GPIO
+	mcu::GpioPinConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioPinConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1);
+	mcu::GpioPinConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
+	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
+	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
 
+	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000);
+#endif
 
 /*####################################################################################################################*/
 	/*##################*/
@@ -101,6 +115,14 @@ void main()
 	while (true)
 	{
 		mcu::SystemClock::runTasks();
+
+#ifdef CAN_BY_GPIO
+		uint16_t testData[8] = {0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF};
+		uint64_t testDataRaw;
+		emb::c28x::from_8bit_bytes(testDataRaw, testData);
+		cbgTranceiver.send<uint64_t>(testDataRaw, 0x200);
+		mcu::delay_us(10000);
+#endif
 	}
 }
 

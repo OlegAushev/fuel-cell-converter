@@ -177,13 +177,13 @@ public:
 	void init(const GpioPinConfig& cfg)
 	{
 		m_cfg = cfg;
-#ifdef CPU1
 		if (m_cfg.valid)
 		{
 			m_initialized = true;	// _init() uses set(), so m_initialized must be set first
+#ifdef CPU1
 			_init();
-		}
 #endif
+		}
 	}
 
 	/**
