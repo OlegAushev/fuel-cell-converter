@@ -16,6 +16,8 @@
 #include "emb/emb_math.h"
 #include "mcu/system/mcusystem.h"
 #include "mcu/cputimers/mcucputimers.h"
+
+// APP-SPECIFIC headers
 #include "syslog/syslog.h"
 #include "boostconverter/boostconverter.h"
 
@@ -45,6 +47,7 @@ namespace od {
 /// @{
 
 
+// APP-SPECIFIC objects
 extern BoostConverter* converter;
 
 

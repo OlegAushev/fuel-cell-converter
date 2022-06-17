@@ -11,6 +11,10 @@
 const mcu::GpioPinConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioPinConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioPinConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+#else
+const mcu::GpioPinConfig rstPinCfg;
+const mcu::GpioPinConfig errPinCfg;
+const mcu::GpioPinConfig relPinCfg;
 #endif
 
 
@@ -20,6 +24,7 @@ const mcu::GpioPinConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, mcu::
 BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 		const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
 	: emb::c28x::Singleton<BoostConverter>(this)
+	, m_config(converterConfig)
 	, FLT_PIN(converterConfig.fltPin)
 	, RST_PIN(rstPinCfg)
 	, ERR_PIN(errPinCfg)
@@ -91,15 +96,16 @@ __interrupt void BoostConverter::onAdcVoltageInInterrupt()
 	BoostConverter* converter = BoostConverter::instance();
 
 	float vIn = converter->inVoltageSensor.read();
-	if (vIn > converter->m_config.ovpVoltageIn)
+	converter->m_voltageIn.process(vIn);
+
+	if (converter->m_voltageIn.output() > converter->m_config.ovpVoltageIn)
 	{
 		Syslog::setFault(Fault::OVP_IN);
 	}
-	else if (vIn < converter->m_config.uvpVoltageIn)
+	else if (converter->m_voltageIn.output() < converter->m_config.uvpVoltageIn)
 	{
-		Syslog::setFault(Fault::UVP_IN);
+		// TODO Syslog::setFault(Fault::UVP_IN);
 	}
-	converter->m_voltageIn.process(vIn);
 
 	converter->inVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_IN);
 }
@@ -114,12 +120,13 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 	BoostConverter* converter = BoostConverter::instance();
 
 	float vOut = converter->outVoltageSensor.read();
-	if (vOut > converter->m_config.ovpVoltageOut)
+	converter->m_voltageOut.process(vOut);
+
+	if (converter->m_voltageOut.output() > converter->m_config.ovpVoltageOut)
 	{
 		Syslog::setFault(Fault::OVP_OUT);
 	}
 
-	converter->m_voltageOut.process(vOut);
 	if (converter->m_voltageOut.output() > converter->m_config.batteryChargedVoltage)
 	{
 		Syslog::setWarning(Warning::BATTERY_CHARGED);

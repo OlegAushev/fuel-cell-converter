@@ -20,6 +20,14 @@ namespace mcu {
 /// @{
 
 
+///
+enum IpcMode
+{
+	IPC_MODE_SINGLECORE,
+	IPC_MODE_DUALCORE
+};
+
+
 /**
  * @brief Local IPC signal.
  */
@@ -137,6 +145,45 @@ inline void acknowledgeRemoteIpcSignal(RemoteIpcSignal ipcFlag)
 inline void revokeLocalIpcSignal(LocalIpcSignal ipcFlag)
 {
 	IPCLtoRFlagClear(ipcFlag.flag);
+}
+
+
+/**
+ * @brief Checks local or remote flag according to ipc mode.
+ * @param ipcSignalPair - IPC signal pair
+ * @param mode - IPC mode
+ * @return \c true if flag is set, \c false otherwise.
+ */
+inline bool ipcSignalSent(const IpcSignalPair& ipcSignalPair, IpcMode mode)
+{
+	switch (mode)
+	{
+	case mcu::IPC_MODE_SINGLECORE:
+		return localIpcSignalSent(ipcSignalPair.local);
+	case mcu::IPC_MODE_DUALCORE:
+		return remoteIpcSignalSent(ipcSignalPair.remote);
+	}
+	return false;
+}
+
+
+/**
+ * @brief Resets local or remote flag according to ipc mode.
+ * @param ipcSignalPair - IPC signal pair
+ * @param mode - IPC mode
+ * @return (none)
+ */
+inline void resetIpcSignal(const IpcSignalPair& ipcSignalPair, IpcMode mode)
+{
+	switch (mode)
+	{
+	case mcu::IPC_MODE_SINGLECORE:
+		revokeLocalIpcSignal(ipcSignalPair.local);
+		return;
+	case mcu::IPC_MODE_DUALCORE:
+		acknowledgeRemoteIpcSignal(ipcSignalPair.remote);
+		return;
+	}
 }
 
 

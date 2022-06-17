@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configurations XML_version="1.2" id="configurations_0">
-                                            
+                                                
+    
     
     
     
@@ -11,7 +12,8 @@
     
     
     <configuration XML_version="1.2" id="configuration_0">
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -22,7 +24,8 @@
         
         
         <instance XML_version="1.2" desc="Texas Instruments XDS100v2 USB Debug Probe" href="connections/TIXDS100v2_Connection.xml" id="Texas Instruments XDS100v2 USB Debug Probe" xml="TIXDS100v2_Connection.xml" xmlpath="connections"/>
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -33,7 +36,8 @@
         
         
         <connection XML_version="1.2" id="Texas Instruments XDS100v2 USB Debug Probe">
-                                                                                                                                    
+                                                                                                                                                
+            
             
             
             
@@ -44,7 +48,8 @@
             
             
             <instance XML_version="1.2" href="drivers/tixds100v2icepick_c.xml" id="drivers" xml="tixds100v2icepick_c.xml" xmlpath="drivers"/>
-                                                                                                                                    
+                                                                                                                                                
+            
             
             
             
@@ -55,7 +60,8 @@
             
             
             <instance XML_version="1.2" href="drivers/tixds100v2c28x.xml" id="drivers" xml="tixds100v2c28x.xml" xmlpath="drivers"/>
-                                                                                                                                    
+                                                                                                                                                
+            
             
             
             
@@ -66,7 +72,8 @@
             
             
             <instance XML_version="1.2" href="drivers/tixds100v2cla1.xml" id="drivers" xml="tixds100v2cla1.xml" xmlpath="drivers"/>
-                                                                                                                                    
+                                                                                                                                                
+            
             
             
             
@@ -77,7 +84,8 @@
             
             
             <instance XML_version="1.2" href="drivers/tixds100v2cs_child.xml" id="drivers" xml="tixds100v2cs_child.xml" xmlpath="drivers"/>
-                                                                                                                                    
+                                                                                                                                                
+            
             
             
             
@@ -88,7 +96,8 @@
             
             
             <platform XML_version="1.2" id="platform_0">
-                                                                                                                                                                                
+                                                                                                                                                                                                
+                
                 
                 
                 
@@ -99,7 +108,8 @@
                 
                 
                 <instance XML_version="1.2" desc="TMS320F28379D" href="devices/f28379d.xml" id="TMS320F28379D" xml="f28379d.xml" xmlpath="devices"/>
-                                                                                                                                                                                
+                                                                                                                                                                                                
+                
                 
                 
                 
@@ -110,7 +120,8 @@
                 
                 
                 <device HW_revision="1" XML_version="1.2" description="" id="TMS320F28379D" partnum="TMS320F28379D" simulation="no">
-                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                
+                    
                     
                     
                     
@@ -121,7 +132,8 @@
                     
                     
                     <router HW_revision="1.0" XML_version="1.2" description="ICEPick_C router" id="IcePick_C_0" isa="ICEPICK_C">
-                                                                                                                                                                                                                                                                        
+                                                                                                                                                                                                                                                                                                
+                        
                         
                         
                         
@@ -132,7 +144,8 @@
                         
                         
                         <subpath id="Subpath_1">
-                                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                                                
+                            
                             
                             
                             
@@ -143,7 +156,8 @@
                             
                             
                             <property Type="numericfield" Value="0x11" desc="Port Number_0" id="Port Number"/>
-                                                                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                                                            
+                        
                         
                         
                         
@@ -154,7 +168,8 @@
                         
                         
                         </subpath>
-                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                            
+                    
                     
                     
                     
@@ -165,7 +180,8 @@
                     
                     
                     </router>
-                                                                                                                                                                                                                        
+                                                                                                                                                                                                                                            
+                
                 
                 
                 
@@ -176,7 +192,8 @@
                 
                 
                 </device>
-                                                                                                                                                                            
+                                                                                                                                                                                            
+            
             
             
             
@@ -187,7 +204,8 @@
             
             
             </platform>
-                                                                                                                                
+                                                                                                                                            
+        
         
         
         
@@ -198,7 +216,8 @@
         
         
         </connection>
-                                                                                    
+                                                                                            
+    
     
     
     
@@ -209,7 +228,8 @@
     
     
     </configuration>
-                                        
+                                            
+
 
 
 

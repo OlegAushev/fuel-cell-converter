@@ -1,4 +1,7 @@
 ///
+#define FIRMWARE_VERSION_DEF 2206
+
+
 //#define CAN_BY_GPIO
 
 #ifdef CRD300
@@ -14,7 +17,7 @@
 //#warning "External storage is disabled."
 #endif
 
-/*=====================*/
+
 #include "F28x_Project.h"
 #include "device.h"
 #include <new>
@@ -55,7 +58,7 @@ BoostConverter* converter;
 /* ============================ SYSTEM INFO ================================= */
 /* ========================================================================== */
 const char* Syslog::DEVICE_NAME = "FCC";
-const uint32_t Syslog::SOFTWARE_VERSION = 2206;
+const uint32_t Syslog::FIRMWARE_VERSION = FIRMWARE_VERSION_DEF;
 
 #if defined(RUNTESTS)
 const char* Syslog::BUILD_CONFIGURATION = "TEST";
@@ -237,7 +240,7 @@ void main()
 #else
 	mcu::GpioPinConfig drvFltPinCfg();
 #endif
-	mcu::GpioPin drvFltPin;
+	mcu::GpioPin drvFltPin(drvFltPinCfg);
 	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
 
 /*####################################################################################################################*/
@@ -245,9 +248,6 @@ void main()
 	/*# BOOT CPU2 #*/
 	/*#############*/
 #ifdef DUALCORE
-	mcu::CanUnit<mcu::CANA>::transferControlToCpu2(
-			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
-			mcu::GpioPinConfig(18, GPIO_18_CANRXA));
 	mcu::bootCpu2();
 	Syslog::addMessage(Syslog::DEVICE_BOOT_CPU2);
 	mcu::waitForIpcSignal(CPU2_BOOTED);
@@ -298,15 +298,10 @@ void main()
 		.tsdo = mcu::IpcSignalPair(9),
 	};
 
-#ifdef DUALCORE
-	microcanopen::SdoService<mcu::CANA> sdoService(converter);
-	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
-	microcanopen::McoServer<mcu::CANA, emb::MODE_SLAVE> mcoServer(NULL, &rpdoService, &sdoService, canIpcSignals);
-#else
-	microcanopen::SdoService<mcu::CANA> sdoService(converter);
-	microcanopen::TpdoService<mcu::CANA> tpdoService(converter);
-	microcanopen::RpdoService<mcu::CANA> rpdoService(converter);
-	microcanopen::McoServer<mcu::CANA, emb::MODE_MASTER> mcoServer(
+	microcanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
+	microcanopen::TpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoService(converter);
+	microcanopen::RpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> rpdoService(converter);
+	microcanopen::McoServer<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> mcoServer(
 			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
 			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
 			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
@@ -321,7 +316,7 @@ void main()
 
 	mcoServer.setRpdoId(microcanopen::RPDO_NUM1, 0x194);
 	mcoServer.setRpdoId(microcanopen::RPDO_NUM2, 0x294);
-#endif
+
 
 /*####################################################################################################################*/
 	/*##################*/
@@ -357,10 +352,7 @@ void main()
 	mcu::sendIpcSignal(CPU1_PERIPHERY_CONFIGURED);
 #endif
 	Syslog::addMessage(Syslog::DEVICE_CPU1_READY);
-
-#ifndef DUALCORE
 	mcoServer.enable();
-#endif
 
 #warning "Watchdog disabled"
 	//mcu::SystemClock::enableWatchdog();

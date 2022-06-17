@@ -33,6 +33,7 @@ struct McoServerConfig
 	uint32_t periodTpdo4;
 };
 
+
 /**
  * Node ID class.
  */
@@ -43,6 +44,7 @@ public:
 	explicit NodeId(unsigned int _value) : value(_value) {}
 };
 
+
 /// Network management state
 enum NmtState
 {
@@ -51,6 +53,7 @@ enum NmtState
 	OPERATIONAL = 0x05,
 	PRE_OPERATIONAL = 0x7F
 };
+
 
 /// COB type
 enum CobType
@@ -126,11 +129,14 @@ const unsigned int cobDataLen[COB_TYPE_COUNT] = {
 	1	// HEARTBEAT
 };
 
+
 /// TPDO numbers
 enum TpdoNum {TPDO_NUM1, TPDO_NUM2, TPDO_NUM3, TPDO_NUM4};
 
+
 /// RPDO numbers
 enum RpdoNum {RPDO_NUM1, RPDO_NUM2, RPDO_NUM3, RPDO_NUM4};
+
 
 /// SDO message data union.
 union CobSdoData
@@ -139,6 +145,7 @@ union CobSdoData
 	uint32_t u32;
 	float f32;
 };
+
 
 /**
  * SDO message.
@@ -167,10 +174,12 @@ struct CobSdo
 	}
 };
 
+
 const uint32_t SDO_CCS_WRITE = 1;
 const uint32_t SDO_SCS_WRITE = 3;
 const uint32_t SDO_CCS_READ = 2;
 const uint32_t SDO_SCS_READ = 2;
+
 
 /// OD access possible statuses
 enum ODAccessStatus
@@ -179,6 +188,7 @@ enum ODAccessStatus
 	OD_ACCESS_FAIL = 1,
 	OD_ACCESS_NO_ACCESS = 2
 };
+
 
 /// OD entry data types
 enum ODEntryDataType
@@ -194,9 +204,11 @@ enum ODEntryDataType
 	OD_STRING
 };
 
+
 /// OD entry data types sizes
 const size_t ODEntryDataSizes[9] = {sizeof(bool), sizeof(int16_t), sizeof(int32_t),
 		sizeof(uint16_t), sizeof(uint32_t), sizeof(float), sizeof(uint16_t), 0, 0};
+
 
 /**
  * @brief OD entry key.
@@ -206,6 +218,7 @@ struct ODEntryKey
 	uint32_t index;
 	uint32_t subindex;
 };
+
 
 /**
  * @brief OD entry value.
@@ -224,6 +237,7 @@ struct ODEntryValue
 	ODAccessStatus (*writeAccessFunc)(CobSdoData val);
 };
 
+
 /**
  * @brief OD entry.
  */
@@ -233,11 +247,13 @@ struct ODEntry
 	ODEntryValue value;
 };
 
+
 inline bool operator<(const ODEntry& lhs, const ODEntry& rhs)
 {
 	return (lhs.key.index < rhs.key.index)
 			|| ((lhs.key.index == rhs.key.index) && (lhs.key.subindex < rhs.key.subindex));
 }
+
 
 /**
  * @brief OD entry key aux class. C++03 doesn't have direct {}-initialization.
@@ -249,16 +265,19 @@ struct ODEntryKeyAux
 	ODEntryKeyAux(uint32_t _index, uint32_t _subindex) : index(_index), subindex(_subindex) {}
 };
 
+
 inline bool operator<(const ODEntryKeyAux& lhs, const ODEntry& rhs)
 {
 	return (lhs.index < rhs.key.index)
 			|| ((lhs.index == rhs.key.index) && (lhs.subindex < rhs.key.subindex));
 }
 
+
 inline bool operator==(const ODEntryKeyAux& lhs, const ODEntry& rhs)
 {
 	return (lhs.index == rhs.key.index) && (lhs.subindex == rhs.key.subindex);
 }
+
 
 inline bool operator==(const ODEntry& lhs, const ODEntryKeyAux& rhs)
 {
@@ -266,18 +285,21 @@ inline bool operator==(const ODEntry& lhs, const ODEntryKeyAux& rhs)
 }
 
 
-
 /// Used in OD-entries which doesn't have direct access to data through pointer.
 #define OD_NO_DIRECT_ACCESS static_cast<uint32_t*>(NULL)
+
 
 /// Used in OD-entries which have direct access to data through pointer.
 #define OD_PTR(ptr) reinterpret_cast<uint32_t*>(ptr)
 
+
 /// Used in OD-entries which don't have read access to data through function.
 inline ODAccessStatus OD_NO_READ_ACCESS(CobSdoData& dest) { return OD_ACCESS_NO_ACCESS; }
 
+
 /// Used in OD-entries which don't have write access to data through function.
 inline ODAccessStatus OD_NO_WRITE_ACCESS(CobSdoData val) { return OD_ACCESS_NO_ACCESS; }
+
 
 /// OD_TASK execution status
 enum TaskStatus
@@ -287,6 +309,7 @@ enum TaskStatus
 	TASK_IN_PROGRESS = 2,
 	TASK_STARTED = 3
 };
+
 
 /// @}
 } // namespace microcanopen

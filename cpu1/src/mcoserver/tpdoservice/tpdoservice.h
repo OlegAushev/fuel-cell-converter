@@ -15,6 +15,8 @@
 
 #include "../mcodef.h"
 #include "mcu/can/mcucan.h"
+
+// APP-SPECIFIC headers
 #include "syslog/syslog.h"
 #include "boostconverter/boostconverter.h"
 
@@ -25,7 +27,7 @@ namespace microcanopen {
 
 
 /* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART BEGIN ====================== */
+/* ======================= APPLICATION-SPECIFIC BEGIN ======================= */
 /* ========================================================================== */
 
 /**
@@ -71,6 +73,7 @@ struct CobTpdo1
 	}
 };
 
+
 /**
  * @ingroup mco_app_spec
  * @brief TPDO2 message data.
@@ -109,6 +112,7 @@ struct CobTpdo2
 		return data;
 	}
 };
+
 
 /**
  * @ingroup mco_app_spec
@@ -149,6 +153,7 @@ struct CobTpdo3
 	}
 };
 
+
 /**
  * @ingroup mco_app_spec
  * @brief TPDO4 message data.
@@ -180,14 +185,26 @@ struct CobTpdo4
 		return data;
 	}
 };
+
 /* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART END ======================== */
+/* ======================== APPLICATION-SPECIFIC END ======================== */
 /* ========================================================================== */
+
+
+// APP-SPECIFIC defines
+#if (defined(ACIM_MOTOR_SIX_PHASE))
+#define TPDO_DRIVE(module, ipc, mode) TpdoService<module, ipc, mode>::drive6Ph
+#elif (defined(ACIM_MOTOR_THREE_PHASE))
+#define TPDO_DRIVE(module, ipc, mode) TpdoService<module, ipc, mode>::drive3Ph_1
+#elif (defined(ACIM_TWO_MOTORS))
+#define TPDO_DRIVE(module, ipc, mode) TpdoService<module, ipc, mode>::drive3Ph_1
+#endif
+
 
 /**
  * @brief TPDO-service class.
  */
-template <mcu::CanModule Module>
+template <mcu::CanModule Module, mcu::IpcMode Ipc, emb::MasterSlaveMode Mode>
 class TpdoService
 {
 	friend class TpdoServiceTest;
@@ -201,7 +218,44 @@ public:
 	 * @param (none)
 	 * @return TPDO1 message raw data.
 	 */
-	uint64_t makeTpdo1();
+	uint64_t makeTpdo1()
+	{
+		CobTpdo1 msg;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			//saveDriveState(msg, TPDO_DRIVE(Module, Ipc, Mode)->state());
+			saveRunStatus(msg, converter->state());
+			saveFaultStatus(msg, Syslog::faults());
+			saveWarningStatus(msg, Syslog::warnings());
+			// TODO tpdoService.saveOverheatStatus(msg,
+			//saveReferenceType(msg, TPDO_DRIVE(Module, Ipc, Mode)->model.reference());
+			//saveControlLoopType(msg, TPDO_DRIVE(Module, Ipc, Mode)->model.controlLoopType());
+			/* TODO
+			tpdoService.saveTorquePU(msg, m_drive->model.torque() * m_drive->positionSensor.signOfPositiveDirection() / m_drive->model.torqueMax());
+			tpdoService.saveSpeed(msg, m_drive->positionSensor.speed(srm::PositionSensor::CAPTURE_BASIS).rpm() * m_drive->positionSensor.signOfPositiveDirection());
+			tpdoService.saveStatorCurrent(msg, m_drive->model.currentPhaseRms());
+			tpdoService.savePower(msg, m_drive->powerMech());
+			tpdoService.saveDcVoltage(msg, m_drive->converter.voltageDC());
+			tpdoService.saveFieldCurrent(msg, m_drive->converter.currents()[srm::CURRENT_FIELD]);
+			tpdoService.saveRunStatus(msg, m_drive->converter.state());
+			tpdoService.saveFaultStatus(msg, syslog.faults());
+			tpdoService.saveWarningStatus(msg, syslog.warnings());
+			tpdoService.saveOverheatStatus(msg,
+					syslog.hasWarning(Warning::JUNCTION_OVERHEATING)
+					|| syslog.hasWarning(Warning::CASE_AIR_OVERHEATING)
+					|| syslog.hasWarning(Warning::STATOR_OVERHEATING)
+					|| syslog.hasWarning(Warning::FIELD_WINDING_OVERHEATING));
+			*/
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		return msg.all();
+	}
 
 	/**
 	 * @ingroup mco_app_spec
@@ -209,7 +263,33 @@ public:
 	 * @param (none)
 	 * @return TPDO2 message raw data.
 	 */
-	uint64_t makeTpdo2();
+	uint64_t makeTpdo2()
+	{
+		CobTpdo2 msg;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			/* TODO
+			tpdoService.saveMotorTemp(msg, m_drive->motor.temperature(srm::Motor::STATOR));
+			tpdoService.saveOutputVoltagePU(msg, m_drive->model.pwmDutyCycle());
+			tpdoService.saveTorqueLimitationStatus(msg, 0);	// TODO
+			tpdoService.saveFwMotorTemp(msg, m_drive->motor.temperature(srm::Motor::FIELD_WINDING));
+			#ifdef CRD300
+			tpdoService.saveHeatsinkTemp(msg, m_drive->converter.temperature(srm::Converter::MODULE_PHASE_B));
+			#else
+			tpdoService.saveHeatsinkTemp(msg, m_drive->converter.temperature(srm::Converter::AIR));
+			#endif
+			tpdoService.saveCaseAirTemp(msg, m_drive->converter.temperature(srm::Converter::AIR));
+			*/
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		return msg.all();
+	}
 
 	/**
 	 * @ingroup mco_app_spec
@@ -217,7 +297,32 @@ public:
 	 * @param (none)
 	 * @return TPDO3 message raw data.
 	 */
-	uint64_t makeTpdo3();
+	uint64_t makeTpdo3()
+	{
+		CobTpdo3 msg;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			/* TODO
+			tpdoService.savePosHousingVoltage(msg, m_drive->converter.voltageDC()/2);
+			tpdoService.saveNegHousingVoltage(msg, m_drive->converter.voltageDC()/2);
+			tpdoService.saveInsulationLowStatus(msg, 0);
+			tpdoService.saveInsulationLowStatusWoFilter(msg, 0);
+			tpdoService.saveDcCurrent(msg, m_drive->converter.currents()[srm::CURRENT_DC]);
+
+			Syslog syslog;
+			msg.syslogInfo = static_cast<uint32_t>(syslog.readMessage());
+			syslog.popMessage();
+			*/
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		return msg.all();
+	}
 
 	/**
 	 * @ingroup mco_app_spec
@@ -225,11 +330,24 @@ public:
 	 * @param (none)
 	 * @return TPDO4 message raw data.
 	 */
-	uint64_t makeTpdo4();
+	uint64_t makeTpdo4()
+	{
+		CobTpdo4 msg;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			saveFaults(msg, Syslog::faults());
+			saveWarnings(msg, Syslog::warnings());
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		return msg.all();
+	}
 
-/* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART BEGIN ====================== */
-/* ========================================================================== */
 public:
 	/**
 	 * @ingroup mco_app_spec
@@ -237,12 +355,19 @@ public:
 	 */
 	TpdoService(BoostConverter* _converter)
 	{
+		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
+		// APP-SPECIFIC BEGIN
 		converter = _converter;
+		// APP-SPECIFIC END
 	}
 
 private:
-	BoostConverter* converter;
+	// APP-SPECIFIC objects
+	const BoostConverter* converter;
 
+/* ========================================================================== */
+/* ======================= APPLICATION-SPECIFIC BEGIN ======================= */
+/* ========================================================================== */
 private:
 	static const float SPEED_RPM_LIMIT = 8000;
 	static const float STATOR_CURRENT_LIMIT = 650;
@@ -623,9 +748,8 @@ private:
 	 * @param warnings
 	 */
 	static void saveWarnings(CobTpdo4& msg, uint32_t warnings) { msg.can1.warnings = warnings; }
-
 /* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART END ======================== */
+/* ======================== APPLICATION-SPECIFIC END ======================== */
 /* ========================================================================== */
 };
 

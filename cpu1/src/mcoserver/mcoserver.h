@@ -12,20 +12,22 @@
 
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
+#include "mcu/can/mcucan.h"
+#include "mcu/ipc/mcuipc.h"
+#include "mcu/cputimers/mcucputimers.h"
 #include "mcodef.h"
 #include "tpdoservice/tpdoservice.h"
 #include "rpdoservice/rpdoservice.h"
 #include "sdoservice/sdoservice.h"
 
+// APP-SPECIFIC headers
 #include "syslog/syslog.h"
-#include "mcu/can/mcucan.h"
-#include "mcu/ipc/mcuipc.h"
-#include "mcu/cputimers/mcucputimers.h"
 
 
 namespace microcanopen {
 /// @addtogroup mco_server
 /// @{
+
 
 /**
  * @brief IPC flags.
@@ -40,17 +42,18 @@ struct IpcSignals
 	mcu::IpcSignalPair tsdo;
 };
 
+
 /**
  * @brief MicroCANopen server class.
  */
-template <mcu::CanModule Module, emb::MasterSlaveMode Mode>
-class McoServer : public emb::c28x::Singleton<McoServer<Module, Mode> >
+template <mcu::CanModule Module, mcu::IpcMode Ipc, emb::MasterSlaveMode Mode>
+class McoServer : public emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >
 {
 private:
 	mcu::CanUnit<Module>* m_canUnit;
-	TpdoService<Module>* m_tpdoService;
-	RpdoService<Module>* m_rpdoService;
-	SdoService<Module>* m_sdoService;
+	TpdoService<Module, Ipc, Mode>* m_tpdoService;
+	RpdoService<Module, Ipc, Mode>* m_rpdoService;
+	SdoService<Module, Ipc, Mode>* m_sdoService;
 
 	volatile NmtState m_state;
 	unsigned int m_nodeId;
@@ -75,11 +78,11 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(TpdoService<Module>* tpdoService,
-			RpdoService<Module>* rpdoService,
-			SdoService<Module>* sdoService,
+	McoServer(TpdoService<Module, Ipc, Mode>* tpdoService,
+			RpdoService<Module, Ipc, Mode>* rpdoService,
+			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcSignals& ipcSignals)
-		: emb::c28x::Singleton<McoServer<Module, Mode> >(this)
+		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
 		, m_canUnit(NULL)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
@@ -93,10 +96,11 @@ public:
 		, RPDO4_RECEIVED(ipcSignals.rpdo4)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_SLAVE);
+		EMB_STATIC_ASSERT(Ipc != mcu::IPC_MODE_SINGLECORE);
 
-		rpdoService->initIpcSignals(&RPDO1_RECEIVED, &RPDO2_RECEIVED,
-				&RPDO3_RECEIVED, &RPDO4_RECEIVED);
-		sdoService->initIpcSignals(&RSDO_RECEIVED, &TSDO_READY);
+		rpdoService->initIpcSignals(RPDO1_RECEIVED, RPDO2_RECEIVED,
+				RPDO3_RECEIVED, RPDO4_RECEIVED);
+		sdoService->initIpcSignals(RSDO_RECEIVED, TSDO_READY);
 	}
 
 	/**
@@ -113,11 +117,11 @@ public:
 	McoServer(mcu::GpioPinConfig txPin, mcu::GpioPinConfig rxPin,
 			mcu::CanBitrate bitrate, mcu::CanMode mode,
 			NodeId nodeId,
-			TpdoService<Module>* tpdoService,
-			RpdoService<Module>* rpdoService,
-			SdoService<Module>* sdoService,
+			TpdoService<Module, Ipc, Mode>* tpdoService,
+			RpdoService<Module, Ipc, Mode>* rpdoService,
+			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcSignals& ipcSignals)
-		: emb::c28x::Singleton<McoServer<Module, Mode> >(this)
+		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
@@ -132,9 +136,9 @@ public:
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 
-		rpdoService->initIpcSignals(&RPDO1_RECEIVED, &RPDO2_RECEIVED,
-				&RPDO3_RECEIVED, &RPDO4_RECEIVED);
-		sdoService->initIpcSignals(&RSDO_RECEIVED, &TSDO_READY);
+		rpdoService->initIpcSignals(RPDO1_RECEIVED, RPDO2_RECEIVED,
+				RPDO3_RECEIVED, RPDO4_RECEIVED);
+		sdoService->initIpcSignals(RSDO_RECEIVED, TSDO_READY);
 
 		m_state = INITIALIZING;
 		m_canUnit = new mcu::CanUnit<Module>(txPin, rxPin, bitrate, mode);
@@ -228,18 +232,28 @@ public:
 	 */
 	void run()
 	{
-#ifdef CPU1
-		m_rpdoService->respondToProcessedRpdo();
-		m_sdoService->processRequest();
-#ifndef DUALCORE
-		runPeriodicTasks();
-		sendSdoResponse();
-#endif
-#endif
-#ifdef CPU2
-		runPeriodicTasks();
-		sendSdoResponse();
-#endif
+		switch (Ipc)
+		{
+		case mcu::IPC_MODE_SINGLECORE:
+			m_rpdoService->respondToProcessedRpdo();
+			m_sdoService->processRequest();
+			runPeriodicTasks();
+			sendSdoResponse();
+			break;
+		case mcu::IPC_MODE_DUALCORE:
+			switch (Mode)
+			{
+			case emb::MODE_MASTER:
+				runPeriodicTasks();
+				sendSdoResponse();
+				break;
+			case emb::MODE_SLAVE:
+				m_rpdoService->respondToProcessedRpdo();
+				m_sdoService->processRequest();
+				break;
+			}
+			break;
+		}
 	}
 
 	/**
@@ -291,19 +305,12 @@ public:
 	 */
 	void sendSdoResponse()
 	{
-#ifdef DUALCORE
-		if (!mcu::remoteIpcSignalSent(TSDO_READY.remote)) return;
-#else
-		if (!mcu::localIpcSignalSent(TSDO_READY.local)) return;
-#endif
+		if (!mcu::ipcSignalSent(TSDO_READY, Ipc)) return;
 
-		emb::c28x::to_8bit_bytes<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module>::tsdoData());
+		emb::c28x::to_8bit_bytes<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module, Ipc, Mode>::tsdoData());
 		m_canUnit->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
-#ifdef DUALCORE
-		mcu::acknowledgeRemoteIpcSignal(TSDO_READY.remote);
-#else
-		mcu::revokeLocalIpcSignal(TSDO_READY.local);
-#endif
+
+		mcu::resetIpcSignal(TSDO_READY, Ipc);
 	}
 
 protected:
@@ -381,7 +388,7 @@ protected:
 	 */
 	static __interrupt void onFrameReceived()
 	{
-		McoServer<Module, Mode>* server = McoServer<Module, Mode>::instance();
+		McoServer<Module, Ipc, Mode>* server = McoServer<Module, Ipc, Mode>::instance();
 		mcu::CanUnit<Module>* canUnit = mcu::CanUnit<Module>::instance();
 
 		uint32_t interruptCause = CAN_getInterruptCause(canUnit->base());

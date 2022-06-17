@@ -63,11 +63,10 @@ private:
 	BoostConverterConfig m_config;
 
 	const mcu::GpioPin FLT_PIN;
-#ifndef CRD300
 	const mcu::GpioPin RST_PIN;
 	const mcu::GpioPin ERR_PIN;
 	const mcu::GpioPin REL_PIN;
-#endif
+
 public:
 	/// Converter states
 	enum BoostConverterState
@@ -148,8 +147,18 @@ public:
 
 	float voltageIn() const { return m_voltageIn.output(); }
 	float voltageOut() const { return m_voltageOut.output(); }
-	void relOn() const { REL_PIN.set(); }
-	void relOff() const { REL_PIN.reset(); }
+	void relOn() const
+	{
+#ifndef CRD300
+		REL_PIN.set();
+#endif
+	}
+	void relOff() const
+	{
+#ifndef CRD300
+		REL_PIN.reset();
+#endif
+	}
 
 protected:
 	static __interrupt void onPwmEventInterrupt();

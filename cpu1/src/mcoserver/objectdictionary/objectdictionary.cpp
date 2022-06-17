@@ -12,6 +12,7 @@ namespace microcanopen {
 namespace od {
 
 
+// APP-SPECIFIC objects
 BoostConverter* converter = static_cast<BoostConverter*>(NULL);
 
 
@@ -30,7 +31,7 @@ inline ODAccessStatus getDeviceName(CobSdoData& dest)
 
 inline ODAccessStatus getSoftwareVersion(CobSdoData& dest)
 {
-	memcpy(&dest, &Syslog::SOFTWARE_VERSION, sizeof(uint32_t));
+	memcpy(&dest, &Syslog::FIRMWARE_VERSION, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }
 
@@ -521,7 +522,7 @@ inline ODAccessStatus setMrasKi(CobSdoData val)
 
 extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x1008, 0x00}, {"SYSTEM", "INFO", "DEVICE_NAME", "", OD_STRING, true, false, OD_NO_DIRECT_ACCESS, od::getDeviceName, OD_NO_WRITE_ACCESS}},
-{{0x5FFF, 0x00}, {"SYSTEM", "INFO", "SOFTWARE_VERSION", "", OD_UINT32, true, false, OD_NO_DIRECT_ACCESS, od::getSoftwareVersion, OD_NO_WRITE_ACCESS}},
+{{0x5FFF, 0x00}, {"SYSTEM", "INFO", "FIRMWARE_VERSION", "", OD_UINT32, true, false, OD_NO_DIRECT_ACCESS, od::getSoftwareVersion, OD_NO_WRITE_ACCESS}},
 {{0x5FFF, 0x01}, {"SYSTEM", "INFO", "BUILD_CONFIGURATION", "", OD_STRING, true, false, OD_NO_DIRECT_ACCESS, od::getBuildConfiguration, OD_NO_WRITE_ACCESS}},
 
 

@@ -19,6 +19,8 @@
 #include "mcu/ipc/mcuipc.h"
 #include "mcu/gpio/mcugpio.h"
 #include "mcu/cputimers/mcucputimers.h"
+
+// APP-SPECIFIC headers
 #include "boostconverter/boostconverter.h"
 
 
@@ -28,7 +30,7 @@ namespace microcanopen {
 
 
 /* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART BEGIN ====================== */
+/* ======================= APPLICATION-SPECIFIC BEGIN ======================= */
 /* ========================================================================== */
 
 /**
@@ -59,6 +61,7 @@ struct CobRpdo1
 	CobRpdo1(uint64_t rawMsg) { memcpy(this, &rawMsg, sizeof(CobRpdo1)); }
 };
 
+
 /**
  * @ingroup mco_app_spec
  * @brief RPDO2 message data.
@@ -85,6 +88,7 @@ struct CobRpdo2
 	CobRpdo2(uint64_t rawMsg) { memcpy(this, &rawMsg, sizeof(CobRpdo2)); }
 };
 
+
 /**
  * @ingroup mco_app_spec
  * @brief Data storage for IPC.
@@ -96,15 +100,30 @@ struct ProcessedRpdoData
 	float speedRef;
 	float torquePuRef;
 };
+extern ProcessedRpdoData rpdoProcessedDataShared;
+extern ProcessedRpdoData rpdoProcessedDataNonShared;
 
 /* ========================================================================== */
 /* =================== APPLICATION-SPECIFIC PART END ======================== */
 /* ========================================================================== */
 
+
+#if (defined(ACIM_MOTOR_SIX_PHASE))
+#define RPDO_DRIVE(module, ipc, mode) RpdoService<module, ipc, mode>::drive6Ph
+#define RPDO_DRIVE2(module, ipc, mode) static_cast<acim::Drive<acim::SIX_PHASE, acim::DRIVE_INSTANCE_1>*>(NULL)
+#elif (defined(ACIM_MOTOR_THREE_PHASE))
+#define RPDO_DRIVE(module, ipc, mode) RpdoService<module, ipc, mode>::drive3Ph_1
+#define RPDO_DRIVE2(module, ipc, mode) RpdoService<module, ipc, mode>::drive3Ph_2
+#elif (defined(ACIM_TWO_MOTORS))
+#define RPDO_DRIVE(module, ipc, mode) RpdoService<module, ipc, mode>::drive3Ph_1
+#define RPDO_DRIVE2(module, ipc, mode) RpdoService<module, ipc, mode>::drive3Ph_2
+#endif
+
+
 /**
  * @brief RPDO-service class.
  */
-template <mcu::CanModule Module>
+template <mcu::CanModule Module, mcu::IpcMode Ipc, emb::MasterSlaveMode Mode>
 class RpdoService
 {
 	friend class RpdoServiceTest;
@@ -112,20 +131,21 @@ private:
 	RpdoService(const RpdoService& other);			// no copy constructor
 	RpdoService& operator=(const RpdoService& other);	// no copy assignment operator
 
-	mcu::IpcSignalPair* RPDO1_RECEIVED;
-	mcu::IpcSignalPair* RPDO2_RECEIVED;
-	mcu::IpcSignalPair* RPDO3_RECEIVED;
-	mcu::IpcSignalPair* RPDO4_RECEIVED;
+	mcu::IpcSignalPair RPDO1_RECEIVED;
+	mcu::IpcSignalPair RPDO2_RECEIVED;
+	mcu::IpcSignalPair RPDO3_RECEIVED;
+	mcu::IpcSignalPair RPDO4_RECEIVED;
 
+	ProcessedRpdoData* m_rpdoProcessedData;
 public:
 	/**
 	 * @brief Configures IPC signals.
 	 * @return (none)
 	 */
-	void initIpcSignals(mcu::IpcSignalPair* signalPairRpdo1Received,
-			mcu::IpcSignalPair* signalPairRpdo2Received,
-			mcu::IpcSignalPair* signalPairRpdo3Received,
-			mcu::IpcSignalPair* signalPairRpdo4Received)
+	void initIpcSignals(const mcu::IpcSignalPair& signalPairRpdo1Received,
+			const mcu::IpcSignalPair& signalPairRpdo2Received,
+			const mcu::IpcSignalPair& signalPairRpdo3Received,
+			const mcu::IpcSignalPair& signalPairRpdo4Received)
 	{
 		RPDO1_RECEIVED = signalPairRpdo1Received;
 		RPDO2_RECEIVED = signalPairRpdo2Received;
@@ -139,7 +159,24 @@ public:
 	 * @param rawMsg - RPDO1 message raw data.
 	 * @return (none)
 	 */
-	void processRpdo1(uint64_t rawMsg);
+	void processRpdo1(uint64_t rawMsg)
+	{
+		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		CobRpdo1 pdoMsg(rawMsg);
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			m_rpdoProcessedData->bitRun = pdoMsg.can1.run;
+			m_rpdoProcessedData->bitEmergencyStop = pdoMsg.can1.emergencyStop;
+			break;
+		case MCO_CAN2:
+			// RESERVED
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::sendIpcSignal(RPDO1_RECEIVED.local);
+	}
 
 	/**
 	 * @ingroup mco_app_spec
@@ -147,7 +184,24 @@ public:
 	 * @param rawMsg - RPDO2 message raw data.
 	 * @return (none)
 	 */
-	void processRpdo2(uint64_t rawMsg);
+	void processRpdo2(uint64_t rawMsg)
+	{
+		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		CobRpdo2 pdoMsg(rawMsg);
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			m_rpdoProcessedData->speedRef = RpdoService::speedRef(pdoMsg);
+			m_rpdoProcessedData->torquePuRef = RpdoService::torquePuRef(pdoMsg);
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::sendIpcSignal(RPDO2_RECEIVED.local);
+	}
 
 	/**
 	 * @ingroup mco_app_spec
@@ -155,7 +209,22 @@ public:
 	 * @param rawMsg - RPDO3 message raw data.
 	 * @return (none)
 	 */
-	void processRpdo3(uint64_t rawMsg);
+	void processRpdo3(uint64_t rawMsg)
+	{
+		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			// RESERVED
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::sendIpcSignal(RPDO3_RECEIVED.local);
+	}
 
 	/**
 	 * @ingroup mco_app_spec
@@ -163,9 +232,23 @@ public:
 	 * @param rawMsg - RPDO4 message raw data.
 	 * @return (none)
 	 */
-	void processRpdo4(uint64_t rawMsg);
+	void processRpdo4(uint64_t rawMsg)
+	{
+		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			// RESERVED
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::sendIpcSignal(RPDO4_RECEIVED.local);
+	}
 
-#ifdef CPU1
 public:
 	/**
 	 * @ingroup mco_app_spec
@@ -173,40 +256,151 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void respondToProcessedRpdo();
-
-private:
-	void _respondToProcessedRpdo1();
-	void _respondToProcessedRpdo2();
-	void _respondToProcessedRpdo3();
-	void _respondToProcessedRpdo4();
-#endif
-
-/* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART BEGIN ====================== */
-/* ========================================================================== */
-public:
-#ifdef CPU2
-	/**
-	 * @brief Configures service on CPU2.
-	 */
-	RpdoService() {};
-#endif
-
-#ifdef CPU1
-	/**
-	 * @ingroup mco_app_spec
-	 * @brief Configures service.
-	 */
-	RpdoService(BoostConverter* _converter)
+	void respondToProcessedRpdo()
 	{
-		converter = _converter;
+		_respondToProcessedRpdo1();
+		_respondToProcessedRpdo2();
+		_respondToProcessedRpdo3();
+		_respondToProcessedRpdo4();
 	}
 
 private:
-	BoostConverter* converter;
-#endif
+	///
+	///
+	///
+	void _respondToProcessedRpdo1()
+	{
+		if (!mcu::ipcSignalSent(RPDO1_RECEIVED, Ipc)) return;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
+			if (m_rpdoProcessedData->bitRun == true)
+			{
+				converter->start();
+			}
+			else
+			{
+				converter->stop();
+			}
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::resetIpcSignal(RPDO1_RECEIVED, Ipc);
+	}
 
+	///
+	///
+	///
+	void _respondToProcessedRpdo2()
+	{
+		if (!mcu::ipcSignalSent(RPDO2_RECEIVED, Ipc)) return;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			//RPDO_DRIVE(Module, Ipc, Mode)->setSpeedRef(m_rpdoProcessedData->speedRef);
+			//RPDO_DRIVE(Module, Ipc, Mode)->setTorqueRef(m_rpdoProcessedData->torquePuRef);
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::resetIpcSignal(RPDO2_RECEIVED, Ipc);
+	}
+
+	///
+	///
+	///
+	void _respondToProcessedRpdo3()
+	{
+		if (!mcu::ipcSignalSent(RPDO3_RECEIVED, Ipc)) return;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			// RESERVED
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::resetIpcSignal(RPDO3_RECEIVED, Ipc);
+	}
+
+	///
+	///
+	///
+	void _respondToProcessedRpdo4()
+	{
+		if (!mcu::ipcSignalSent(RPDO4_RECEIVED, Ipc)) return;
+		// APP-SPECIFIC BEGIN
+		switch (Module)
+		{
+		case MCO_CAN1:
+			// RESERVED
+			break;
+		case MCO_CAN2:
+			// RESERVED;
+			break;
+		}
+		// APP-SPECIFIC END
+		mcu::resetIpcSignal(RPDO4_RECEIVED, Ipc);
+	}
+
+public:
+	/**
+	 * @brief Configures service.
+	 */
+	RpdoService()
+	{
+		EMB_STATIC_ASSERT(Ipc == mcu::IPC_MODE_DUALCORE);
+		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
+		switch (Ipc)
+		{
+		case mcu::IPC_MODE_SINGLECORE:
+			m_rpdoProcessedData = &rpdoProcessedDataNonShared;
+			break;
+		case mcu::IPC_MODE_DUALCORE:
+			m_rpdoProcessedData = &rpdoProcessedDataShared;
+			break;
+		}
+	}
+
+	/**
+	 * @ingroup mco_app_spec
+	 * @brief Configures service on server that responds to processed RPDO messages.
+	 */
+	RpdoService(BoostConverter* _converter)
+	{
+		switch (Ipc)
+		{
+		case mcu::IPC_MODE_SINGLECORE:
+			m_rpdoProcessedData = &rpdoProcessedDataNonShared;
+			break;
+		case mcu::IPC_MODE_DUALCORE:
+			m_rpdoProcessedData = &rpdoProcessedDataShared;
+			break;
+		}
+
+		// APP-SPECIFIC BEGIN
+		converter = _converter;
+		// APP-SPECIFIC END
+	}
+
+private:
+	// APP-SPECIFIC objects
+	BoostConverter* converter;
+
+/* ========================================================================== */
+/* ======================= APPLICATION-SPECIFIC BEGIN ======================= */
+/* ========================================================================== */
 private:
 	/**
 	 * @ingroup mco_app_spec
@@ -223,9 +417,8 @@ private:
 	 * @return Torque per-unit reference.
 	 */
 	static float torquePuRef(const CobRpdo2& msg) { return msg.can1.torque; }
-
 /* ========================================================================== */
-/* =================== APPLICATION-SPECIFIC PART END ======================== */
+/* ======================== APPLICATION-SPECIFIC END ======================== */
 /* ========================================================================== */
 };
 
