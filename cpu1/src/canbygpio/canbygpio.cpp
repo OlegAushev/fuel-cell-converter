@@ -27,11 +27,15 @@ Transceiver::Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
 	, m_rxPin(rxPin)
 	, m_clkPin(clkPin)
 {
+	m_rxPin.registerInterruptHandler(GPIO_INT_XINT5, GPIO_INT_TYPE_FALLING_EDGE, onRxStart);
+
 	reset();
 
 	mcu::HighResolutionClock::init(1000000 / (2 * bitrate));
 	mcu::HighResolutionClock::registerInterruptHandler(onClockInterrupt);
 	mcu::HighResolutionClock::start();
+
+	m_rxPin.enableInterrupts();
 }
 
 
@@ -73,6 +77,17 @@ __interrupt void Transceiver::onClockInterrupt()
 			tranceiver->m_txActive = false;
 		}
 	}
+}
+
+
+///
+///
+///
+__interrupt void Transceiver::onRxStart()
+{
+	Transceiver* tranceiver = Transceiver::instance();
+
+	tranceiver->m_rxPin.acknowledgeInterrupt();
 }
 
 

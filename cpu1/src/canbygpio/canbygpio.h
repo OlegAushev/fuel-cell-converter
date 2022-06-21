@@ -95,7 +95,7 @@ public:
 protected:
 	int _generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsigned int frameId);
 	static __interrupt void onClockInterrupt();
-
+	static __interrupt void onRxStart();
 
 };
 

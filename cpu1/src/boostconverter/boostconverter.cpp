@@ -35,7 +35,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, m_voltageOut(VDC_SMOOTH_FACTOR)
 	, m_currentIn(0, 0)
 	, m_dutycycleController(converterConfig.kP_dutycycle, converterConfig.kI_dutycucle,
-			1 / pwmConfig.switchingFreq, 0, 0.4f)
+			1 / pwmConfig.switchingFreq, 0, 0.55f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
 			1 / pwmConfig.switchingFreq, converterConfig.currentInMin, converterConfig.currentInMax)
 {

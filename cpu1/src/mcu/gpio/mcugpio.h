@@ -70,6 +70,16 @@ enum PinQualMode
 };
 
 
+namespace detail {
+
+
+extern const uint32_t PIE_XINT_NUMBERS[5];
+extern const uint16_t PIE_XINT_GROUPS[5];
+
+
+} // namespace detail
+
+
 /**
  * @brief GPIO pin config.
  */
@@ -150,6 +160,8 @@ class GpioPin
 private:
 	GpioPinConfig m_cfg;
 	bool m_initialized;
+
+	GPIO_ExternalIntNum m_intNum;
 public:
 	/**
 	 * @brief Gpio pin default constructor.
@@ -278,6 +290,52 @@ private:
 		}
 
 		GPIO_setMasterCore(m_cfg.no, m_cfg.masterCore);
+	}
+
+public:
+	/**
+	 * @brief Registers interrupt handler
+	 * @param intNum - interrupt number
+	 * @param intType - interrupt type
+	 * @param handler - pointer to handler
+	 */
+	void registerInterruptHandler(GPIO_ExternalIntNum intNum, GPIO_IntType intType, void (*handler)(void))
+	{
+		m_intNum = intNum;
+		GPIO_setInterruptType(intNum, intType);
+		GPIO_setInterruptPin(m_cfg.no, intNum);
+		GPIO_enableInterrupt(intNum);
+		Interrupt_register(detail::PIE_XINT_NUMBERS[intNum], handler);
+	}
+
+	/**
+	 * @brief Enables interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void enableInterrupts() const
+	{
+		Interrupt_enable(detail::PIE_XINT_NUMBERS[m_intNum]);
+	}
+
+	/**
+	 * @brief Disables interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void disableInterrupts() const
+	{
+		Interrupt_disable(detail::PIE_XINT_NUMBERS[m_intNum]);
+	}
+
+	/**
+	 * @brief Acknowledges interrupt.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void acknowledgeInterrupt() const
+	{
+		Interrupt_clearACKGroup(detail::PIE_XINT_GROUPS[m_intNum]);
 	}
 };
 
