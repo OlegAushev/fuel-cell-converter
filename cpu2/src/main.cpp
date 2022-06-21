@@ -29,6 +29,11 @@ unsigned char converterobj_loc[sizeof(BoostConverter)];
 BoostConverter* converter;
 
 
+uint16_t testTxData[8] = {0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF};
+uint16_t testRxData[8] = {0};
+unsigned int dataLen, frameId;
+
+
 /* ========================================================================== */
 /* ================================ MAIN ==================================== */
 /* ========================================================================== */
@@ -117,10 +122,15 @@ void main()
 		mcu::SystemClock::runTasks();
 
 #ifdef CAN_BY_GPIO
-		uint16_t testData[8] = {0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF};
 		uint64_t testDataRaw;
-		emb::c28x::from_8bit_bytes(testDataRaw, testData);
+		emb::c28x::from_8bit_bytes(testDataRaw, testTxData);
 		cbgTranceiver.send<uint64_t>(testDataRaw, 0x200);
+
+		if (cbgTranceiver.recv(testRxData, dataLen, frameId) < 0)
+		{
+			mcu::toggleLed(mcu::LED_RED);
+		}
+
 		mcu::delay_us(10000);
 #endif
 	}

@@ -70,6 +70,8 @@ private:
 	unsigned int m_rxSyncFlag;
 	int m_rxBitCount;
 	int m_rxIdx;
+	bool m_rxDataReady;
+	uint64_t m_rxError;
 
 	unsigned int m_clkFlag;
 
@@ -99,8 +101,20 @@ public:
 		m_txActive = true;
 	}
 
+	int recv(uint16_t* data, unsigned int& dataLen, unsigned int& frameId)
+	{
+		dataLen = 0;
+		if (m_rxDataReady)
+		{
+			m_rxDataReady = false;
+			return _parseRxCanFrame(data, dataLen, frameId);
+		}
+		return 1;
+	}
+
 protected:
 	int _generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsigned int frameId);
+	int _parseRxCanFrame(uint16_t* data, unsigned int& dataLen, unsigned int& frameId);
 	static __interrupt void onClockInterrupt();
 	static __interrupt void onRxStart();
 

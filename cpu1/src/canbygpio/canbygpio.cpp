@@ -53,6 +53,7 @@ void Transceiver::reset()
 	m_rxSyncFlag = 0;
 	m_rxBitCount = STREAM_SIZE;
 	m_rxIdx = 0;
+	m_rxDataReady = false;
 
 	m_clkFlag = 0;
 }
@@ -95,6 +96,7 @@ __interrupt void Transceiver::onClockInterrupt()
 		{
 			tranceiver->m_rxActive = false;
 			tranceiver->m_rxPin.enableInterrupts(); // ready for new frame;
+			tranceiver->m_rxDataReady = true;
 		}
 	}
 }
@@ -160,7 +162,7 @@ int Transceiver::_generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsig
 	}
 
 	// CRC
-	uint16_t bitCount = idx;
+	size_t bitCount = idx;
 	uint16_t crcReg = 0;
 	int16_t crcNext;
 	for (size_t i = 0; i < bitCount; ++i)
@@ -188,8 +190,8 @@ int Transceiver::_generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsig
 	txCanBitStream[0] = txBitStream[0];
 	size_t canIdx = 1;
 
-	int16_t sameBits = 0;
-	int16_t stuffBits = 0;
+	int sameBits = 0;
+	int stuffBits = 0;
 
 	for (size_t i = 1; i < bitCount; ++i)
 	{
@@ -227,6 +229,108 @@ int Transceiver::_generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsig
 }
 
 
+///
+///
+///
+int Transceiver::_parseRxCanFrame(uint16_t* data, unsigned int& dataLen, unsigned int& frameId)
+{
+	// init bit stream
+	rxBitStream.fill(-1);
+
+	//Destuff bits: check for 5 consecutive bit states
+	//then skip bit if this occurs
+	size_t bitCount = rxCanBitStream.size();
+	int16_t prevBit = rxBitStream[0];
+	rxBitStream[0] = rxCanBitStream[0];
+	size_t canIdx = 1;
+	size_t idx = 1;
+
+	int sameBits = 0;
+	int stuffBits = 0;
+
+	while (canIdx < bitCount)
+	{
+		rxBitStream[idx++] = rxCanBitStream[canIdx++];
+
+		if(prevBit == rxCanBitStream[canIdx-1])
+		{
+			if (!sameBits)
+				sameBits = 2;
+			else
+				++sameBits;
+
+			if (sameBits == 5)
+			{
+				++canIdx;
+				sameBits = 0;
+				++stuffBits;
+			}
+		}
+		else
+		{
+			sameBits = 0;
+		}
+
+		prevBit = rxCanBitStream[canIdx - 1];
+	}
+
+	idx = 0;
+
+	// SOF
+	if (rxBitStream[idx++] != 0) return -1;
+
+	// ID
+	frameId = 0;
+	for (size_t i = 0; i < 11; ++i)
+	{
+		frameId |= rxBitStream[idx++] << (10 - i);
+	}
+
+	// RTR, IDE, r0
+	if (rxBitStream[idx++] != 0) return -2;
+	if (rxBitStream[idx++] != 0) return -3;
+	if (rxBitStream[idx++] != 0) return -4;
+
+	// DLC
+	dataLen = 0;
+	for (size_t i = 0; i < 4; ++i)
+	{
+		dataLen |= rxBitStream[idx++] << (3 - i);
+	}
+
+	// DATA
+	for (size_t i = 0; i < dataLen; ++i)
+	{
+		for (size_t j = 0; j < 8; ++j)
+		{
+			data[i] |= rxBitStream[idx++] << (7 - j);
+		}
+	}
+
+	// CRC
+	bitCount = idx;
+	uint16_t crcReg = 0;
+	int16_t crcNext;
+	for (size_t i = 0; i < bitCount; ++i)
+	{
+		crcNext = rxBitStream[i] ^ ((crcReg & 0x4000) >> 14);
+		crcReg = (crcReg << 1) & 0x7FFE;
+		if (crcNext)
+		{
+			crcReg = crcReg ^ 0x4599;	// CAN-15 CRC polynomial
+		}
+	}
+
+	uint16_t crcRegRx = 0;
+	for (size_t i = 0; i < 15; ++i)
+	{
+		crcRegRx |= rxBitStream[idx++] << (14 - i);
+	}
+
+	if (crcReg != crcRegRx) return -5;
+
+	return 0;
+}
 
 
 
