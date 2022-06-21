@@ -136,14 +136,14 @@ struct PwmModuleImpl
 {
 	PwmModule instance[PhaseCount];
 	uint32_t base[PhaseCount];
-	uint32_t pieEventIntNo;
-	uint32_t pieTripIntNo;
+	uint32_t pieEventIntNum;
+	uint32_t pieTripIntNum;
 };
 
 
 extern const uint32_t pwmBases[12];
-extern const uint32_t pwmPieEventIntNos[12];
-extern const uint32_t pwmPieTripIntNos[12];
+extern const uint32_t pwmPieEventIntNums[12];
+extern const uint32_t pwmPieTripIntNums[12];
 extern const uint32_t pwmPinOutAConfigs[12];
 extern const uint32_t pwmPinOutBConfigs[12];
 
@@ -193,8 +193,8 @@ public:
 			m_module.instance[i] = cfg.module[i];
 			m_module.base[i] = detail::pwmBases[cfg.module[i]];
 		}
-		m_module.pieEventIntNo = detail::pwmPieEventIntNos[cfg.module[0]];
-		m_module.pieTripIntNo = detail::pwmPieTripIntNos[cfg.module[0]];
+		m_module.pieEventIntNum = detail::pwmPieEventIntNums[cfg.module[0]];
+		m_module.pieTripIntNum = detail::pwmPieTripIntNums[cfg.module[0]];
 
 		for (size_t i = 0; i < PhaseCount; ++i)
 		{
@@ -694,8 +694,8 @@ public:
 	 */
 	void registerEventInterruptHandler(void (*handler)(void)) const
 	{
-		Interrupt_register(m_module.pieEventIntNo, handler);
-		Interrupt_enable(m_module.pieEventIntNo);
+		Interrupt_register(m_module.pieEventIntNum, handler);
+		Interrupt_enable(m_module.pieEventIntNum);
 	}
 
 	/**
@@ -705,8 +705,8 @@ public:
 	 */
 	void registerTripInterruptHandler(void (*handler)(void)) const
 	{
-		Interrupt_register(m_module.pieTripIntNo, handler);
-		Interrupt_enable(m_module.pieTripIntNo);
+		Interrupt_register(m_module.pieTripIntNum, handler);
+		Interrupt_enable(m_module.pieTripIntNum);
 	}
 
 	/**

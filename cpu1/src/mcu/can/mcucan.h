@@ -75,14 +75,14 @@ namespace detail {
 struct CanModuleImpl
 {
 	uint32_t base;
-	uint32_t pieIntNo;
-	CanModuleImpl(uint32_t _base, uint32_t _pieIntNo)
-		: base(_base), pieIntNo(_pieIntNo) {}
+	uint32_t pieIntNum;
+	CanModuleImpl(uint32_t _base, uint32_t _pieIntNum)
+		: base(_base), pieIntNum(_pieIntNum) {}
 };
 
 
 extern const uint32_t canBases[2];
-extern const uint32_t canPieIntNos[2];
+extern const uint32_t canPieIntNums[2];
 
 
 } // namespace detail
@@ -109,7 +109,7 @@ public:
 	CanUnit(const GpioPinConfig& txPin, const GpioPinConfig& rxPin,
 			CanBitrate bitrate, CanMode mode)
 		: emb::c28x::Singleton<CanUnit<Module> >(this)
-		, m_module(detail::canBases[Module], detail::canPieIntNos[Module])
+		, m_module(detail::canBases[Module], detail::canPieIntNums[Module])
 	{
 #ifdef CPU1
 		_initPins(txPin, rxPin);
@@ -206,7 +206,7 @@ public:
 	 */
 	void registerInterruptHandler(void (*handler)(void)) const
 	{
-		Interrupt_register(m_module.pieIntNo, handler);
+		Interrupt_register(m_module.pieIntNum, handler);
 		CAN_enableInterrupt(m_module.base, CAN_INT_IE0 | CAN_INT_ERROR | CAN_INT_STATUS);
 		CAN_enableGlobalInterrupt(m_module.base, CAN_GLOBAL_INT_CANINT0);
 	}
@@ -216,14 +216,14 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableInterrupts() const { Interrupt_enable(m_module.pieIntNo); }
+	void enableInterrupts() const { Interrupt_enable(m_module.pieIntNum); }
 
 	/**
 	 * @brief Disables interrupts.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disableInterrupts() const { Interrupt_disable(m_module.pieIntNo); }
+	void disableInterrupts() const { Interrupt_disable(m_module.pieIntNum); }
 
 protected:
 #ifdef CPU1

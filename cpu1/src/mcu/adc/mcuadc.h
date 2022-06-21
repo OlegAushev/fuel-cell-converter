@@ -92,15 +92,15 @@ private:
 	struct Irq
 	{
 		uint32_t base;
-		ADC_IntNumber intNo;
+		ADC_IntNumber intNum;
 		ADC_SOCNumber soc;
-		uint32_t pieIntNo;
+		uint32_t pieIntNum;
 		Irq() {}
-		Irq(uint32_t _base, ADC_IntNumber _intNo, ADC_SOCNumber _soc, uint32_t _pieIntNo)
+		Irq(uint32_t _base, ADC_IntNumber _intNum, ADC_SOCNumber _soc, uint32_t _pieIntNum)
 			: base(_base)
-			, intNo(_intNo)
+			, intNum(_intNum)
 			, soc(_soc)
-			, pieIntNo(_pieIntNo)
+			, pieIntNum(_pieIntNum)
 		{}
 	};
 	static Irq m_irqs[ADC_IRQ_COUNT];
@@ -133,7 +133,7 @@ public:
 	{
 		for (size_t i = 0; i < ADC_IRQ_COUNT; ++i)
 		{
-			Interrupt_enable(m_irqs[i].pieIntNo);
+			Interrupt_enable(m_irqs[i].pieIntNum);
 		}
 	}
 
@@ -145,7 +145,7 @@ public:
 	 */
 	void registerInterruptHandler(AdcIrq irq, void (*handler)(void)) const
 	{
-		Interrupt_register(m_irqs[irq].pieIntNo, handler);
+		Interrupt_register(m_irqs[irq].pieIntNum, handler);
 	}
 
 	/**
@@ -155,9 +155,9 @@ public:
 	 */
 	void acknowledgeInterrupt(AdcIrq irq) const
 	{
-		ADC_clearInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNo);
+		ADC_clearInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNum);
 
-		switch (m_irqs[irq].intNo)
+		switch (m_irqs[irq].intNum)
 		{
 		case ADC_INT_NUMBER1:
 			Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
@@ -175,7 +175,7 @@ public:
 	 */
 	bool interruptPending(AdcIrq irq) const
 	{
-		return ADC_getInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNo);
+		return ADC_getInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNum);
 	}
 
 	/**
@@ -185,7 +185,7 @@ public:
 	 */
 	void clearInterruptStatus(AdcIrq irq) const
 	{
-		ADC_clearInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNo);
+		ADC_clearInterruptStatus(m_irqs[irq].base, m_irqs[irq].intNum);
 	}
 
 /*============================================================================*/

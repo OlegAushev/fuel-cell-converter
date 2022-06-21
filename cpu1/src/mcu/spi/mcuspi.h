@@ -88,14 +88,14 @@ namespace detail {
 struct SpiModuleImpl
 {
 	uint32_t base;
-	uint32_t pieRxIntNo;
-	SpiModuleImpl(uint32_t _base, uint32_t _pieRxIntNo)
-		: base(_base), pieRxIntNo(_pieRxIntNo) {}
+	uint32_t pieRxIntNum;
+	SpiModuleImpl(uint32_t _base, uint32_t _pieRxIntNum)
+		: base(_base), pieRxIntNum(_pieRxIntNum) {}
 };
 
 
 extern const uint32_t spiBases[3];
-extern const uint32_t spiRxPieIntNos[3];
+extern const uint32_t spiRxPieIntNums[3];
 
 
 } // namespace detail
@@ -127,7 +127,7 @@ public:
 			const GpioPinConfig& clkPin, const GpioPinConfig& csPin,
 			const SpiConfig& cfg)
 		: emb::c28x::Singleton<SpiUnit<Module> >(this)
-		, m_module(detail::spiBases[Module], detail::spiRxPieIntNos[Module])
+		, m_module(detail::spiBases[Module], detail::spiRxPieIntNums[Module])
 	{
 		assert((cfg.dataSize >= 1) && (cfg.dataSize <= 16));
 
@@ -264,7 +264,7 @@ public:
 	void registerRxInterruptHandler(void (*handler)(void)) const
 	{
 		SPI_disableModule(m_module.base);
-		Interrupt_register(m_module.pieRxIntNo, handler);
+		Interrupt_register(m_module.pieRxIntNum, handler);
 		SPI_enableInterrupt(m_module.base, SPI_INT_RXFF);
 		SPI_enableModule(m_module.base);
 	}
@@ -274,7 +274,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableRxInterrupts() const { Interrupt_enable(m_module.pieRxIntNo); }
+	void enableRxInterrupts() const { Interrupt_enable(m_module.pieRxIntNum); }
 
 	/**
 	 * @brief Acknowledges interrupt.

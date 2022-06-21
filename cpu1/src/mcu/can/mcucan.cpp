@@ -14,7 +14,7 @@ namespace detail {
 
 
 const uint32_t canBases[2] = {CANA_BASE, CANB_BASE};
-const uint32_t canPieIntNos[2] = {INT_CANA0, INT_CANB0};
+const uint32_t canPieIntNums[2] = {INT_CANA0, INT_CANB0};
 
 
 }

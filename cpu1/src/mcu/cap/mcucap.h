@@ -58,13 +58,13 @@ struct CapModuleImpl
 	CapModule instance[ChannelCount];
 	uint32_t base[ChannelCount];
 	XBAR_InputNum xbarInput[ChannelCount];
-	uint32_t pieIntNo[ChannelCount];
+	uint32_t pieIntNum[ChannelCount];
 };
 
 
 extern const uint32_t capBases[6];
 extern const XBAR_InputNum capXbarInputs[6];
-extern const uint32_t capPieIntNos[6];
+extern const uint32_t capPieIntNums[6];
 
 
 } // namespace detail
@@ -97,7 +97,7 @@ public:
 			m_module.instance[i] = cfg.module[i];
 			m_module.base[i] = detail::capBases[cfg.module[i]];
 			m_module.xbarInput[i] = detail::capXbarInputs[cfg.module[i]];
-			m_module.pieIntNo[i] = detail::capPieIntNos[cfg.module[i]];
+			m_module.pieIntNum[i] = detail::capPieIntNums[cfg.module[i]];
 			XBAR_setInputPin(m_module.xbarInput[i], cfg.inputPin[i].config().no);
 		}
 
@@ -196,8 +196,8 @@ public:
 		{
 			if (m_module.instance[i] == module)
 			{
-				Interrupt_register(m_module.pieIntNo[i], handler);
-				Interrupt_enable(m_module.pieIntNo[i]);
+				Interrupt_register(m_module.pieIntNum[i], handler);
+				Interrupt_enable(m_module.pieIntNum[i]);
 				return;
 			}
 		}

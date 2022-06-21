@@ -96,14 +96,14 @@ struct QepModuleImpl
 {
 	uint32_t base;
 	uint16_t intFlags;
-	uint32_t pieIntNo;
-	QepModuleImpl(uint32_t _base, uint16_t _intFlags, uint32_t _pieIntNo)
-		: base(_base), intFlags(_intFlags), pieIntNo(_pieIntNo) {}
+	uint32_t pieIntNum;
+	QepModuleImpl(uint32_t _base, uint16_t _intFlags, uint32_t _pieIntNum)
+		: base(_base), intFlags(_intFlags), pieIntNum(_pieIntNum) {}
 };
 
 
 extern const uint32_t qepBases[3];
-extern const uint32_t qepPieIntNos[3];
+extern const uint32_t qepPieIntNums[3];
 
 
 } // namespace detail
@@ -129,7 +129,7 @@ public:
 	QepUnit(const GpioPinConfig& qepaPin, const GpioPinConfig& qepbPin,
 			const GpioPinConfig& qepiPin, const QepConfig& cfg)
 		: emb::c28x::Singleton<QepUnit<Module> >(this)
-		, m_module(detail::qepBases[Module], cfg.intFlags, detail::qepPieIntNos[Module])
+		, m_module(detail::qepBases[Module], cfg.intFlags, detail::qepPieIntNums[Module])
 	{
 #ifdef CPU1
 		_initPins(qepaPin, qepbPin, qepiPin);
@@ -177,7 +177,7 @@ public:
 	 */
 	void registerInterruptHandler(void (*handler)(void)) const
 	{
-		Interrupt_register(m_module.pieIntNo, handler);
+		Interrupt_register(m_module.pieIntNum, handler);
 		EQEP_enableInterrupt(m_module.base, m_module.intFlags);
 	}
 
@@ -188,7 +188,7 @@ public:
 	 */
 	void enableInterrupts() const
 	{
-		Interrupt_enable(m_module.pieIntNo);
+		Interrupt_enable(m_module.pieIntNum);
 	}
 
 protected:

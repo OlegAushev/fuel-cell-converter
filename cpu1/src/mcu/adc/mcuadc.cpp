@@ -81,9 +81,9 @@ AdcUnit::AdcUnit(int channelCount)
 	// Interrupt config
 	for (size_t i = 0; i < ADC_IRQ_COUNT; ++i)
 	{
-		ADC_setInterruptSource(m_irqs[i].base, m_irqs[i].intNo, m_irqs[i].soc);
-		ADC_enableInterrupt(m_irqs[i].base, m_irqs[i].intNo);
-		ADC_clearInterruptStatus(m_irqs[i].base, m_irqs[i].intNo);
+		ADC_setInterruptSource(m_irqs[i].base, m_irqs[i].intNum, m_irqs[i].soc);
+		ADC_enableInterrupt(m_irqs[i].base, m_irqs[i].intNum);
+		ADC_clearInterruptStatus(m_irqs[i].base, m_irqs[i].intNum);
 	}
 }
 
