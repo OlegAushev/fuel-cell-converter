@@ -48,6 +48,13 @@ void Transceiver::reset()
 	m_txBitCount = 0;
 	m_txIdx = 0;
 	m_txError = 0;
+
+	m_rxActive = false;
+	m_rxSyncFlag = 0;
+	m_rxBitCount = STREAM_SIZE;
+	m_rxIdx = 0;
+
+	m_clkFlag = 0;
 }
 
 
@@ -56,16 +63,15 @@ void Transceiver::reset()
 ///
 __interrupt void Transceiver::onClockInterrupt()
 {
-	static unsigned int oddFlag = 0;
-	oddFlag = 1 - oddFlag;
 	Transceiver* tranceiver = Transceiver::instance();
+	tranceiver->m_clkFlag = 1 - tranceiver->m_clkFlag;
 
-	if (oddFlag)
+	if (tranceiver->m_clkFlag)
 	{
-		GPIO_togglePin(tranceiver->m_clkPin.config().no);
+		//GPIO_togglePin(tranceiver->m_clkPin.config().no);
 	}
 
-	if ((tranceiver->m_txActive) && oddFlag)
+	if ((tranceiver->m_txActive) && tranceiver->m_clkFlag)
 	{
 		if (tranceiver->m_txIdx < tranceiver->m_txBitCount)
 		{
@@ -77,6 +83,20 @@ __interrupt void Transceiver::onClockInterrupt()
 			tranceiver->m_txActive = false;
 		}
 	}
+
+	if ((tranceiver->m_rxActive) && (tranceiver->m_clkFlag == tranceiver->m_rxSyncFlag))
+	{
+		if (tranceiver->m_rxIdx < tranceiver->m_rxBitCount)
+		{
+			rxCanBitStream[tranceiver->m_rxIdx++] =
+					GPIO_readPin(tranceiver->m_rxPin.config().no);
+		}
+		else
+		{
+			tranceiver->m_rxActive = false;
+			tranceiver->m_rxPin.enableInterrupts(); // ready for new frame;
+		}
+	}
 }
 
 
@@ -86,8 +106,13 @@ __interrupt void Transceiver::onClockInterrupt()
 __interrupt void Transceiver::onRxStart()
 {
 	Transceiver* tranceiver = Transceiver::instance();
+	tranceiver->m_rxSyncFlag = 1 - tranceiver->m_clkFlag; // begin receiving on next CLK INT
+	tranceiver->m_rxIdx = 0;
+	tranceiver->m_rxActive = true;
+	tranceiver->m_rxPin.disableInterrupts();
 
 	tranceiver->m_rxPin.acknowledgeInterrupt();
+	GPIO_togglePin(tranceiver->m_clkPin.config().no);
 }
 
 

@@ -207,7 +207,9 @@ public:
 	{
 		assert(m_initialized);
 		m_cfg.masterCore = masterCore;
+#ifdef CPU1
 		GPIO_setMasterCore(m_cfg.no, masterCore);
+#endif
 	}
 
 	/**
@@ -294,7 +296,19 @@ private:
 
 public:
 	/**
-	 * @brief Registers interrupt handler
+	 * @brief Sets the pin for the specified external interrupt.
+	 * @param intNum - interrupt number
+	 * @return (none)
+	 */
+#ifdef CPU1
+	void setInterrupt(GPIO_ExternalIntNum intNum)
+	{
+		GPIO_setInterruptPin(m_cfg.no, intNum);	// X-Bar may be configured on CPU1 only
+	}
+#endif
+
+	/**
+	 * @brief Registers interrupt handler.
 	 * @param intNum - interrupt number
 	 * @param intType - interrupt type
 	 * @param handler - pointer to handler
@@ -303,9 +317,8 @@ public:
 	{
 		m_intNum = intNum;
 		GPIO_setInterruptType(intNum, intType);
-		GPIO_setInterruptPin(m_cfg.no, intNum);
-		GPIO_enableInterrupt(intNum);
 		Interrupt_register(detail::PIE_XINT_NUMBERS[intNum], handler);
+		Interrupt_enable(detail::PIE_XINT_NUMBERS[m_intNum]);
 	}
 
 	/**
@@ -315,7 +328,8 @@ public:
 	 */
 	void enableInterrupts() const
 	{
-		Interrupt_enable(detail::PIE_XINT_NUMBERS[m_intNum]);
+		GPIO_enableInterrupt(m_intNum);
+
 	}
 
 	/**
@@ -325,7 +339,7 @@ public:
 	 */
 	void disableInterrupts() const
 	{
-		Interrupt_disable(detail::PIE_XINT_NUMBERS[m_intNum]);
+		GPIO_disableInterrupt(m_intNum);
 	}
 
 	/**

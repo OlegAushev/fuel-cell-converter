@@ -66,6 +66,13 @@ private:
 	int m_txIdx;
 	uint64_t m_txError;
 
+	bool m_rxActive;
+	unsigned int m_rxSyncFlag;
+	int m_rxBitCount;
+	int m_rxIdx;
+
+	unsigned int m_clkFlag;
+
 	uint16_t txData[8];
 	uint16_t rxData[8];
 
