@@ -250,7 +250,7 @@ public:
 			*/
 			break;
 		case MCO_CAN2:
-			// RESERVED;
+			msg.can2.reserved = 0x0F0E0E0B0D0A0E0D;
 			break;
 		}
 		// APP-SPECIFIC END

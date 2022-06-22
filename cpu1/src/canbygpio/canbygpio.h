@@ -51,13 +51,24 @@ struct Frame
 };
 
 
+/// Tags for tag dispatching
+namespace tag {
+
+struct enable_bit_stuffing {};
+struct disable_bit_stuffing {};
+
+} // namespace tag
+
+
 /**
  * @brief CAN-by-GPIO transceiver.
- * Uses mcu::Systick
+ * Uses mcu::HighResolutionClock.
  */
 class Transceiver : emb::c28x::Singleton<Transceiver>
 {
 private:
+	const bool BIT_STUFFING_ENABLED;
+
 	mcu::GpioPin m_txPin;
 	mcu::GpioPin m_rxPin;
 	mcu::GpioPin m_clkPin;
@@ -80,58 +91,80 @@ private:
 	uint16_t rxData[8];
 
 public:
+	/**
+	 * @brief Configures CAN-BY-GPIO transceiver with enabled bit stuffing.
+	 * @param txPin - TX pin
+	 * @param rxPin - RX pin
+	 * @param clkPin - aux CLK pin
+	 * @param bitrate - bitrate
+	 */
 	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-			mcu::GpioPin& clkPin, uint32_t bitrate);
+			mcu::GpioPin& clkPin, uint32_t bitrate, tag::enable_bit_stuffing);
+
+	/**
+	 * @brief Configures CAN-BY-GPIO transceiver with disabled bit stuffing.
+	 * @param txPin - TX pin
+	 * @param rxPin - RX pin
+	 * @param clkPin - aux CLK pin
+	 * @param bitrate - bitrate
+	 */
+	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
+			mcu::GpioPin& clkPin, uint32_t bitrate, tag::disable_bit_stuffing);
+
+	/**
+	 * @brief Resets transceiver.
+	 * @param (none)
+	 * @return (none)
+	 */
 	void reset();
 
-	template <typename T>
-	int send(int frameId, T data)
+	/**
+	 * @brief Sends a CAN frame.
+	 * @param frameId - CAN frame ID
+	 * @param buf - CAN frame data buffer
+	 * @param len - CAN frame data length
+	 * @return Number of bytes sent, or error code if an error occurred.
+	 */
+	int send(unsigned int frameId, const uint16_t* buf, size_t len)
 	{
-		EMB_STATIC_ASSERT(sizeof(T) <= 4);
-
 		if (m_txActive)
 		{
 			++m_txError;
 			return 0;
 		}
 
-		uint16_t dataBytes[2 * sizeof(T)];
-		emb::c28x::to_8bit_bytes(dataBytes, data);
-		m_txBitCount = _generateTxCanFrame(frameId, 2 * sizeof(T), dataBytes);
+		m_txBitCount = _generateTxCanFrame(frameId, buf, len, BIT_STUFFING_ENABLED);
 		m_txIdx = 0;
 		m_txActive = true;
-		return 2 * sizeof(T);
+		return len;
 	}
 
-	int recv(int& frameId, uint16_t* data)
+	/**
+	 * @brief Receives a CAN frame.
+	 * @param frameId - CAN frame ID
+	 * @param buf - frame data buffer
+	 * @return Number of bytes received, or error code if an error occurred.
+	 */
+	int recv(unsigned int& frameId, uint16_t* buf)
 	{
 		int retval = 0;
 		if (m_rxDataReady)
 		{
-			retval = _parseRxCanFrame(frameId, data);
+			retval = _parseRxCanFrame(frameId, buf, BIT_STUFFING_ENABLED);
 			m_rxDataReady = false;
 		}
 		return retval;
 	}
 
 protected:
-	int _generateTxCanFrame(int frameId, int dataLen, uint16_t* data);
-	int _parseRxCanFrame(int& frameId, uint16_t* data);
+	void _init(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
+			mcu::GpioPin& clkPin, uint32_t bitrate);
+	int _generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
+	int _parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);
 	static __interrupt void onClockInterrupt();
 	static __interrupt void onRxStart();
 
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 /// @}

@@ -184,11 +184,11 @@ void main()
 	microcanopen::McoServer<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> mcoServerTest(
 			mcu::GpioPinConfig(6, GPIO_6_CANTXB),
 			mcu::GpioPinConfig(7, GPIO_7_CANRXB),
-			mcu::CAN_BITRATE_125K, mcu::CAN_SILENT_MODE,
+			mcu::CAN_BITRATE_125K, mcu::CAN_LOOPBACK_MODE,
 			microcanopen::NodeId(0x02),
 			&tpdoServiceTest, &rpdoServiceTest, &sdoServiceTest, canIpcSignalsTest);
 
-	mcoServerTest.setHeartbeatPeriod(1000);
+	mcoServerTest.setHeartbeatPeriod(0);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM1, 200);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM2, 0);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 0);

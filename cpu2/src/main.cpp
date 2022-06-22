@@ -29,9 +29,8 @@ unsigned char converterobj_loc[sizeof(BoostConverter)];
 BoostConverter* converter;
 
 
-uint16_t testTxData[8] = {0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF};
 uint16_t testRxData[8] = {0};
-int dataLen, frameId;
+unsigned int frameId;
 
 
 /* ========================================================================== */
@@ -98,7 +97,8 @@ void main()
 	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
 
-	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000);
+	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000,
+			canbygpio::tag::enable_bit_stuffing());
 #endif
 
 /*####################################################################################################################*/
@@ -122,15 +122,8 @@ void main()
 		mcu::SystemClock::runTasks();
 
 #ifdef CAN_BY_GPIO
-		uint64_t testDataRaw;
-		emb::c28x::from_8bit_bytes(testDataRaw, testTxData);
-
-		if (cbgTranceiver.send<uint64_t>(0x200, testDataRaw) == 8)
-		{
-			mcu::delay_us(10000);
-		}
-
-		if (cbgTranceiver.recv(frameId, testRxData) != 8)
+		int nBytes = cbgTranceiver.recv(frameId, testRxData);
+		if (nBytes < 0)
 		{
 			for (size_t i = 0; i < 10; ++i)
 			{
@@ -138,8 +131,13 @@ void main()
 				mcu::delay_us(50000);
 			}
 		}
-
-		mcu::delay_us(10000);
+		else if (nBytes == 8)
+		{
+			if (cbgTranceiver.send(frameId, testRxData, nBytes) == 8)
+			{
+				mcu::delay_us(10000);
+			}
+		}
 #endif
 	}
 }

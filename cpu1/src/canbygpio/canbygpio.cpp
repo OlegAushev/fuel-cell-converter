@@ -21,12 +21,35 @@ static emb::Array<int, STREAM_SIZE> rxCanBitStream;
 ///
 ///
 Transceiver::Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-		mcu::GpioPin& clkPin, uint32_t bitrate)
+		mcu::GpioPin& clkPin, uint32_t bitrate, tag::enable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
-	, m_txPin(txPin)
-	, m_rxPin(rxPin)
-	, m_clkPin(clkPin)
+	, BIT_STUFFING_ENABLED(true)
 {
+	_init(txPin, rxPin, clkPin, bitrate);
+}
+
+
+///
+///
+///
+Transceiver::Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
+		mcu::GpioPin& clkPin, uint32_t bitrate, tag::disable_bit_stuffing)
+	: emb::c28x::Singleton<Transceiver>(this)
+	, BIT_STUFFING_ENABLED(false)
+{
+	_init(txPin, rxPin, clkPin, bitrate);
+}
+
+
+///
+///
+///
+void Transceiver::_init(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
+		mcu::GpioPin& clkPin, uint32_t bitrate)
+{
+	m_txPin = txPin;
+	m_rxPin = rxPin;
+	m_clkPin = clkPin;
 	m_rxPin.registerInterruptHandler(GPIO_INT_XINT5, GPIO_INT_TYPE_FALLING_EDGE, onRxStart);
 
 	reset();
@@ -117,7 +140,7 @@ __interrupt void Transceiver::onRxStart()
 ///
 ///
 ///
-int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
+int Transceiver::_generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled)
 {
 	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
 
@@ -147,15 +170,15 @@ int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
 	// DLC
 	for (size_t i = 0; i < 4; ++i)
 	{
-		txBitStream[idx++] = ((dataLen >> (3 - i)) & 1) ? 1 : 0;
+		txBitStream[idx++] = ((len >> (3 - i)) & 1) ? 1 : 0;
 	}
 
 	// DATA
-	for (size_t i = 0; i < dataLen; ++i)
+	for (size_t i = 0; i < len; ++i)
 	{
 		for (size_t j = 0; j < 8; ++j)
 		{
-			txBitStream[idx++] = ((data[i] >> (7 - j)) & 1) ? 1 : 0;
+			txBitStream[idx++] = ((buf[i] >> (7 - j)) & 1) ? 1 : 0;
 		}
 	}
 
@@ -184,37 +207,49 @@ int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
 	//Stuff bits: check for 5 consecutive bit states
 	//then insert opposite bit state if this occurs
 	bitCount = idx;
-	int16_t prevBit = txBitStream[0];
-	txCanBitStream[0] = txBitStream[0];
-	size_t canIdx = 1;
+	size_t canIdx = 0;
 
-	int sameBits = 0;
-	int stuffBits = 0;
-
-	for (size_t i = 1; i < bitCount; ++i)
+	if (bitStuffingEnabled)
 	{
-		txCanBitStream[canIdx++] = txBitStream[i];
+		int16_t prevBit = txBitStream[0];
+		txCanBitStream[0] = txBitStream[0];
+		++canIdx;
 
-		if(prevBit == txBitStream[i])
+		int sameBits = 0;
+		int stuffBits = 0;
+
+		for (size_t i = 1; i < bitCount; ++i)
 		{
-			if (!sameBits)
-				sameBits = 2;
-			else
-				++sameBits;
+			txCanBitStream[canIdx++] = txBitStream[i];
 
-			if (sameBits == 5)
+			if(prevBit == txBitStream[i])
 			{
-				txCanBitStream[canIdx++] = (txBitStream[i] == 1) ? 0 : 1;
-				sameBits = 0;
-				++stuffBits;
-			}
-		}
-		else
-		{
-			sameBits = 0;
-		}
+				if (!sameBits)
+					sameBits = 2;
+				else
+					++sameBits;
 
-		prevBit = txCanBitStream[canIdx - 1];
+				if (sameBits == 5)
+				{
+					txCanBitStream[canIdx++] = (txBitStream[i] == 1) ? 0 : 1;
+					sameBits = 0;
+					++stuffBits;
+				}
+			}
+			else
+			{
+				sameBits = 0;
+			}
+
+			prevBit = txCanBitStream[canIdx - 1];
+		}
+	}
+	else
+	{
+		for (size_t i = 0; i < bitCount; ++i)
+		{
+			txCanBitStream[canIdx++] = txBitStream[i];
+		}
 	}
 
 	// Append 14 recessive bits at the end of the bitstream
@@ -230,7 +265,7 @@ int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
 ///
 ///
 ///
-int Transceiver::_parseRxCanFrame(int& frameId, uint16_t* data)
+int Transceiver::_parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled)
 {
 	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
 
@@ -240,38 +275,51 @@ int Transceiver::_parseRxCanFrame(int& frameId, uint16_t* data)
 	//Destuff bits: check for 5 consecutive bit states
 	//then skip bit if this occurs
 	size_t bitCount = rxCanBitStream.size();
-	int16_t prevBit = rxBitStream[0];
-	rxBitStream[0] = rxCanBitStream[0];
-	size_t canIdx = 1;
-	size_t idx = 1;
+	size_t canIdx = 0;
+	size_t idx = 0;
 
-	int sameBits = 0;
-	int stuffBits = 0;
-
-	while (canIdx < bitCount)
+	if (bitStuffingEnabled)
 	{
-		rxBitStream[idx++] = rxCanBitStream[canIdx++];
+		int16_t prevBit = rxBitStream[0];
+		rxBitStream[0] = rxCanBitStream[0];
+		++canIdx;
+		++idx;
 
-		if(prevBit == rxCanBitStream[canIdx-1])
+		int sameBits = 0;
+		int stuffBits = 0;
+
+		while (canIdx < bitCount)
 		{
-			if (!sameBits)
-				sameBits = 2;
-			else
-				++sameBits;
+			rxBitStream[idx++] = rxCanBitStream[canIdx++];
 
-			if (sameBits == 5)
+			if(prevBit == rxCanBitStream[canIdx-1])
 			{
-				++canIdx;
-				sameBits = 0;
-				++stuffBits;
-			}
-		}
-		else
-		{
-			sameBits = 0;
-		}
+				if (!sameBits)
+					sameBits = 2;
+				else
+					++sameBits;
 
-		prevBit = rxCanBitStream[canIdx - 1];
+				if (sameBits == 5)
+				{
+					++canIdx;
+					sameBits = 0;
+					++stuffBits;
+				}
+			}
+			else
+			{
+				sameBits = 0;
+			}
+
+			prevBit = rxCanBitStream[canIdx - 1];
+		}
+	}
+	else
+	{
+		while (canIdx < bitCount)
+		{
+			rxBitStream[idx++] = rxCanBitStream[canIdx++];
+		}
 	}
 
 	idx = 0;
@@ -292,18 +340,18 @@ int Transceiver::_parseRxCanFrame(int& frameId, uint16_t* data)
 	if (rxBitStream[idx++] != 0) return -4;
 
 	// DLC
-	int dataLen = 0;
+	int len = 0;
 	for (size_t i = 0; i < 4; ++i)
 	{
-		dataLen |= rxBitStream[idx++] << (3 - i);
+		len |= rxBitStream[idx++] << (3 - i);
 	}
 
 	// DATA
-	for (size_t i = 0; i < dataLen; ++i)
+	for (size_t i = 0; i < len; ++i)
 	{
 		for (size_t j = 0; j < 8; ++j)
 		{
-			data[i] |= rxBitStream[idx++] << (7 - j);
+			buf[i] |= rxBitStream[idx++] << (7 - j);
 		}
 	}
 
@@ -329,13 +377,8 @@ int Transceiver::_parseRxCanFrame(int& frameId, uint16_t* data)
 
 	if (crcReg != crcRegRx) return -5;
 
-	return dataLen;
+	return len;
 }
-
-
-
-
-
 
 
 
