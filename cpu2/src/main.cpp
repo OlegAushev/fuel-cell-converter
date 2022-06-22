@@ -124,7 +124,11 @@ void main()
 #ifdef CAN_BY_GPIO
 		uint64_t testDataRaw;
 		emb::c28x::from_8bit_bytes(testDataRaw, testTxData);
-		cbgTranceiver.send<uint64_t>(0x200, testDataRaw);
+
+		if (cbgTranceiver.send<uint64_t>(0x200, testDataRaw) == 8)
+		{
+			mcu::delay_us(10000);
+		}
 
 		if (cbgTranceiver.recv(frameId, testRxData) != 8)
 		{

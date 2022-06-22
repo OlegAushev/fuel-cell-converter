@@ -15,6 +15,7 @@
 
 #include "mcu/gpio/mcugpio.h"
 #include "mcu/cputimers/mcucputimers.h"
+#include "profiler/profiler.h"
 
 
 namespace canbygpio {
@@ -84,14 +85,14 @@ public:
 	void reset();
 
 	template <typename T>
-	void send(int frameId, T data)
+	int send(int frameId, T data)
 	{
 		EMB_STATIC_ASSERT(sizeof(T) <= 4);
 
 		if (m_txActive)
 		{
 			++m_txError;
-			return;
+			return 0;
 		}
 
 		uint16_t dataBytes[2 * sizeof(T)];
@@ -99,16 +100,18 @@ public:
 		m_txBitCount = _generateTxCanFrame(frameId, 2 * sizeof(T), dataBytes);
 		m_txIdx = 0;
 		m_txActive = true;
+		return 2 * sizeof(T);
 	}
 
 	int recv(int& frameId, uint16_t* data)
 	{
+		int retval = 0;
 		if (m_rxDataReady)
 		{
+			retval = _parseRxCanFrame(frameId, data);
 			m_rxDataReady = false;
-			return _parseRxCanFrame(frameId, data);
 		}
-		return 0;
+		return retval;
 	}
 
 protected:

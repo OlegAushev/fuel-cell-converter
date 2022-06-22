@@ -119,6 +119,8 @@ __interrupt void Transceiver::onRxStart()
 ///
 int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
 {
+	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
+
 	assert(dataLen <= 9);
 	assert(frameId <= 0x7FF);
 
@@ -230,6 +232,8 @@ int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
 ///
 int Transceiver::_parseRxCanFrame(int& frameId, uint16_t* data)
 {
+	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
+
 	// init bit stream
 	rxBitStream.fill(-1);
 
