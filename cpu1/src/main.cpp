@@ -207,12 +207,12 @@ void main()
 	/*# XM3 CONTROLLER & MOSFET DRIVERS #*/
 	/*###################################*/
 	crd300::Controller crd300;
-	crd300.disableDriverLogic();	// Gate driver output will be held low if power supplies are enabled
+	crd300.disableDriverLogic();
 	crd300.enableDriverPS();
 	mcu::delay_us(200);
 	crd300.resetDrivers();
 	crd300.enableNeg15V();
-	crd300.enablePos15V();		// current sensor power supply must be enabled before current sensors calibrating
+	crd300.enablePos15V();
 	mcu::delay_us(1e5);
 #endif
 
@@ -352,7 +352,7 @@ void main()
 	mcu::SystemClock::reset();
 
 #ifdef DUALCORE
-	// CPU1 has finished all preparations, CPU2 can now enable all interrupts
+	// CPU1 has finished all preparations, CPU2 can enable all interrupts
 	mcu::sendIpcSignal(CPU1_PERIPHERY_CONFIGURED);
 #endif
 	Syslog::addMessage(Syslog::DEVICE_CPU1_READY);
