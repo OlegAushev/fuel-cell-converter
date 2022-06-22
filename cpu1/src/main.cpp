@@ -189,7 +189,7 @@ void main()
 			&tpdoServiceTest, &rpdoServiceTest, &sdoServiceTest, canIpcSignalsTest);
 
 	mcoServerTest.setHeartbeatPeriod(1000);
-	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM1, 200);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM2, 0);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 0);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM4, 0);

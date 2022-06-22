@@ -67,11 +67,6 @@ __interrupt void Transceiver::onClockInterrupt()
 	Transceiver* tranceiver = Transceiver::instance();
 	tranceiver->m_clkFlag = 1 - tranceiver->m_clkFlag;
 
-	if (tranceiver->m_clkFlag)
-	{
-		//GPIO_togglePin(tranceiver->m_clkPin.config().no);
-	}
-
 	if ((tranceiver->m_txActive) && tranceiver->m_clkFlag)
 	{
 		if (tranceiver->m_txIdx < tranceiver->m_txBitCount)
@@ -97,6 +92,7 @@ __interrupt void Transceiver::onClockInterrupt()
 			tranceiver->m_rxActive = false;
 			tranceiver->m_rxPin.enableInterrupts(); // ready for new frame;
 			tranceiver->m_rxDataReady = true;
+			GPIO_togglePin(tranceiver->m_clkPin.config().no);
 		}
 	}
 }
@@ -121,7 +117,7 @@ __interrupt void Transceiver::onRxStart()
 ///
 ///
 ///
-int Transceiver::_generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsigned int frameId)
+int Transceiver::_generateTxCanFrame(int frameId, int dataLen, uint16_t* data)
 {
 	assert(dataLen <= 9);
 	assert(frameId <= 0x7FF);
@@ -232,7 +228,7 @@ int Transceiver::_generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsig
 ///
 ///
 ///
-int Transceiver::_parseRxCanFrame(uint16_t* data, unsigned int& dataLen, unsigned int& frameId)
+int Transceiver::_parseRxCanFrame(int& frameId, uint16_t* data)
 {
 	// init bit stream
 	rxBitStream.fill(-1);
@@ -292,7 +288,7 @@ int Transceiver::_parseRxCanFrame(uint16_t* data, unsigned int& dataLen, unsigne
 	if (rxBitStream[idx++] != 0) return -4;
 
 	// DLC
-	dataLen = 0;
+	int dataLen = 0;
 	for (size_t i = 0; i < 4; ++i)
 	{
 		dataLen |= rxBitStream[idx++] << (3 - i);
@@ -329,7 +325,7 @@ int Transceiver::_parseRxCanFrame(uint16_t* data, unsigned int& dataLen, unsigne
 
 	if (crcReg != crcRegRx) return -5;
 
-	return 0;
+	return dataLen;
 }
 
 

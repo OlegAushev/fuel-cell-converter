@@ -31,7 +31,7 @@ BoostConverter* converter;
 
 uint16_t testTxData[8] = {0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF};
 uint16_t testRxData[8] = {0};
-unsigned int dataLen, frameId;
+int dataLen, frameId;
 
 
 /* ========================================================================== */
@@ -124,11 +124,15 @@ void main()
 #ifdef CAN_BY_GPIO
 		uint64_t testDataRaw;
 		emb::c28x::from_8bit_bytes(testDataRaw, testTxData);
-		cbgTranceiver.send<uint64_t>(testDataRaw, 0x200);
+		cbgTranceiver.send<uint64_t>(0x200, testDataRaw);
 
-		if (cbgTranceiver.recv(testRxData, dataLen, frameId) < 0)
+		if (cbgTranceiver.recv(frameId, testRxData) != 8)
 		{
-			mcu::toggleLed(mcu::LED_RED);
+			for (size_t i = 0; i < 10; ++i)
+			{
+				mcu::toggleLed(mcu::LED_RED);
+				mcu::delay_us(50000);
+			}
 		}
 
 		mcu::delay_us(10000);

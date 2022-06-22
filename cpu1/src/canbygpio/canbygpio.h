@@ -84,7 +84,7 @@ public:
 	void reset();
 
 	template <typename T>
-	void send(T data, unsigned int frameId)
+	void send(int frameId, T data)
 	{
 		EMB_STATIC_ASSERT(sizeof(T) <= 4);
 
@@ -96,25 +96,24 @@ public:
 
 		uint16_t dataBytes[2 * sizeof(T)];
 		emb::c28x::to_8bit_bytes(dataBytes, data);
-		m_txBitCount = _generateTxCanFrame(dataBytes, 2 * sizeof(T), frameId);
+		m_txBitCount = _generateTxCanFrame(frameId, 2 * sizeof(T), dataBytes);
 		m_txIdx = 0;
 		m_txActive = true;
 	}
 
-	int recv(uint16_t* data, unsigned int& dataLen, unsigned int& frameId)
+	int recv(int& frameId, uint16_t* data)
 	{
-		dataLen = 0;
 		if (m_rxDataReady)
 		{
 			m_rxDataReady = false;
-			return _parseRxCanFrame(data, dataLen, frameId);
+			return _parseRxCanFrame(frameId, data);
 		}
-		return 1;
+		return 0;
 	}
 
 protected:
-	int _generateTxCanFrame(uint16_t* data, unsigned int dataLen, unsigned int frameId);
-	int _parseRxCanFrame(uint16_t* data, unsigned int& dataLen, unsigned int& frameId);
+	int _generateTxCanFrame(int frameId, int dataLen, uint16_t* data);
+	int _parseRxCanFrame(int& frameId, uint16_t* data);
 	static __interrupt void onClockInterrupt();
 	static __interrupt void onRxStart();
 
