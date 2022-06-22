@@ -138,6 +138,19 @@ public:
 	}
 
 	/**
+	 * @brief Disables interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void disableInterrupts() const
+	{
+		for (size_t i = 0; i < ADC_IRQ_COUNT; ++i)
+		{
+			Interrupt_disable(m_irqs[i].pieIntNum);
+		}
+	}
+	
+	/**
 	 * @brief Registers ADC ISR
 	 * @param irq - interrupt request
 	 * @param handler - pointer to interrupt handler

@@ -270,11 +270,24 @@ public:
 	}
 
 	/**
-	 * @brief Enables Rx-interrupt.
+	 * @brief Enables Rx-interrupts.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableRxInterrupts() const { Interrupt_enable(m_module.pieRxIntNum); }
+	void enableRxInterrupts() const
+	{
+		Interrupt_enable(m_module.pieRxIntNum);
+	}
+
+	/**
+	 * @brief Disables Rx-interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void disableRxInterrupts() const
+	{
+		Interrupt_disable(m_module.pieRxIntNum);
+	}
 
 	/**
 	 * @brief Acknowledges interrupt.

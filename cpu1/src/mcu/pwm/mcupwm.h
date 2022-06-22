@@ -677,14 +677,43 @@ public:
 /*============================ Interrupts ====================================*/
 /*============================================================================*/
 	/**
-	 * @brief Enables PWM and trip-zone interrupts.
+	 * @brief Enables time-base interrupts.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableInterrupts() const
+	void enableEventInterrupts() const
 	{
 		EPWM_enableInterrupt(m_module.base[0]);
+	}
+
+	/**
+	 * @brief Enables trip interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void enableTripInterrupts() const
+	{
 		EPWM_enableTripZoneInterrupt(m_module.base[0], EPWM_TZ_INTERRUPT_OST);
+	}
+
+	/**
+	 * @brief Disables time-base interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void disableEventInterrupts() const
+	{
+		EPWM_disableInterrupt(m_module.base[0]);
+	}
+
+	/**
+	 * @brief Disables trip interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void disableTripInterrupts() const
+	{
+		EPWM_disableTripZoneInterrupt(m_module.base[0], EPWM_TZ_INTERRUPT_OST);
 	}
 
 	/**

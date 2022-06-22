@@ -225,6 +225,18 @@ public:
 	 */
 	void disableInterrupts() const { Interrupt_disable(m_module.pieIntNum); }
 
+	/**
+	 * @brief Acknowledges interrupt.
+	 * @param intCause - interrupt cause
+	 * @return (none)
+	 */
+	void acknowledgeInterrupt(uint32_t intCause) const
+	{
+		CAN_clearInterruptStatus(m_module.base, intCause);
+		CAN_clearGlobalInterruptStatus(m_module.base, CAN_GLOBAL_INT_CANINT0);
+		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP9);
+	}
+
 protected:
 #ifdef CPU1
 	static void _initPins(const GpioPinConfig& txPin, const GpioPinConfig& rxPin)

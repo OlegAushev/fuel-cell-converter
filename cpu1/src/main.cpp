@@ -149,8 +149,8 @@ void main()
 	/*# CLOCK #*/
 	/*#########*/
 	mcu::SystemClock::init();
-	//mcu::HighResolutionClock::init(1000000);
-	//mcu::HighResolutionClock::start();
+	mcu::HighResolutionClock::init(1000000);
+	mcu::HighResolutionClock::start();
 	emb::DurationLogger_us::init(mcu::HighResolutionClock::now);
 	emb::DurationLogger_clk::init(mcu::HighResolutionClock::counter);
 
@@ -262,9 +262,9 @@ void main()
 	mcu::AdcUnit mcuAdcUnit(mcu::ADC_CHANNEL_COUNT);
 
 /*####################################################################################################################*/
-	/*#####################*/
+	/*#############*/
 	/*# CONVERTER #*/
-	/*#####################*/
+	/*#############*/
 	converter = new(converterobj_loc) BoostConverter(
 			Settings::SYSTEM_CONFIG.CONVERTER_CONFIG,
 			Settings::SYSTEM_CONFIG.PWM_CONFIG);
@@ -279,7 +279,7 @@ void main()
 	/*###############*/
 	/*# CLOCK TASKS #*/
 	/*###############*/
-	mcu::SystemClock::setTaskPeriod(0, 1000);	// Led toggle period
+	mcu::SystemClock::setTaskPeriod(0, 1000);
 	mcu::SystemClock::registerTask(0, taskToggleLed);
 
 	mcu::SystemClock::setWatchdogPeriod(1000);
@@ -338,11 +338,14 @@ void main()
 	/*# ADC PREPARATION #*/
 	/*###################*/
 	mcuAdcUnit.enableInterrupts();
-	mcu::delay_us(100);				// wait for pending ADC INTs (after ADC calibrating) be served
-	// TODO drive->phaseCurrentSensor.resetCompleted();	// clear measurements possibly stored in Drive
-	// TODO drive->dcVoltageSensor.resetCompleted();	// clear measurements possibly stored in Drive
+
+	// wait for pending ADC INTs (after ADC calibrating) be served
+	mcu::delay_us(100);
+
+	// now PWM can be launched
 	converter->pwmUnit.acknowledgeInterrupt();
-	converter->pwmUnit.enableInterrupts();		// now PWM can be launched
+	converter->pwmUnit.enableEventInterrupts();
+	converter->pwmUnit.enableTripInterrupts();
 
 // END of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/

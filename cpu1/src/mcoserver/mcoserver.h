@@ -461,9 +461,7 @@ protected:
 			break;
 		}
 
-		CAN_clearInterruptStatus(canUnit->base(), interruptCause);
-		CAN_clearGlobalInterruptStatus(canUnit->base(), CAN_GLOBAL_INT_CANINT0);
-		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP9);
+		canUnit->acknowledgeInterrupt(interruptCause);
 	}
 };
 

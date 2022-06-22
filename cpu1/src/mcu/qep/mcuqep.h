@@ -191,6 +191,16 @@ public:
 		Interrupt_enable(m_module.pieIntNum);
 	}
 
+	/**
+	 * @brief Disables interrupts.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void disableInterrupts() const
+	{
+		Interrupt_disable(m_module.pieIntNum);
+	}
+
 protected:
 #ifdef CPU1
 	static void _initPins(const GpioPinConfig& qepaPin, const GpioPinConfig& qepbPin,
