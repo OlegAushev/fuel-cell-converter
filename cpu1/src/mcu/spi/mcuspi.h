@@ -33,10 +33,10 @@ enum SpiModule
 /// SPI protocol
 enum SpiProtocol
 {
-	SPI_PROTOCOL_POL0PHA0 = SPI_PROT_POL0PHA0,	//! Mode 0. Polarity 0, phase 0. Rising edge without delay
-	SPI_PROTOCOL_POL0PHA1 =  SPI_PROT_POL0PHA1,	//! Mode 1. Polarity 0, phase 1. Rising edge with delay.
-	SPI_PROTOCOL_POL1PHA0 = SPI_PROT_POL1PHA0,	//! Mode 2. Polarity 1, phase 0. Falling edge without delay.
-	SPI_PROTOCOL_POL1PHA1 = SPI_PROT_POL1PHA1	//! Mode 3. Polarity 1, phase 1. Falling edge with delay.
+	SPI_PROTOCOL_POL0PHA0 = SPI_PROT_POL0PHA0,	//!< Mode 0. Polarity 0, phase 0. Rising edge without delay
+	SPI_PROTOCOL_POL0PHA1 =  SPI_PROT_POL0PHA1,	//!< Mode 1. Polarity 0, phase 1. Rising edge with delay.
+	SPI_PROTOCOL_POL1PHA0 = SPI_PROT_POL1PHA0,	//!< Mode 2. Polarity 1, phase 0. Falling edge without delay.
+	SPI_PROTOCOL_POL1PHA1 = SPI_PROT_POL1PHA1	//!< Mode 3. Polarity 1, phase 1. Falling edge with delay.
 };
 
 
@@ -53,8 +53,8 @@ enum SpiMode
 /// SPI bitrates
 enum SpiBitrate
 {
-	SPI_BITRATE_1M = 1000000,   ///< SPI_BITRATE_1M
-	SPI_BITRATE_12M5 = 12500000,///< SPI_BITRATE_12M5
+	SPI_BITRATE_1M = 1000000,
+	SPI_BITRATE_12M5 = 12500000,
 };
 
 

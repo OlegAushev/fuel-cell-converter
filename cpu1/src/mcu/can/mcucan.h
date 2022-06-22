@@ -168,24 +168,24 @@ public:
 	/**
 	 * @brief Retrieves received data.
 	 * @param objId - message object ID
-	 * @param dataDest - pointer to data destination
+	 * @param dataBuf - pointer to data destination buffer
 	 * @return \c true if new data was retrieved, \c false otherwise.
 	 */
-	bool recv(uint32_t objId, uint16_t* dataDest) const
+	bool recv(uint32_t objId, uint16_t* dataBuf) const
 	{
-		return CAN_readMessage(m_module.base, objId, dataDest);
+		return CAN_readMessage(m_module.base, objId, dataBuf);
 	}
 
 	/**
 	 * @brief Sends data.
 	 * @param objId - message object ID
-	 * @param dataSrc - pointer to data source
+	 * @param dataBuf - pointer to data source buffer
 	 * @param dataLen - data length
 	 * @return (none)
 	 */
-	void send(uint32_t objId, const uint16_t* dataSrc, uint16_t dataLen) const
+	void send(uint32_t objId, const uint16_t* dataBuf, uint16_t dataLen) const
 	{
-		CAN_sendMessage(m_module.base, objId, dataLen, dataSrc);
+		CAN_sendMessage(m_module.base, objId, dataLen, dataBuf);
 	}
 
 	/**
