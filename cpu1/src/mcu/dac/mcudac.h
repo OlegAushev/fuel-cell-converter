@@ -87,6 +87,7 @@ class DacUnit : public emb::c28x::Singleton<DacUnit<Module> >
 private:
 	detail::DacModuleImpl m_module;
 
+private:
 	DacUnit(const DacUnit& other);			// no copy constructor
 	DacUnit& operator=(const DacUnit& other);	// no copy assignment operator
 public:

@@ -1,6 +1,6 @@
 /**
  * @file
- * @ingroup mcu can_by_gpio
+ * @ingroup can_by_gpio
  */
 
 
@@ -87,35 +87,35 @@ void Transceiver::reset()
 ///
 __interrupt void Transceiver::onClockInterrupt()
 {
-	Transceiver* tranceiver = Transceiver::instance();
-	tranceiver->m_clkFlag = 1 - tranceiver->m_clkFlag;
+	Transceiver* transceiver = Transceiver::instance();
+	transceiver->m_clkFlag = 1 - transceiver->m_clkFlag;
 
-	if ((tranceiver->m_txActive) && tranceiver->m_clkFlag)
+	if ((transceiver->m_txActive) && transceiver->m_clkFlag)
 	{
-		if (tranceiver->m_txIdx < tranceiver->m_txBitCount)
+		if (transceiver->m_txIdx < transceiver->m_txBitCount)
 		{
-			uint32_t out = (txCanBitStream[tranceiver->m_txIdx++] == 0) ? 0 : 1;
-			GPIO_writePin(tranceiver->m_txPin.config().no, out);
+			uint32_t out = (txCanBitStream[transceiver->m_txIdx++] == 0) ? 0 : 1;
+			GPIO_writePin(transceiver->m_txPin.config().no, out);
 		}
 		else
 		{
-			tranceiver->m_txActive = false;
+			transceiver->m_txActive = false;
 		}
 	}
 
-	if ((tranceiver->m_rxActive) && (tranceiver->m_clkFlag == tranceiver->m_rxSyncFlag))
+	if ((transceiver->m_rxActive) && (transceiver->m_clkFlag == transceiver->m_rxSyncFlag))
 	{
-		if (tranceiver->m_rxIdx < tranceiver->m_rxBitCount)
+		if (transceiver->m_rxIdx < transceiver->m_rxBitCount)
 		{
-			rxCanBitStream[tranceiver->m_rxIdx++] =
-					GPIO_readPin(tranceiver->m_rxPin.config().no);
+			rxCanBitStream[transceiver->m_rxIdx++] =
+					GPIO_readPin(transceiver->m_rxPin.config().no);
 		}
 		else
 		{
-			tranceiver->m_rxActive = false;
-			tranceiver->m_rxPin.enableInterrupts(); // ready for new frame;
-			tranceiver->m_rxDataReady = true;	// RX data can be read by recv()
-			GPIO_togglePin(tranceiver->m_clkPin.config().no);
+			transceiver->m_rxActive = false;
+			transceiver->m_rxPin.enableInterrupts(); // ready for new frame;
+			transceiver->m_rxDataReady = true;	// RX data can be read by recv()
+			GPIO_togglePin(transceiver->m_clkPin.config().no);
 		}
 	}
 }
@@ -126,14 +126,14 @@ __interrupt void Transceiver::onClockInterrupt()
 ///
 __interrupt void Transceiver::onRxStart()
 {
-	Transceiver* tranceiver = Transceiver::instance();
-	tranceiver->m_rxSyncFlag = 1 - tranceiver->m_clkFlag; 	// begin receiving on next CLK INT
-	tranceiver->m_rxIdx = 0;
-	tranceiver->m_rxActive = true;
-	tranceiver->m_rxPin.disableInterrupts();		// no interrupts until this frame will be received
+	Transceiver* transceiver = Transceiver::instance();
+	transceiver->m_rxSyncFlag = 1 - transceiver->m_clkFlag;	// begin receiving on next CLK INT
+	transceiver->m_rxIdx = 0;
+	transceiver->m_rxActive = true;
+	transceiver->m_rxPin.disableInterrupts();		// no interrupts until this frame will be received
 
-	tranceiver->m_rxPin.acknowledgeInterrupt();
-	GPIO_togglePin(tranceiver->m_clkPin.config().no);
+	transceiver->m_rxPin.acknowledgeInterrupt();
+	GPIO_togglePin(transceiver->m_clkPin.config().no);
 }
 
 

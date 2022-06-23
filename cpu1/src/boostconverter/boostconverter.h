@@ -59,14 +59,6 @@ struct BoostConverterConfig
  */
 class BoostConverter : emb::c28x::Singleton<BoostConverter>
 {
-private:
-	BoostConverterConfig m_config;
-
-	const mcu::GpioPin FLT_PIN;
-	const mcu::GpioPin RST_PIN;
-	const mcu::GpioPin ERR_PIN;
-	const mcu::GpioPin REL_PIN;
-
 public:
 	/// Converter states
 	enum BoostConverterState
@@ -75,12 +67,8 @@ public:
 		CONVERTER_ON
 	};
 
-	mcu::PwmUnit<mcu::PWM_ONE_PHASE> pwmUnit;
-	InVoltageSensor inVoltageSensor;
-	OutVoltageSensor outVoltageSensor;
-	InCurrentSensor inCurrentSensor;
-
 private:
+	BoostConverterConfig m_config;
 	BoostConverterState m_state;
 
 	static const float VDC_SMOOTH_FACTOR = 0.001;
@@ -92,9 +80,19 @@ private:
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;
 	emb::PiControllerCl<emb::CONTROLLER_INVERSE> m_currentController;
 
+	const mcu::GpioPin FLT_PIN;
+	const mcu::GpioPin RST_PIN;
+	const mcu::GpioPin ERR_PIN;
+	const mcu::GpioPin REL_PIN;
+public:
+	mcu::PwmUnit<mcu::PWM_ONE_PHASE> pwmUnit;
+	InVoltageSensor inVoltageSensor;
+	OutVoltageSensor outVoltageSensor;
+	InCurrentSensor inCurrentSensor;
+
+private:
 	BoostConverter(const BoostConverter& other);		// no copy constructor
 	BoostConverter& operator=(const BoostConverter& other);	// no copy assignment operator
-
 public:
 	/**
 	 * @brief Constructs a new Converter object.

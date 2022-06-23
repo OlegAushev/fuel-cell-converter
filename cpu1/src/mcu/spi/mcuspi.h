@@ -111,9 +111,9 @@ private:
 	detail::SpiModuleImpl m_module;
 	SpiWordLen m_wordLen;
 
+private:
 	SpiUnit(const SpiUnit& other);			// no copy constructor
 	SpiUnit& operator=(const SpiUnit& other);	// no copy assignment operator
-
 public:
 	/**
 	 * @brief Initializes MCU SPI unit.

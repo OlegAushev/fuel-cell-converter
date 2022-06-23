@@ -25,12 +25,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 		const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
 	: emb::c28x::Singleton<BoostConverter>(this)
 	, m_config(converterConfig)
-	, FLT_PIN(converterConfig.fltPin)
-	, RST_PIN(rstPinCfg)
-	, ERR_PIN(errPinCfg)
-	, REL_PIN(relPinCfg)
 	, m_state(CONVERTER_OFF)
-	, pwmUnit(pwmConfig)
 	, m_voltageIn(VDC_SMOOTH_FACTOR)
 	, m_voltageOut(VDC_SMOOTH_FACTOR)
 	, m_currentIn(0, 0)
@@ -38,6 +33,11 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 			1 / pwmConfig.switchingFreq, 0, 0.55f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
 			1 / pwmConfig.switchingFreq, converterConfig.currentInMin, converterConfig.currentInMax)
+	, FLT_PIN(converterConfig.fltPin)
+	, RST_PIN(rstPinCfg)
+	, ERR_PIN(errPinCfg)
+	, REL_PIN(relPinCfg)
+	, pwmUnit(pwmConfig)
 {
 #ifdef CRD300
 	pwmUnit.initTzSubmodule(FLT_PIN, XBAR_INPUT1);

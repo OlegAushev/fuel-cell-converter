@@ -118,10 +118,10 @@ class QepUnit : public emb::c28x::Singleton<QepUnit<Module> >
 private:
 	detail::QepModuleImpl m_module;
 
+private:
 	QepUnit(const QepUnit& other);			// no copy constructor
 	QepUnit& operator=(const QepUnit& other);	// no copy assignment operator
 public:
-
 	/**
 	 * @brief Initializes MCU QEP unit.
 	 * @param (none)

@@ -97,6 +97,7 @@ class CanUnit : public emb::c28x::Singleton<CanUnit<Module> >
 private:
 	detail::CanModuleImpl m_module;
 
+private:
 	CanUnit(const CanUnit& other);			// no copy constructor
 	CanUnit& operator=(const CanUnit& other);	// no copy assignment operator
 public:

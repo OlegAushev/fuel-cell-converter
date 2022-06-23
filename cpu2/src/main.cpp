@@ -97,7 +97,7 @@ void main()
 	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
 
-	canbygpio::Transceiver cbgTranceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000,
+	canbygpio::Transceiver cbgTransceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000,
 			canbygpio::tag::enable_bit_stuffing());
 #endif
 
@@ -122,7 +122,7 @@ void main()
 		mcu::SystemClock::runTasks();
 
 #ifdef CAN_BY_GPIO
-		int nBytes = cbgTranceiver.recv(frameId, testRxData);
+		int nBytes = cbgTransceiver.recv(frameId, testRxData);
 		if (nBytes < 0)
 		{
 			for (size_t i = 0; i < 10; ++i)
@@ -133,7 +133,7 @@ void main()
 		}
 		else if (nBytes == 8)
 		{
-			if (cbgTranceiver.send(frameId, testRxData, nBytes) == 8)
+			if (cbgTransceiver.send(frameId, testRxData, nBytes) == 8)
 			{
 				mcu::delay_us(10000);
 			}

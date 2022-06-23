@@ -173,6 +173,7 @@ private:
 	uint16_t m_period;			// TBPRD register value
 	uint16_t m_phaseShift[PhaseCount];	// TBPHS registers values
 
+private:
 	PwmUnit(const PwmUnit& other);			// no copy constructor
 	PwmUnit& operator=(const PwmUnit& other);	// no copy assignment operator
 public:

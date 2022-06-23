@@ -79,6 +79,7 @@ class CapUnit
 private:
 	detail::CapModuleImpl<ChannelCount> m_module;
 
+private:
 	CapUnit(const CapUnit& other);			// no copy constructor
 	CapUnit& operator=(const CapUnit& other);	// no copy assignment operator
 public:

@@ -92,6 +92,7 @@ class I2CUnit : public emb::c28x::Singleton<I2CUnit<Module> >
 private:
 	detail::I2CModuleImpl m_module;
 
+private:
 	I2CUnit(const I2CUnit& other);			// no copy constructor
 	I2CUnit& operator=(const I2CUnit& other);	// no copy assignment operator
 public:
