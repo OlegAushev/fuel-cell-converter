@@ -114,7 +114,7 @@ __interrupt void Transceiver::onClockInterrupt()
 		{
 			tranceiver->m_rxActive = false;
 			tranceiver->m_rxPin.enableInterrupts(); // ready for new frame;
-			tranceiver->m_rxDataReady = true;
+			tranceiver->m_rxDataReady = true;	// RX data can be read by recv()
 			GPIO_togglePin(tranceiver->m_clkPin.config().no);
 		}
 	}
@@ -127,10 +127,10 @@ __interrupt void Transceiver::onClockInterrupt()
 __interrupt void Transceiver::onRxStart()
 {
 	Transceiver* tranceiver = Transceiver::instance();
-	tranceiver->m_rxSyncFlag = 1 - tranceiver->m_clkFlag; // begin receiving on next CLK INT
+	tranceiver->m_rxSyncFlag = 1 - tranceiver->m_clkFlag; 	// begin receiving on next CLK INT
 	tranceiver->m_rxIdx = 0;
 	tranceiver->m_rxActive = true;
-	tranceiver->m_rxPin.disableInterrupts();
+	tranceiver->m_rxPin.disableInterrupts();		// no interrupts until this frame will be received
 
 	tranceiver->m_rxPin.acknowledgeInterrupt();
 	GPIO_togglePin(tranceiver->m_clkPin.config().no);
