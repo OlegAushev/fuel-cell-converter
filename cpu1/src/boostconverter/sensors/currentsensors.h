@@ -82,7 +82,7 @@ public:
 #ifdef CRD300
 		return 800.f * (float(rawData) / 4095.f) - 400.f - m_zeroError;
 #else
-		return float(rawData) * 0.102564f - 200 - m_zeroError;
+		return float(rawData) * 0.09524f - 200 - m_zeroError;
 #endif
 	}
 
