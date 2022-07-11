@@ -99,7 +99,7 @@ public:
 	 * @param bitrate - bitrate
 	 */
 	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-			mcu::GpioPin& clkPin, uint32_t bitrate, tag::enable_bit_stuffing);
+			const mcu::GpioPin& clkPin, uint32_t bitrate, tag::enable_bit_stuffing);
 
 	/**
 	 * @brief Configures CAN-BY-GPIO transceiver with disabled bit stuffing.
@@ -109,7 +109,7 @@ public:
 	 * @param bitrate - bitrate
 	 */
 	Transceiver(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-			mcu::GpioPin& clkPin, uint32_t bitrate, tag::disable_bit_stuffing);
+			const mcu::GpioPin& clkPin, uint32_t bitrate, tag::disable_bit_stuffing);
 
 	/**
 	 * @brief Resets transceiver.
@@ -158,7 +158,7 @@ public:
 
 protected:
 	void _init(const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-			mcu::GpioPin& clkPin, uint32_t bitrate);
+			const mcu::GpioPin& clkPin, uint32_t bitrate);
 	int _generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
 	int _parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);
 	static __interrupt void onClockInterrupt();

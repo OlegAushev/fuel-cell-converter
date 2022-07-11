@@ -21,7 +21,7 @@
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu2clocktasks.h"
-#include "canbygpio/canbygpio.h"
+#include "fuelcellcontroller/fuelcellcontroller.h"
 
 
 #pragma DATA_SECTION("SHARED_CONVERTER")
@@ -100,6 +100,7 @@ void main()
 	canbygpio::Transceiver cbgTransceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000,
 			canbygpio::tag::enable_bit_stuffing());
 #endif
+	FuelCellController fuelcellController(converter, canbygpioTx, canbygpioRx, canbygpioClk, 125000);
 
 /*####################################################################################################################*/
 	/*##################*/
