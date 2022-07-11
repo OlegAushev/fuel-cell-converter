@@ -128,15 +128,60 @@ class RpdoService
 {
 	friend class RpdoServiceTest;
 private:
-	RpdoService(const RpdoService& other);			// no copy constructor
-	RpdoService& operator=(const RpdoService& other);	// no copy assignment operator
-
+	// APP-SPECIFIC objects
+	BoostConverter* converter;
+private:
 	mcu::IpcSignalPair RPDO1_RECEIVED;
 	mcu::IpcSignalPair RPDO2_RECEIVED;
 	mcu::IpcSignalPair RPDO3_RECEIVED;
 	mcu::IpcSignalPair RPDO4_RECEIVED;
 
-	ProcessedRpdoData* m_rpdoProcessedData;
+	/// Data-storage for IPC
+	ProcessedRpdoData* s_rpdoProcessedData;
+
+private:
+	RpdoService(const RpdoService& other);			// no copy constructor
+	RpdoService& operator=(const RpdoService& other);	// no copy assignment operator
+public:
+	/**
+	 * @brief Configures service.
+	 */
+	RpdoService()
+	{
+		EMB_STATIC_ASSERT(Ipc == mcu::IPC_MODE_DUALCORE);
+		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
+		switch (Ipc)
+		{
+		case mcu::IPC_MODE_SINGLECORE:
+			s_rpdoProcessedData = &rpdoProcessedDataNonShared;
+			break;
+		case mcu::IPC_MODE_DUALCORE:
+			s_rpdoProcessedData = &rpdoProcessedDataShared;
+			break;
+		}
+	}
+
+	/**
+	 * @ingroup mco_app_spec
+	 * @brief Configures service on server that responds to processed RPDO messages.
+	 */
+	RpdoService(BoostConverter* _converter)
+	{
+		switch (Ipc)
+		{
+		case mcu::IPC_MODE_SINGLECORE:
+			s_rpdoProcessedData = &rpdoProcessedDataNonShared;
+			break;
+		case mcu::IPC_MODE_DUALCORE:
+			s_rpdoProcessedData = &rpdoProcessedDataShared;
+			break;
+		}
+
+		// APP-SPECIFIC BEGIN
+		converter = _converter;
+		// APP-SPECIFIC END
+	}
+
 public:
 	/**
 	 * @brief Configures IPC signals.
@@ -167,8 +212,8 @@ public:
 		switch (Module)
 		{
 		case MCO_CAN1:
-			m_rpdoProcessedData->bitRun = pdoMsg.can1.run;
-			m_rpdoProcessedData->bitEmergencyStop = pdoMsg.can1.emergencyStop;
+			s_rpdoProcessedData->bitRun = pdoMsg.can1.run;
+			s_rpdoProcessedData->bitEmergencyStop = pdoMsg.can1.emergencyStop;
 			break;
 		case MCO_CAN2:
 			// RESERVED
@@ -192,8 +237,8 @@ public:
 		switch (Module)
 		{
 		case MCO_CAN1:
-			m_rpdoProcessedData->speedRef = RpdoService::speedRef(pdoMsg);
-			m_rpdoProcessedData->torquePuRef = RpdoService::torquePuRef(pdoMsg);
+			s_rpdoProcessedData->speedRef = RpdoService::speedRef(pdoMsg);
+			s_rpdoProcessedData->torquePuRef = RpdoService::torquePuRef(pdoMsg);
 			break;
 		case MCO_CAN2:
 			// RESERVED;
@@ -276,7 +321,7 @@ private:
 		{
 		case MCO_CAN1:
 			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
-			if (m_rpdoProcessedData->bitRun == true)
+			if (s_rpdoProcessedData->bitRun == true)
 			{
 				converter->start();
 			}
@@ -303,8 +348,7 @@ private:
 		switch (Module)
 		{
 		case MCO_CAN1:
-			//RPDO_DRIVE(Module, Ipc, Mode)->setSpeedRef(m_rpdoProcessedData->speedRef);
-			//RPDO_DRIVE(Module, Ipc, Mode)->setTorqueRef(m_rpdoProcessedData->torquePuRef);
+			// RESERVED;
 			break;
 		case MCO_CAN2:
 			// RESERVED;
@@ -353,50 +397,6 @@ private:
 		// APP-SPECIFIC END
 		mcu::resetIpcSignal(RPDO4_RECEIVED, Ipc);
 	}
-
-public:
-	/**
-	 * @brief Configures service.
-	 */
-	RpdoService()
-	{
-		EMB_STATIC_ASSERT(Ipc == mcu::IPC_MODE_DUALCORE);
-		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
-		switch (Ipc)
-		{
-		case mcu::IPC_MODE_SINGLECORE:
-			m_rpdoProcessedData = &rpdoProcessedDataNonShared;
-			break;
-		case mcu::IPC_MODE_DUALCORE:
-			m_rpdoProcessedData = &rpdoProcessedDataShared;
-			break;
-		}
-	}
-
-	/**
-	 * @ingroup mco_app_spec
-	 * @brief Configures service on server that responds to processed RPDO messages.
-	 */
-	RpdoService(BoostConverter* _converter)
-	{
-		switch (Ipc)
-		{
-		case mcu::IPC_MODE_SINGLECORE:
-			m_rpdoProcessedData = &rpdoProcessedDataNonShared;
-			break;
-		case mcu::IPC_MODE_DUALCORE:
-			m_rpdoProcessedData = &rpdoProcessedDataShared;
-			break;
-		}
-
-		// APP-SPECIFIC BEGIN
-		converter = _converter;
-		// APP-SPECIFIC END
-	}
-
-private:
-	// APP-SPECIFIC objects
-	BoostConverter* converter;
 
 /* ========================================================================== */
 /* ======================= APPLICATION-SPECIFIC BEGIN ======================= */

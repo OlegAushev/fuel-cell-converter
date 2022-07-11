@@ -209,9 +209,25 @@ class TpdoService
 {
 	friend class TpdoServiceTest;
 private:
+	// APP-SPECIFIC objects
+	const BoostConverter* converter;
+
+private:
 	TpdoService(const TpdoService& other);			// no copy constructor
 	TpdoService& operator=(const TpdoService& other);	// no copy assignment operator
 public:
+	/**
+	 * @ingroup mco_app_spec
+	 * @brief Configures service.
+	 */
+	TpdoService(BoostConverter* _converter)
+	{
+		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
+		// APP-SPECIFIC BEGIN
+		converter = _converter;
+		// APP-SPECIFIC END
+	}
+
 	/**
 	 * @ingroup mco_app_spec
 	 * @brief Creates TPDO1 message data. Used by McoServer as callback.
@@ -250,7 +266,7 @@ public:
 			*/
 			break;
 		case MCO_CAN2:
-			msg.can2.reserved = 0x0F0E0E0B0D0A0E0D;
+			// RESERVED;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -348,23 +364,6 @@ public:
 		return msg.all();
 	}
 
-public:
-	/**
-	 * @ingroup mco_app_spec
-	 * @brief Configures service.
-	 */
-	TpdoService(BoostConverter* _converter)
-	{
-		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
-		// APP-SPECIFIC BEGIN
-		converter = _converter;
-		// APP-SPECIFIC END
-	}
-
-private:
-	// APP-SPECIFIC objects
-	const BoostConverter* converter;
-
 /* ========================================================================== */
 /* ======================= APPLICATION-SPECIFIC BEGIN ======================= */
 /* ========================================================================== */
@@ -388,10 +387,10 @@ private:
 	 * @param msg
 	 * @param state
 	 */
-//	static void saveDriveState(CobTpdo1& msg, acim::DriveState state)
-//	{
-//		msg.can1.driveState = static_cast<uint8_t>(state);
-//	}
+	/*static void saveDriveState(CobTpdo1& msg, acim::DriveState state)
+	{
+		msg.can1.driveState = static_cast<uint8_t>(state);
+	}*/
 
 	/**
 	 *
@@ -521,36 +520,36 @@ private:
 	 * @param msg
 	 * @param ref
 	 */
-//	static void saveReferenceType(CobTpdo1& msg, acim::Reference ref)
-//	{
-//		switch (ref)
-//		{
-//		case acim::SPEED_REFERENCE:
-//			msg.can1.referenceType = 0;
-//			break;
-//		case acim::TORQUE_REFERENCE:
-//			msg.can1.referenceType = 1;
-//			break;
-//		}
-//	}
+	/*static void saveReferenceType(CobTpdo1& msg, acim::Reference ref)
+	{
+		switch (ref)
+		{
+		case acim::SPEED_REFERENCE:
+			msg.can1.referenceType = 0;
+			break;
+		case acim::TORQUE_REFERENCE:
+			msg.can1.referenceType = 1;
+			break;
+		}
+	}*/
 
 	/**
 	 *
 	 * @param msg
 	 * @param ref
 	 */
-//	static void saveControlLoopType(CobTpdo1& msg, acim::ControlLoopType loopType)
-//	{
-//		switch (loopType)
-//		{
-//		case acim::OPEN_LOOP:
-//			msg.can1.controlLoopType = 0;
-//			break;
-//		case acim::CLOSED_LOOP:
-//			msg.can1.controlLoopType = 1;
-//			break;
-//		}
-//	}
+	/*static void saveControlLoopType(CobTpdo1& msg, acim::ControlLoopType loopType)
+	{
+		switch (loopType)
+		{
+		case acim::OPEN_LOOP:
+			msg.can1.controlLoopType = 0;
+			break;
+		case acim::CLOSED_LOOP:
+			msg.can1.controlLoopType = 1;
+			break;
+		}
+	}*/
 
 /* ========================================================================== */
 /* =========================== CobTpdo2-message ============================= */
