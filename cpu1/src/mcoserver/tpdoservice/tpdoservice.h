@@ -320,17 +320,8 @@ public:
 		switch (Module)
 		{
 		case MCO_CAN1:
-			/* TODO
-			tpdoService.savePosHousingVoltage(msg, m_drive->converter.voltageDC()/2);
-			tpdoService.saveNegHousingVoltage(msg, m_drive->converter.voltageDC()/2);
-			tpdoService.saveInsulationLowStatus(msg, 0);
-			tpdoService.saveInsulationLowStatusWoFilter(msg, 0);
-			tpdoService.saveDcCurrent(msg, m_drive->converter.currents()[srm::CURRENT_DC]);
-
-			Syslog syslog;
-			msg.syslogInfo = static_cast<uint32_t>(syslog.readMessage());
-			syslog.popMessage();
-			*/
+			msg.can1.syslogInfo = static_cast<uint32_t>(Syslog::readMessage());
+			Syslog::popMessage();
 			break;
 		case MCO_CAN2:
 			// RESERVED;

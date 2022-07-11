@@ -145,6 +145,7 @@ public:
 
 	float voltageIn() const { return m_voltageIn.output(); }
 	float voltageOut() const { return m_voltageOut.output(); }
+	float currentIn() const { return m_currentInAvg; }
 	void relOn() const
 	{
 #ifndef CRD300
