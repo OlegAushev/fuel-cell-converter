@@ -144,7 +144,7 @@ int Transceiver::_generateTxCanFrame(unsigned int frameId, const uint16_t* buf, 
 {
 	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
 
-	assert(dataLen <= 9);
+	assert(len <= 9);
 	assert(frameId <= 0x7FF);
 
 	size_t idx = 0;

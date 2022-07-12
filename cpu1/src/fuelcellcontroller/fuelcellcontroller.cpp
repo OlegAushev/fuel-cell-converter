@@ -54,7 +54,7 @@ void FuelCellController::run()
 		tpdo.voltage = emb::clamp(m_converter->voltageOut(), 0.f, float(USHRT_MAX));
 		tpdo.current = emb::clamp(m_converter->currentIn(), 0.f, float(USHRT_MAX));
 
-		emb::c28x::to_8bit_bytes<FuelCellTpdo>(tpdoBytes, tpdo);
+		emb::c28x::to_bytes8<FuelCellTpdo>(tpdoBytes, tpdo);
 	}
 }
 

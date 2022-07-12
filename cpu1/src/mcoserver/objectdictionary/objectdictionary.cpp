@@ -24,7 +24,7 @@ inline ODAccessStatus getDeviceName(CobSdoData& dest)
 	uint16_t name[4] = {0};
 	memcpy(name, Syslog::DEVICE_NAME, sizeof(name)/sizeof(*name));
 	uint32_t nameRaw = 0;
-	emb::c28x::from_8bit_bytes<uint32_t>(nameRaw, name);
+	emb::c28x::from_bytes8<uint32_t>(nameRaw, name);
 	memcpy(&dest, &nameRaw, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }
@@ -40,7 +40,7 @@ inline ODAccessStatus getBuildConfiguration(CobSdoData& dest)
 	uint16_t name[4];
 	memcpy(name, Syslog::BUILD_CONFIGURATION, sizeof(name)/sizeof(*name));
 	uint32_t nameRaw;
-	emb::c28x::from_8bit_bytes<uint32_t>(nameRaw, name);
+	emb::c28x::from_bytes8<uint32_t>(nameRaw, name);
 	memcpy(&dest, &nameRaw, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }

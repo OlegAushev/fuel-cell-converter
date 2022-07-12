@@ -307,7 +307,7 @@ public:
 	{
 		if (!mcu::ipcSignalSent(TSDO_READY, Ipc)) return;
 
-		emb::c28x::to_8bit_bytes<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module, Ipc, Mode>::tsdoData());
+		emb::c28x::to_bytes8<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module, Ipc, Mode>::tsdoData());
 		m_canUnit->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
 
 		mcu::resetIpcSignal(TSDO_READY, Ipc);
@@ -360,7 +360,7 @@ protected:
 	void sendHeartbeat()
 	{
 		uint64_t heartbeatData = m_state;
-		emb::c28x::to_8bit_bytes<uint64_t>(m_msgObjects[HEARTBEAT].data, heartbeatData);
+		emb::c28x::to_bytes8<uint64_t>(m_msgObjects[HEARTBEAT].data, heartbeatData);
 		m_canUnit->send(HEARTBEAT, m_msgObjects[HEARTBEAT].data, cobDataLen[HEARTBEAT]);
 	}
 
@@ -373,7 +373,7 @@ protected:
 	void sendTpdo(TpdoNum tpdoNum, uint64_t tpdoData)
 	{
 		size_t TPDOx = TPDO1 + tpdoNum * 2;
-		emb::c28x::to_8bit_bytes<uint64_t>(m_msgObjects[TPDOx].data, tpdoData);
+		emb::c28x::to_bytes8<uint64_t>(m_msgObjects[TPDOx].data, tpdoData);
 		m_canUnit->send(TPDOx, m_msgObjects[TPDOx].data, cobDataLen[TPDOx]);
 	}
 
@@ -416,7 +416,7 @@ protected:
 		{
 			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo1(rawPdoMsg);
 			break;
 		}
@@ -425,7 +425,7 @@ protected:
 		{
 			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo2(rawPdoMsg);
 			break;
 		}
@@ -434,7 +434,7 @@ protected:
 		{
 			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo3(rawPdoMsg);
 			break;
 		}
@@ -443,7 +443,7 @@ protected:
 		{
 			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
+			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo4(rawPdoMsg);
 			break;
 		}
@@ -452,7 +452,7 @@ protected:
 		{
 			canUnit->recv(RSDO, server->m_msgObjects[RSDO].data);
 			uint64_t rawSdoMsg = 0;
-			emb::c28x::from_8bit_bytes<uint64_t>(rawSdoMsg, server->m_msgObjects[RSDO].data);
+			emb::c28x::from_bytes8<uint64_t>(rawSdoMsg, server->m_msgObjects[RSDO].data);
 			server->m_sdoService->processRsdo(rawSdoMsg);
 			break;
 		}
