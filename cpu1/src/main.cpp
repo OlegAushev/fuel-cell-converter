@@ -136,9 +136,9 @@ void main()
 	/*##########*/
 	Syslog::IpcSignals syslogIpcSignals =
 	{
-		.reset = mcu::IpcSignalPair(10),
-		.addMessage = mcu::IpcSignalPair(11),
-		.popMessage = mcu::IpcSignalPair(12)
+		.reset = mcu::IpcFlagPair(10),
+		.addMessage = mcu::IpcFlagPair(11),
+		.popMessage = mcu::IpcFlagPair(12)
 	};
 	Syslog::init(syslogIpcSignals);
 	Syslog::addMessage(Syslog::DEVICE_CPU1_BOOT_SUCCESS);
@@ -170,12 +170,12 @@ void main()
 
 	microcanopen::IpcSignals canIpcSignalsTest =
 	{
-		.rpdo1 = mcu::IpcSignalPair(14),
-		.rpdo2 = mcu::IpcSignalPair(15),
-		.rpdo3 = mcu::IpcSignalPair(16),
-		.rpdo4 = mcu::IpcSignalPair(17),
-		.rsdo = mcu::IpcSignalPair(18),
-		.tsdo = mcu::IpcSignalPair(19),
+		.rpdo1 = mcu::IpcFlagPair(14),
+		.rpdo2 = mcu::IpcFlagPair(15),
+		.rpdo3 = mcu::IpcFlagPair(16),
+		.rpdo4 = mcu::IpcFlagPair(17),
+		.rsdo = mcu::IpcFlagPair(18),
+		.tsdo = mcu::IpcFlagPair(19),
 	};
 
 	microcanopen::SdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoServiceTest(NULL);
@@ -251,7 +251,7 @@ void main()
 #ifdef DUALCORE
 	mcu::bootCpu2();
 	Syslog::addMessage(Syslog::DEVICE_BOOT_CPU2);
-	mcu::waitForIpcSignal(CPU2_BOOTED);
+	mcu::waitForRemoteIpcFlag(CPU2_BOOTED);
 	Syslog::addMessage(Syslog::DEVICE_CPU2_BOOT_SUCCESS);
 #endif
 
@@ -291,12 +291,12 @@ void main()
 	/*#######*/
 	microcanopen::IpcSignals canIpcSignals =
 	{
-		.rpdo1 = mcu::IpcSignalPair(4),
-		.rpdo2 = mcu::IpcSignalPair(5),
-		.rpdo3 = mcu::IpcSignalPair(6),
-		.rpdo4 = mcu::IpcSignalPair(7),
-		.rsdo = mcu::IpcSignalPair(8),
-		.tsdo = mcu::IpcSignalPair(9),
+		.rpdo1 = mcu::IpcFlagPair(4),
+		.rpdo2 = mcu::IpcFlagPair(5),
+		.rpdo3 = mcu::IpcFlagPair(6),
+		.rpdo4 = mcu::IpcFlagPair(7),
+		.rsdo = mcu::IpcFlagPair(8),
+		.tsdo = mcu::IpcFlagPair(9),
 	};
 
 	microcanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
@@ -326,7 +326,7 @@ void main()
 	// NONE
 
 #ifdef DUALCORE
-	mcu::waitForIpcSignal(CPU2_PERIPHERY_CONFIGURED);
+	mcu::waitForRemoteIpcFlag(CPU2_PERIPHERY_CONFIGURED);
 	Syslog::addMessage(Syslog::DEVICE_CPU2_READY);
 #endif
 
@@ -353,7 +353,7 @@ void main()
 
 #ifdef DUALCORE
 	// CPU1 has finished all preparations, CPU2 can enable all interrupts
-	mcu::sendIpcSignal(CPU1_PERIPHERY_CONFIGURED);
+	mcu::setLocalIpcFlag(CPU1_PERIPHERY_CONFIGURED);
 #endif
 	Syslog::addMessage(Syslog::DEVICE_CPU1_READY);
 	mcoServer.enable();

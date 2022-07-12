@@ -49,8 +49,8 @@ class SdoService
 {
 	friend class SdoServiceTest;
 private:
-	mcu::IpcSignalPair RSDO_RECEIVED;
-	mcu::IpcSignalPair TSDO_READY;
+	mcu::IpcFlagPair RSDO_RECEIVED;
+	mcu::IpcFlagPair TSDO_READY;
 
 	/// Data-storage for IPC
 	static CobSdo* s_rsdoData;
@@ -193,8 +193,8 @@ public:
 	 * @brief Configures IPC signals.
 	 * @return (none)
 	 */
-	void initIpcSignals(const mcu::IpcSignalPair& signalPairRsdoReceived,
-			const mcu::IpcSignalPair& signalPairTsdoReady)
+	void initIpcSignals(const mcu::IpcFlagPair& signalPairRsdoReceived,
+			const mcu::IpcFlagPair& signalPairTsdoReady)
 	{
 		RSDO_RECEIVED = signalPairRsdoReceived;
 		TSDO_READY = signalPairTsdoReady;
@@ -209,10 +209,10 @@ public:
 	{
 		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
 
-		if (!mcu::localIpcSignalSent(RSDO_RECEIVED.local))
+		if (!mcu::isLocalIpcFlagSet(RSDO_RECEIVED.local))
 		{
 			*s_rsdoData = CobSdo(rawMsg);
-			mcu::sendIpcSignal(RSDO_RECEIVED.local);
+			mcu::setLocalIpcFlag(RSDO_RECEIVED.local);
 		}
 		else
 		{
@@ -235,11 +235,11 @@ public:
 	 */
 	void processRequest()
 	{
-		if (!mcu::ipcSignalSent(RSDO_RECEIVED, Ipc)) return;
+		if (!mcu::isIpcFlagSet(RSDO_RECEIVED, Ipc)) return;
 
 		_processRequest(*s_rsdoData, *s_tsdoData);
 
-		mcu::resetIpcSignal(RSDO_RECEIVED, Ipc);
+		mcu::resetIpcFlag(RSDO_RECEIVED, Ipc);
 	}
 
 private:
@@ -314,7 +314,7 @@ private:
 			{
 				return;
 			}
-			mcu::sendIpcSignal(TSDO_READY.local);
+			mcu::setLocalIpcFlag(TSDO_READY.local);
 			break;
 
 		case OD_ACCESS_FAIL:

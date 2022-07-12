@@ -97,9 +97,9 @@ public:
 
 	struct IpcSignals
 	{
-		mcu::IpcSignalPair reset;
-		mcu::IpcSignalPair addMessage;
-		mcu::IpcSignalPair popMessage;
+		mcu::IpcFlagPair reset;
+		mcu::IpcFlagPair addMessage;
+		mcu::IpcFlagPair popMessage;
 	};
 
 private:
@@ -130,9 +130,9 @@ private:
 	static FaultData* m_thisCpuFaultData;
 
 	// IPC signals
-	static mcu::IpcSignalPair RESET_FAULTS_AND_WARNINGS;
-	static mcu::IpcSignalPair ADD_MESSAGE;
-	static mcu::IpcSignalPair POP_MESSAGE;
+	static mcu::IpcFlagPair RESET_FAULTS_AND_WARNINGS;
+	static mcu::IpcFlagPair ADD_MESSAGE;
+	static mcu::IpcFlagPair POP_MESSAGE;
 
 public:
 	static const char* DEVICE_NAME;
@@ -186,12 +186,12 @@ public:
 			m_messages.push(msg);
 		}
 #else
-		if (mcu::localIpcSignalSent(ADD_MESSAGE.local))
+		if (mcu::isLocalIpcFlagSet(ADD_MESSAGE.local))
 		{
 			return;
 		}
 		m_cpu2Message = msg;
-		mcu::sendIpcSignal(ADD_MESSAGE.local);
+		mcu::setLocalIpcFlag(ADD_MESSAGE.local);
 #endif
 	}
 
@@ -223,7 +223,7 @@ public:
 			m_messages.pop();
 		}
 #else
-		mcu::sendIpcSignal(POP_MESSAGE.local);
+		mcu::setLocalIpcFlag(POP_MESSAGE.local);
 #endif
 	}
 
@@ -247,23 +247,23 @@ public:
 	{
 #ifdef DUALCORE
 #ifdef CPU1
-		if (mcu::remoteIpcSignalSent(POP_MESSAGE.remote))
+		if (mcu::isRemoteIpcFlagSet(POP_MESSAGE.remote))
 		{
 			popMessage();
-			mcu::acknowledgeRemoteIpcSignal(POP_MESSAGE.remote);
+			mcu::acknowledgeRemoteIpcFlag(POP_MESSAGE.remote);
 		}
 
-		if (mcu::remoteIpcSignalSent(ADD_MESSAGE.remote))
+		if (mcu::isRemoteIpcFlagSet(ADD_MESSAGE.remote))
 		{
 			addMessage(m_cpu2Message);
-			mcu::acknowledgeRemoteIpcSignal(ADD_MESSAGE.remote);
+			mcu::acknowledgeRemoteIpcFlag(ADD_MESSAGE.remote);
 		}
 #endif
 #ifdef CPU2
-		if (mcu::remoteIpcSignalSent(RESET_FAULTS_AND_WARNINGS.remote))
+		if (mcu::isRemoteIpcFlagSet(RESET_FAULTS_AND_WARNINGS.remote))
 		{
 			resetFaultsAndWarnings();
-			mcu::acknowledgeRemoteIpcSignal(RESET_FAULTS_AND_WARNINGS.remote);
+			mcu::acknowledgeRemoteIpcFlag(RESET_FAULTS_AND_WARNINGS.remote);
 		}
 #endif
 #endif
@@ -438,7 +438,7 @@ public:
 		m_thisCpuFaultData->faults = m_thisCpuFaultData->faults & m_thisCpuFaultData->criticalFaultMask;
 		m_thisCpuFaultData->warnings = m_thisCpuFaultData->warnings & m_thisCpuFaultData->criticalWarningMask;
 #if (defined(CPU1) && defined(DUALCORE))
-		mcu::sendIpcSignal(RESET_FAULTS_AND_WARNINGS.local);
+		mcu::setLocalIpcFlag(RESET_FAULTS_AND_WARNINGS.local);
 #endif
 	}
 

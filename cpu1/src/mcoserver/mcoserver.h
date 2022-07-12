@@ -34,12 +34,12 @@ namespace microcanopen {
  */
 struct IpcSignals
 {
-	mcu::IpcSignalPair rpdo1;
-	mcu::IpcSignalPair rpdo2;
-	mcu::IpcSignalPair rpdo3;
-	mcu::IpcSignalPair rpdo4;
-	mcu::IpcSignalPair rsdo;
-	mcu::IpcSignalPair tsdo;
+	mcu::IpcFlagPair rpdo1;
+	mcu::IpcFlagPair rpdo2;
+	mcu::IpcFlagPair rpdo3;
+	mcu::IpcFlagPair rpdo4;
+	mcu::IpcFlagPair rsdo;
+	mcu::IpcFlagPair tsdo;
 };
 
 
@@ -64,12 +64,12 @@ private:
 	emb::Array<uint64_t, 4> m_tpdoPeriods;
 
 	// IPC signals
-	mcu::IpcSignalPair RSDO_RECEIVED;
-	mcu::IpcSignalPair TSDO_READY;
-	mcu::IpcSignalPair RPDO1_RECEIVED;
-	mcu::IpcSignalPair RPDO2_RECEIVED;
-	mcu::IpcSignalPair RPDO3_RECEIVED;
-	mcu::IpcSignalPair RPDO4_RECEIVED;
+	mcu::IpcFlagPair RSDO_RECEIVED;
+	mcu::IpcFlagPair TSDO_READY;
+	mcu::IpcFlagPair RPDO1_RECEIVED;
+	mcu::IpcFlagPair RPDO2_RECEIVED;
+	mcu::IpcFlagPair RPDO3_RECEIVED;
+	mcu::IpcFlagPair RPDO4_RECEIVED;
 
 public:
 	/**
@@ -305,12 +305,12 @@ public:
 	 */
 	void sendSdoResponse()
 	{
-		if (!mcu::ipcSignalSent(TSDO_READY, Ipc)) return;
+		if (!mcu::isIpcFlagSet(TSDO_READY, Ipc)) return;
 
 		emb::c28x::to_bytes8<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module, Ipc, Mode>::tsdoData());
 		m_canUnit->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
 
-		mcu::resetIpcSignal(TSDO_READY, Ipc);
+		mcu::resetIpcFlag(TSDO_READY, Ipc);
 	}
 
 protected:

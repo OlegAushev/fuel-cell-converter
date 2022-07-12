@@ -131,10 +131,10 @@ private:
 	// APP-SPECIFIC objects
 	BoostConverter* converter;
 private:
-	mcu::IpcSignalPair RPDO1_RECEIVED;
-	mcu::IpcSignalPair RPDO2_RECEIVED;
-	mcu::IpcSignalPair RPDO3_RECEIVED;
-	mcu::IpcSignalPair RPDO4_RECEIVED;
+	mcu::IpcFlagPair RPDO1_RECEIVED;
+	mcu::IpcFlagPair RPDO2_RECEIVED;
+	mcu::IpcFlagPair RPDO3_RECEIVED;
+	mcu::IpcFlagPair RPDO4_RECEIVED;
 
 	/// Data-storage for IPC
 	ProcessedRpdoData* s_rpdoProcessedData;
@@ -187,10 +187,10 @@ public:
 	 * @brief Configures IPC signals.
 	 * @return (none)
 	 */
-	void initIpcSignals(const mcu::IpcSignalPair& signalPairRpdo1Received,
-			const mcu::IpcSignalPair& signalPairRpdo2Received,
-			const mcu::IpcSignalPair& signalPairRpdo3Received,
-			const mcu::IpcSignalPair& signalPairRpdo4Received)
+	void initIpcSignals(const mcu::IpcFlagPair& signalPairRpdo1Received,
+			const mcu::IpcFlagPair& signalPairRpdo2Received,
+			const mcu::IpcFlagPair& signalPairRpdo3Received,
+			const mcu::IpcFlagPair& signalPairRpdo4Received)
 	{
 		RPDO1_RECEIVED = signalPairRpdo1Received;
 		RPDO2_RECEIVED = signalPairRpdo2Received;
@@ -220,7 +220,7 @@ public:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::sendIpcSignal(RPDO1_RECEIVED.local);
+		mcu::setLocalIpcFlag(RPDO1_RECEIVED.local);
 	}
 
 	/**
@@ -245,7 +245,7 @@ public:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::sendIpcSignal(RPDO2_RECEIVED.local);
+		mcu::setLocalIpcFlag(RPDO2_RECEIVED.local);
 	}
 
 	/**
@@ -268,7 +268,7 @@ public:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::sendIpcSignal(RPDO3_RECEIVED.local);
+		mcu::setLocalIpcFlag(RPDO3_RECEIVED.local);
 	}
 
 	/**
@@ -291,7 +291,7 @@ public:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::sendIpcSignal(RPDO4_RECEIVED.local);
+		mcu::setLocalIpcFlag(RPDO4_RECEIVED.local);
 	}
 
 public:
@@ -315,7 +315,7 @@ private:
 	///
 	void _respondToProcessedRpdo1()
 	{
-		if (!mcu::ipcSignalSent(RPDO1_RECEIVED, Ipc)) return;
+		if (!mcu::isIpcFlagSet(RPDO1_RECEIVED, Ipc)) return;
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
@@ -335,7 +335,7 @@ private:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::resetIpcSignal(RPDO1_RECEIVED, Ipc);
+		mcu::resetIpcFlag(RPDO1_RECEIVED, Ipc);
 	}
 
 	///
@@ -343,7 +343,7 @@ private:
 	///
 	void _respondToProcessedRpdo2()
 	{
-		if (!mcu::ipcSignalSent(RPDO2_RECEIVED, Ipc)) return;
+		if (!mcu::isIpcFlagSet(RPDO2_RECEIVED, Ipc)) return;
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
@@ -355,7 +355,7 @@ private:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::resetIpcSignal(RPDO2_RECEIVED, Ipc);
+		mcu::resetIpcFlag(RPDO2_RECEIVED, Ipc);
 	}
 
 	///
@@ -363,7 +363,7 @@ private:
 	///
 	void _respondToProcessedRpdo3()
 	{
-		if (!mcu::ipcSignalSent(RPDO3_RECEIVED, Ipc)) return;
+		if (!mcu::isIpcFlagSet(RPDO3_RECEIVED, Ipc)) return;
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
@@ -375,7 +375,7 @@ private:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::resetIpcSignal(RPDO3_RECEIVED, Ipc);
+		mcu::resetIpcFlag(RPDO3_RECEIVED, Ipc);
 	}
 
 	///
@@ -383,7 +383,7 @@ private:
 	///
 	void _respondToProcessedRpdo4()
 	{
-		if (!mcu::ipcSignalSent(RPDO4_RECEIVED, Ipc)) return;
+		if (!mcu::isIpcFlagSet(RPDO4_RECEIVED, Ipc)) return;
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
@@ -395,7 +395,7 @@ private:
 			break;
 		}
 		// APP-SPECIFIC END
-		mcu::resetIpcSignal(RPDO4_RECEIVED, Ipc);
+		mcu::resetIpcFlag(RPDO4_RECEIVED, Ipc);
 	}
 
 /* ========================================================================== */

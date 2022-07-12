@@ -47,7 +47,7 @@ void main()
 	/*# SYSTEM #*/
 	/*##########*/
 	mcu::initDevice();
-	mcu::sendIpcSignal(CPU2_BOOTED);
+	mcu::setLocalIpcFlag(CPU2_BOOTED);
 
 /*####################################################################################################################*/
 	/*##########*/
@@ -55,9 +55,9 @@ void main()
 	/*##########*/
 	Syslog::IpcSignals syslogIpcSignals =
 	{
-		.reset = mcu::IpcSignalPair(10),
-		.addMessage = mcu::IpcSignalPair(11),
-		.popMessage = mcu::IpcSignalPair(12)
+		.reset = mcu::IpcFlagPair(10),
+		.addMessage = mcu::IpcFlagPair(11),
+		.popMessage = mcu::IpcFlagPair(12)
 	};
 	Syslog::init(syslogIpcSignals);
 
@@ -108,8 +108,8 @@ void main()
 	/*##################*/
 	// NONE
 
-	mcu::sendIpcSignal(CPU2_PERIPHERY_CONFIGURED);
-	mcu::waitForIpcSignal(CPU1_PERIPHERY_CONFIGURED);
+	mcu::setLocalIpcFlag(CPU2_PERIPHERY_CONFIGURED);
+	mcu::waitForRemoteIpcFlag(CPU1_PERIPHERY_CONFIGURED);
 
 	// END of CPU2 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/

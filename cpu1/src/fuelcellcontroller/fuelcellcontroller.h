@@ -31,8 +31,8 @@ class FuelCellController
 private:
 	const BoostConverter* m_converter;
 	canbygpio::Transceiver m_transceiver;
-	static const mcu::IpcSignalPair SIG_START;
-	static const mcu::IpcSignalPair SIG_STOP;
+	static const mcu::IpcFlagPair SIG_START;
+	static const mcu::IpcFlagPair SIG_STOP;
 
 	static const uint64_t TPDO_PERIOD = 200;
 	static const unsigned int TPDO_FRAME_ID = 0x200;
@@ -46,12 +46,12 @@ public:
 
 	static void start()
 	{
-		mcu::sendIpcSignal(SIG_START.local);
+		mcu::setLocalIpcFlag(SIG_START.local);
 	}
 
 	static void stop()
 	{
-		mcu::sendIpcSignal(SIG_STOP.local);
+		mcu::setLocalIpcFlag(SIG_STOP.local);
 	}
 };
 

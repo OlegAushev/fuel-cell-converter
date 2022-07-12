@@ -35,7 +35,7 @@ Syslog::FaultData* Syslog::m_thisCpuFaultData;
 
 
 // IPC signals
-mcu::IpcSignalPair Syslog::RESET_FAULTS_AND_WARNINGS;
-mcu::IpcSignalPair Syslog::ADD_MESSAGE;
-mcu::IpcSignalPair Syslog::POP_MESSAGE;
+mcu::IpcFlagPair Syslog::RESET_FAULTS_AND_WARNINGS;
+mcu::IpcFlagPair Syslog::ADD_MESSAGE;
+mcu::IpcFlagPair Syslog::POP_MESSAGE;
 

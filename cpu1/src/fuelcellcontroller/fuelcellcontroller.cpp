@@ -7,8 +7,8 @@
 #include "fuelcellcontroller.h"
 
 
-const mcu::IpcSignalPair FuelCellController::SIG_START(21);
-const mcu::IpcSignalPair FuelCellController::SIG_STOP(22);
+const mcu::IpcFlagPair FuelCellController::SIG_START(21);
+const mcu::IpcFlagPair FuelCellController::SIG_STOP(22);
 
 
 ///
@@ -35,11 +35,11 @@ void FuelCellController::run()
 
 	if (mcu::SystemClock::now() >= (timeTxPrev + TPDO_PERIOD))
 	{
-		if (mcu::remoteIpcSignalSent(SIG_STOP.remote))
+		if (mcu::isRemoteIpcFlagSet(SIG_STOP.remote))
 		{
 			tpdo.cmd = 0x69;
 		}
-		else if (mcu::remoteIpcSignalSent(SIG_START.remote))
+		else if (mcu::isRemoteIpcFlagSet(SIG_START.remote))
 		{
 			tpdo.cmd = 0x96;
 		}
@@ -56,14 +56,14 @@ void FuelCellController::run()
 		if (m_transceiver.send(TPDO_FRAME_ID, tpdoBytes, 8) == 8)
 		{
 			// transmission begins successfully
-			if (mcu::remoteIpcSignalSent(SIG_STOP.remote))
+			if (mcu::isRemoteIpcFlagSet(SIG_STOP.remote))
 			{
-				mcu::acknowledgeRemoteIpcSignal(SIG_STOP.remote);
-				mcu::acknowledgeRemoteIpcSignal(SIG_START.remote);
+				mcu::acknowledgeRemoteIpcFlag(SIG_STOP.remote);
+				mcu::acknowledgeRemoteIpcFlag(SIG_START.remote);
 			}
-			else if (mcu::remoteIpcSignalSent(SIG_START.remote))
+			else if (mcu::isRemoteIpcFlagSet(SIG_START.remote))
 			{
-				mcu::acknowledgeRemoteIpcSignal(SIG_START.remote);
+				mcu::acknowledgeRemoteIpcFlag(SIG_START.remote);
 			}
 
 			timeTxPrev = mcu::SystemClock::now();

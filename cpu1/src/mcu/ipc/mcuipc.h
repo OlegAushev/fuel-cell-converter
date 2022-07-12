@@ -29,14 +29,14 @@ enum IpcMode
 
 
 /**
- * @brief Local IPC signal.
+ * @brief Local IPC flag.
  */
-struct LocalIpcSignal
+struct LocalIpcFlag
 {
-	uint32_t flag;
-	LocalIpcSignal() : flag(0) {}
-	explicit LocalIpcSignal(uint32_t flagNo)
-		: flag(1UL << flagNo)
+	uint32_t mask;
+	LocalIpcFlag() : mask(0) {}
+	explicit LocalIpcFlag(uint32_t flagNo)
+		: mask(1UL << flagNo)
 	{
 		assert(flagNo < 32);
 	}
@@ -44,14 +44,14 @@ struct LocalIpcSignal
 
 
 /**
- * @brief Remote IPC signal.
+ * @brief Remote IPC flag.
  */
-struct RemoteIpcSignal
+struct RemoteIpcFlag
 {
-	uint32_t flag;
-	RemoteIpcSignal() : flag(0) {}
-	explicit RemoteIpcSignal(uint32_t flagNo)
-		: flag(1UL << flagNo)
+	uint32_t mask;
+	RemoteIpcFlag() : mask(0) {}
+	explicit RemoteIpcFlag(uint32_t flagNo)
+		: mask(1UL << flagNo)
 	{
 		assert(flagNo < 32);
 	}
@@ -59,14 +59,14 @@ struct RemoteIpcSignal
 
 
 /**
- * @brief Local-Remote signal pair for objects which are created on both CPUs.
+ * @brief Local-Remote flag pair for objects which are created on both CPUs.
  */
-struct IpcSignalPair
+struct IpcFlagPair
 {
-	LocalIpcSignal local;
-	RemoteIpcSignal remote;
-	IpcSignalPair() {}
-	explicit IpcSignalPair(uint32_t flagNo)
+	LocalIpcFlag local;
+	RemoteIpcFlag remote;
+	IpcFlagPair() {}
+	explicit IpcFlagPair(uint32_t flagNo)
 		: local(flagNo)
 		, remote(flagNo)
 	{}
@@ -78,9 +78,9 @@ struct IpcSignalPair
  * @param ipcFlag
  * @return (none)
  */
-inline void sendIpcSignal(LocalIpcSignal ipcFlag)
+inline void setLocalIpcFlag(LocalIpcFlag ipcFlag)
 {
-	IPCLtoRFlagSet(ipcFlag.flag);
+	IPCLtoRFlagSet(ipcFlag.mask);
 }
 
 
@@ -89,10 +89,10 @@ inline void sendIpcSignal(LocalIpcSignal ipcFlag)
  * @param ipcFlag
  * @return (none)
  */
-inline void waitForIpcSignal(RemoteIpcSignal ipcFlag)
+inline void waitForRemoteIpcFlag(RemoteIpcFlag ipcFlag)
 {
-	while(!IPCRtoLFlagBusy(ipcFlag.flag));
-	IPCRtoLFlagAcknowledge(ipcFlag.flag);
+	while(!IPCRtoLFlagBusy(ipcFlag.mask));
+	IPCRtoLFlagAcknowledge(ipcFlag.mask);
 }
 
 
@@ -101,13 +101,9 @@ inline void waitForIpcSignal(RemoteIpcSignal ipcFlag)
  * @param ipcFlag
  * @return \c true if remote IPC signal has been sent, \c false otherwise.
  */
-inline bool remoteIpcSignalSent(RemoteIpcSignal ipcFlag)
+inline bool isRemoteIpcFlagSet(RemoteIpcFlag ipcFlag)
 {
-	if (IPCRtoLFlagBusy(ipcFlag.flag))
-	{
-		return true;
-	}
-	return false;
+	return IPCRtoLFlagBusy(ipcFlag.mask);
 }
 
 
@@ -116,13 +112,9 @@ inline bool remoteIpcSignalSent(RemoteIpcSignal ipcFlag)
  * @param ipcFlag
  * @return \c true if local IPC signal has been sent, \c false otherwise.
  */
-inline bool localIpcSignalSent(LocalIpcSignal ipcFlag)
+inline bool isLocalIpcFlagSet(LocalIpcFlag ipcFlag)
 {
-	if (IPCLtoRFlagBusy(ipcFlag.flag))
-	{
-		return true;
-	}
-	return false;
+	return IPCLtoRFlagBusy(ipcFlag.mask);
 }
 
 
@@ -131,9 +123,9 @@ inline bool localIpcSignalSent(LocalIpcSignal ipcFlag)
  * @param ipcFlag
  * @return (none)
  */
-inline void acknowledgeRemoteIpcSignal(RemoteIpcSignal ipcFlag)
+inline void acknowledgeRemoteIpcFlag(RemoteIpcFlag ipcFlag)
 {
-	IPCRtoLFlagAcknowledge(ipcFlag.flag);
+	IPCRtoLFlagAcknowledge(ipcFlag.mask);
 }
 
 
@@ -142,26 +134,26 @@ inline void acknowledgeRemoteIpcSignal(RemoteIpcSignal ipcFlag)
  * @param ipcFlag
  * @return (none)
  */
-inline void revokeLocalIpcSignal(LocalIpcSignal ipcFlag)
+inline void resetLocalIpcFlag(LocalIpcFlag ipcFlag)
 {
-	IPCLtoRFlagClear(ipcFlag.flag);
+	IPCLtoRFlagClear(ipcFlag.mask);
 }
 
 
 /**
  * @brief Checks local or remote flag according to ipc mode.
- * @param ipcSignalPair - IPC signal pair
+ * @param ipcFlagPair - IPC flag pair
  * @param mode - IPC mode
  * @return \c true if flag is set, \c false otherwise.
  */
-inline bool ipcSignalSent(const IpcSignalPair& ipcSignalPair, IpcMode mode)
+inline bool isIpcFlagSet(const IpcFlagPair& ipcFlagPair, IpcMode mode)
 {
 	switch (mode)
 	{
 	case mcu::IPC_MODE_SINGLECORE:
-		return localIpcSignalSent(ipcSignalPair.local);
+		return isLocalIpcFlagSet(ipcFlagPair.local);
 	case mcu::IPC_MODE_DUALCORE:
-		return remoteIpcSignalSent(ipcSignalPair.remote);
+		return isRemoteIpcFlagSet(ipcFlagPair.remote);
 	}
 	return false;
 }
@@ -169,19 +161,19 @@ inline bool ipcSignalSent(const IpcSignalPair& ipcSignalPair, IpcMode mode)
 
 /**
  * @brief Resets local or remote flag according to ipc mode.
- * @param ipcSignalPair - IPC signal pair
+ * @param ipcFlagPair - IPC flag pair
  * @param mode - IPC mode
  * @return (none)
  */
-inline void resetIpcSignal(const IpcSignalPair& ipcSignalPair, IpcMode mode)
+inline void resetIpcFlag(const IpcFlagPair& ipcFlagPair, IpcMode mode)
 {
 	switch (mode)
 	{
 	case mcu::IPC_MODE_SINGLECORE:
-		revokeLocalIpcSignal(ipcSignalPair.local);
+		resetLocalIpcFlag(ipcFlagPair.local);
 		return;
 	case mcu::IPC_MODE_DUALCORE:
-		acknowledgeRemoteIpcSignal(ipcSignalPair.remote);
+		acknowledgeRemoteIpcFlag(ipcFlagPair.remote);
 		return;
 	}
 }
@@ -216,24 +208,26 @@ inline void registerIpcInterruptHandler(IpcInterrupt ipcInterrupt, void (*handle
 
 /// @addtogroup mcu_ipc
 /// @{
-#if (defined(DUALCORE) && defined(CPU1))
-extern const mcu::LocalIpcSignal CPU1_PERIPHERY_CONFIGURED;
 
-extern const mcu::RemoteIpcSignal CPU2_BOOTED;
-extern const mcu::RemoteIpcSignal CPU2_PERIPHERY_CONFIGURED;
+
+#if (defined(DUALCORE) && defined(CPU1))
+extern const mcu::LocalIpcFlag CPU1_PERIPHERY_CONFIGURED;
+
+extern const mcu::RemoteIpcFlag CPU2_BOOTED;
+extern const mcu::RemoteIpcFlag CPU2_PERIPHERY_CONFIGURED;
 #endif
 
 
 #if (defined(DUALCORE) && defined(CPU2))
-extern const mcu::RemoteIpcSignal CPU1_PERIPHERY_CONFIGURED;
+extern const mcu::RemoteIpcFlag CPU1_PERIPHERY_CONFIGURED;
 
-extern const mcu::LocalIpcSignal CPU2_BOOTED;
-extern const mcu::LocalIpcSignal CPU2_PERIPHERY_CONFIGURED;
+extern const mcu::LocalIpcFlag CPU2_BOOTED;
+extern const mcu::LocalIpcFlag CPU2_PERIPHERY_CONFIGURED;
 #endif
 
 
 #if (!defined(DUALCORE) && defined(CPU1))
-extern const mcu::LocalIpcSignal CPU1_PERIPHERY_CONFIGURED;
+extern const mcu::LocalIpcFlag CPU1_PERIPHERY_CONFIGURED;
 #endif
 
 
