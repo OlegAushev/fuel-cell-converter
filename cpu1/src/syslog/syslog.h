@@ -95,11 +95,11 @@ public:
 		SDO_REQUEST_LOST,
 	};
 
-	struct IpcSignals
+	struct IpcFlags
 	{
-		mcu::IpcFlag reset;
-		mcu::IpcFlag addMessage;
-		mcu::IpcFlag popMessage;
+		mcu::IpcFlag RESET;
+		mcu::IpcFlag ADD_MESSAGE;
+		mcu::IpcFlag POP_MESSAGE;
 	};
 
 private:
@@ -129,7 +129,7 @@ private:
 
 	static FaultData* m_thisCpuFaultData;
 
-	// IPC signals
+	// IPC flags
 	static mcu::IpcFlag RESET_FAULTS_AND_WARNINGS;
 	static mcu::IpcFlag ADD_MESSAGE;
 	static mcu::IpcFlag POP_MESSAGE;
@@ -144,7 +144,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void init(const IpcSignals& ipcSignals)
+	static void init(const IpcFlags& ipcFlags)
 	{
 		if (initialized())
 		{
@@ -165,9 +165,9 @@ public:
 		m_thisCpuFaultData->criticalFaultMask = Fault::CRITICAL_FAULTS;
 		m_thisCpuFaultData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
 
-		RESET_FAULTS_AND_WARNINGS = ipcSignals.reset;
-		ADD_MESSAGE = ipcSignals.addMessage;
-		POP_MESSAGE = ipcSignals.popMessage;
+		RESET_FAULTS_AND_WARNINGS = ipcFlags.RESET;
+		ADD_MESSAGE = ipcFlags.ADD_MESSAGE;
+		POP_MESSAGE = ipcFlags.POP_MESSAGE;
 
 		setInitialized();
 	}

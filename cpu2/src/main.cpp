@@ -53,13 +53,13 @@ void main()
 	/*##########*/
 	/*# SYSLOG #*/
 	/*##########*/
-	Syslog::IpcSignals syslogIpcSignals =
+	Syslog::IpcFlags syslogIpcFlags =
 	{
-		.reset = mcu::IpcFlag(10),
-		.addMessage = mcu::IpcFlag(11),
-		.popMessage = mcu::IpcFlag(12)
+		.RESET = mcu::IpcFlag(10),
+		.ADD_MESSAGE = mcu::IpcFlag(11),
+		.POP_MESSAGE = mcu::IpcFlag(12)
 	};
-	Syslog::init(syslogIpcSignals);
+	Syslog::init(syslogIpcFlags);
 
 /*####################################################################################################################*/
 	/*#########*/

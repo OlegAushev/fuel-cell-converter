@@ -81,19 +81,19 @@ public:
 	McoServer(TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
-			const IpcFlags& ipcSignals)
+			const IpcFlags& ipcFlags)
 		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
 		, m_canUnit(NULL)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
 		// IPC flags
-		, RSDO_RECEIVED(ipcSignals.RSDO_RECEIVED)
-		, TSDO_READY(ipcSignals.TSDO_READY)
-		, RPDO1_RECEIVED(ipcSignals.RPDO1_RECEIVED)
-		, RPDO2_RECEIVED(ipcSignals.RPDO2_RECEIVED)
-		, RPDO3_RECEIVED(ipcSignals.RPDO3_RECEIVED)
-		, RPDO4_RECEIVED(ipcSignals.RPDO4_RECEIVED)
+		, RSDO_RECEIVED(ipcFlags.RSDO_RECEIVED)
+		, TSDO_READY(ipcFlags.TSDO_READY)
+		, RPDO1_RECEIVED(ipcFlags.RPDO1_RECEIVED)
+		, RPDO2_RECEIVED(ipcFlags.RPDO2_RECEIVED)
+		, RPDO3_RECEIVED(ipcFlags.RPDO3_RECEIVED)
+		, RPDO4_RECEIVED(ipcFlags.RPDO4_RECEIVED)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_SLAVE);
 		EMB_STATIC_ASSERT(Ipc != mcu::IPC_MODE_SINGLECORE);
@@ -120,19 +120,19 @@ public:
 			TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
-			const IpcFlags& ipcSignals)
+			const IpcFlags& ipcFlags)
 		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
 		, m_nodeId(nodeId.value)
 		// IPC flags
-		, RSDO_RECEIVED(ipcSignals.RSDO_RECEIVED)
-		, TSDO_READY(ipcSignals.TSDO_READY)
-		, RPDO1_RECEIVED(ipcSignals.RPDO1_RECEIVED)
-		, RPDO2_RECEIVED(ipcSignals.RPDO2_RECEIVED)
-		, RPDO3_RECEIVED(ipcSignals.RPDO3_RECEIVED)
-		, RPDO4_RECEIVED(ipcSignals.RPDO4_RECEIVED)
+		, RSDO_RECEIVED(ipcFlags.RSDO_RECEIVED)
+		, TSDO_READY(ipcFlags.TSDO_READY)
+		, RPDO1_RECEIVED(ipcFlags.RPDO1_RECEIVED)
+		, RPDO2_RECEIVED(ipcFlags.RPDO2_RECEIVED)
+		, RPDO3_RECEIVED(ipcFlags.RPDO3_RECEIVED)
+		, RPDO4_RECEIVED(ipcFlags.RPDO4_RECEIVED)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 
