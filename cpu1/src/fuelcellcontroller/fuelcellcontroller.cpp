@@ -38,13 +38,10 @@ void FuelCellController::run()
 		if (mcu::remoteIpcSignalSent(SIG_STOP.remote))
 		{
 			tpdo.cmd = 0x69;
-			mcu::acknowledgeRemoteIpcSignal(SIG_STOP.remote);
-			mcu::acknowledgeRemoteIpcSignal(SIG_START.remote);
 		}
 		else if (mcu::remoteIpcSignalSent(SIG_START.remote))
 		{
 			tpdo.cmd = 0x96;
-			mcu::acknowledgeRemoteIpcSignal(SIG_START.remote);
 		}
 		else
 		{
@@ -55,6 +52,22 @@ void FuelCellController::run()
 		tpdo.current = emb::clamp(m_converter->currentIn(), 0.f, float(USHRT_MAX));
 
 		emb::c28x::to_bytes8<FuelCellTpdo>(tpdoBytes, tpdo);
+
+		if (m_transceiver.send(TPDO_FRAME_ID, tpdoBytes, 8) == 8)
+		{
+			// transmission begins successfully
+			if (mcu::remoteIpcSignalSent(SIG_STOP.remote))
+			{
+				mcu::acknowledgeRemoteIpcSignal(SIG_STOP.remote);
+				mcu::acknowledgeRemoteIpcSignal(SIG_START.remote);
+			}
+			else if (mcu::remoteIpcSignalSent(SIG_START.remote))
+			{
+				mcu::acknowledgeRemoteIpcSignal(SIG_START.remote);
+			}
+
+			timeTxPrev = mcu::SystemClock::now();
+		}
 	}
 }
 
