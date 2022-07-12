@@ -190,14 +190,14 @@ public:
 
 public:
 	/**
-	 * @brief Configures IPC signals.
+	 * @brief Configures IPC flags.
 	 * @return (none)
 	 */
-	void initIpcSignals(const mcu::IpcFlag& signalPairRsdoReceived,
-			const mcu::IpcFlag& signalPairTsdoReady)
+	void initIpcFlags(const mcu::IpcFlag& flagRsdoReceived,
+			const mcu::IpcFlag& flagTsdoReady)
 	{
-		RSDO_RECEIVED = signalPairRsdoReceived;
-		TSDO_READY = signalPairTsdoReady;
+		RSDO_RECEIVED = flagRsdoReceived;
+		TSDO_READY = flagTsdoReady;
 	}
 
 	/**

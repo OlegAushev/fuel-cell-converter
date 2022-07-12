@@ -184,18 +184,18 @@ public:
 
 public:
 	/**
-	 * @brief Configures IPC signals.
+	 * @brief Configures IPC flags.
 	 * @return (none)
 	 */
-	void initIpcSignals(const mcu::IpcFlag& signalPairRpdo1Received,
-			const mcu::IpcFlag& signalPairRpdo2Received,
-			const mcu::IpcFlag& signalPairRpdo3Received,
-			const mcu::IpcFlag& signalPairRpdo4Received)
+	void initIpcFlags(const mcu::IpcFlag& flagRpdo1Received,
+			const mcu::IpcFlag& flagRpdo2Received,
+			const mcu::IpcFlag& flagRpdo3Received,
+			const mcu::IpcFlag& flagRpdo4Received)
 	{
-		RPDO1_RECEIVED = signalPairRpdo1Received;
-		RPDO2_RECEIVED = signalPairRpdo2Received;
-		RPDO3_RECEIVED = signalPairRpdo3Received;
-		RPDO4_RECEIVED = signalPairRpdo4Received;
+		RPDO1_RECEIVED = flagRpdo1Received;
+		RPDO2_RECEIVED = flagRpdo2Received;
+		RPDO3_RECEIVED = flagRpdo3Received;
+		RPDO4_RECEIVED = flagRpdo4Received;
 	}
 
 	/**

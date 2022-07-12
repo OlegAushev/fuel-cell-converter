@@ -168,14 +168,14 @@ void main()
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
 	canbygpioRx.setInterrupt(GPIO_INT_XINT5);
 
-	microcanopen::IpcSignals canIpcSignalsTest =
+	microcanopen::IpcFlags canIpcSignalsTest =
 	{
-		.rpdo1 = mcu::IpcFlag(14),
-		.rpdo2 = mcu::IpcFlag(15),
-		.rpdo3 = mcu::IpcFlag(16),
-		.rpdo4 = mcu::IpcFlag(17),
-		.rsdo = mcu::IpcFlag(18),
-		.tsdo = mcu::IpcFlag(19),
+		.RPDO1_RECEIVED = mcu::IpcFlag(14),
+		.RPDO2_RECEIVED = mcu::IpcFlag(15),
+		.RPDO3_RECEIVED = mcu::IpcFlag(16),
+		.RPDO4_RECEIVED = mcu::IpcFlag(17),
+		.RSDO_RECEIVED = mcu::IpcFlag(18),
+		.TSDO_READY = mcu::IpcFlag(19),
 	};
 
 	microcanopen::SdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoServiceTest(NULL);
@@ -289,14 +289,14 @@ void main()
 	/*#######*/
 	/*# CAN #*/
 	/*#######*/
-	microcanopen::IpcSignals canIpcSignals =
+	microcanopen::IpcFlags canIpcFlags =
 	{
-		.rpdo1 = mcu::IpcFlag(4),
-		.rpdo2 = mcu::IpcFlag(5),
-		.rpdo3 = mcu::IpcFlag(6),
-		.rpdo4 = mcu::IpcFlag(7),
-		.rsdo = mcu::IpcFlag(8),
-		.tsdo = mcu::IpcFlag(9),
+		.RPDO1_RECEIVED = mcu::IpcFlag(4),
+		.RPDO2_RECEIVED = mcu::IpcFlag(5),
+		.RPDO3_RECEIVED = mcu::IpcFlag(6),
+		.RPDO4_RECEIVED = mcu::IpcFlag(7),
+		.RSDO_RECEIVED = mcu::IpcFlag(8),
+		.TSDO_READY = mcu::IpcFlag(9),
 	};
 
 	microcanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
@@ -307,7 +307,7 @@ void main()
 			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
 			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
 			microcanopen::NodeId(0x01),
-			&tpdoService, &rpdoService, &sdoService, canIpcSignals);
+			&tpdoService, &rpdoService, &sdoService, canIpcFlags);
 
 	mcoServer.setHeartbeatPeriod(1000);
 	mcoServer.setTpdoPeriod(microcanopen::TPDO_NUM1, 1000);

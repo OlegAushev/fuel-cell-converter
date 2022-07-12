@@ -32,14 +32,14 @@ namespace microcanopen {
 /**
  * @brief IPC flags.
  */
-struct IpcSignals
+struct IpcFlags
 {
-	mcu::IpcFlag rpdo1;
-	mcu::IpcFlag rpdo2;
-	mcu::IpcFlag rpdo3;
-	mcu::IpcFlag rpdo4;
-	mcu::IpcFlag rsdo;
-	mcu::IpcFlag tsdo;
+	mcu::IpcFlag RPDO1_RECEIVED;
+	mcu::IpcFlag RPDO2_RECEIVED;
+	mcu::IpcFlag RPDO3_RECEIVED;
+	mcu::IpcFlag RPDO4_RECEIVED;
+	mcu::IpcFlag RSDO_RECEIVED;
+	mcu::IpcFlag TSDO_READY;
 };
 
 
@@ -63,13 +63,13 @@ private:
 	uint64_t m_heartbeatPeriod;
 	emb::Array<uint64_t, 4> m_tpdoPeriods;
 
-	// IPC signals
-	mcu::IpcFlag RSDO_RECEIVED;
-	mcu::IpcFlag TSDO_READY;
+	// IPC flags
 	mcu::IpcFlag RPDO1_RECEIVED;
 	mcu::IpcFlag RPDO2_RECEIVED;
 	mcu::IpcFlag RPDO3_RECEIVED;
 	mcu::IpcFlag RPDO4_RECEIVED;
+	mcu::IpcFlag RSDO_RECEIVED;
+	mcu::IpcFlag TSDO_READY;
 
 public:
 	/**
@@ -81,26 +81,26 @@ public:
 	McoServer(TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
-			const IpcSignals& ipcSignals)
+			const IpcFlags& ipcSignals)
 		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
 		, m_canUnit(NULL)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
-		// IPC signals
-		, RSDO_RECEIVED(ipcSignals.rsdo)
-		, TSDO_READY(ipcSignals.tsdo)
-		, RPDO1_RECEIVED(ipcSignals.rpdo1)
-		, RPDO2_RECEIVED(ipcSignals.rpdo2)
-		, RPDO3_RECEIVED(ipcSignals.rpdo3)
-		, RPDO4_RECEIVED(ipcSignals.rpdo4)
+		// IPC flags
+		, RSDO_RECEIVED(ipcSignals.RSDO_RECEIVED)
+		, TSDO_READY(ipcSignals.TSDO_READY)
+		, RPDO1_RECEIVED(ipcSignals.RPDO1_RECEIVED)
+		, RPDO2_RECEIVED(ipcSignals.RPDO2_RECEIVED)
+		, RPDO3_RECEIVED(ipcSignals.RPDO3_RECEIVED)
+		, RPDO4_RECEIVED(ipcSignals.RPDO4_RECEIVED)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_SLAVE);
 		EMB_STATIC_ASSERT(Ipc != mcu::IPC_MODE_SINGLECORE);
 
-		rpdoService->initIpcSignals(RPDO1_RECEIVED, RPDO2_RECEIVED,
+		rpdoService->initIpcFlags(RPDO1_RECEIVED, RPDO2_RECEIVED,
 				RPDO3_RECEIVED, RPDO4_RECEIVED);
-		sdoService->initIpcSignals(RSDO_RECEIVED, TSDO_READY);
+		sdoService->initIpcFlags(RSDO_RECEIVED, TSDO_READY);
 	}
 
 	/**
@@ -120,25 +120,25 @@ public:
 			TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
-			const IpcSignals& ipcSignals)
+			const IpcFlags& ipcSignals)
 		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
 		, m_nodeId(nodeId.value)
-		// IPC signals
-		, RSDO_RECEIVED(ipcSignals.rsdo)
-		, TSDO_READY(ipcSignals.tsdo)
-		, RPDO1_RECEIVED(ipcSignals.rpdo1)
-		, RPDO2_RECEIVED(ipcSignals.rpdo2)
-		, RPDO3_RECEIVED(ipcSignals.rpdo3)
-		, RPDO4_RECEIVED(ipcSignals.rpdo4)
+		// IPC flags
+		, RSDO_RECEIVED(ipcSignals.RSDO_RECEIVED)
+		, TSDO_READY(ipcSignals.TSDO_READY)
+		, RPDO1_RECEIVED(ipcSignals.RPDO1_RECEIVED)
+		, RPDO2_RECEIVED(ipcSignals.RPDO2_RECEIVED)
+		, RPDO3_RECEIVED(ipcSignals.RPDO3_RECEIVED)
+		, RPDO4_RECEIVED(ipcSignals.RPDO4_RECEIVED)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 
-		rpdoService->initIpcSignals(RPDO1_RECEIVED, RPDO2_RECEIVED,
+		rpdoService->initIpcFlags(RPDO1_RECEIVED, RPDO2_RECEIVED,
 				RPDO3_RECEIVED, RPDO4_RECEIVED);
-		sdoService->initIpcSignals(RSDO_RECEIVED, TSDO_READY);
+		sdoService->initIpcFlags(RSDO_RECEIVED, TSDO_READY);
 
 		m_state = INITIALIZING;
 		m_canUnit = new mcu::CanUnit<Module>(txPin, rxPin, bitrate, mode);
