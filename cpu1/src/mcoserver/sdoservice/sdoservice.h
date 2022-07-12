@@ -49,8 +49,8 @@ class SdoService
 {
 	friend class SdoServiceTest;
 private:
-	mcu::IpcFlagPair RSDO_RECEIVED;
-	mcu::IpcFlagPair TSDO_READY;
+	mcu::IpcFlag RSDO_RECEIVED;
+	mcu::IpcFlag TSDO_READY;
 
 	/// Data-storage for IPC
 	static CobSdo* s_rsdoData;
@@ -193,8 +193,8 @@ public:
 	 * @brief Configures IPC signals.
 	 * @return (none)
 	 */
-	void initIpcSignals(const mcu::IpcFlagPair& signalPairRsdoReceived,
-			const mcu::IpcFlagPair& signalPairTsdoReady)
+	void initIpcSignals(const mcu::IpcFlag& signalPairRsdoReceived,
+			const mcu::IpcFlag& signalPairTsdoReady)
 	{
 		RSDO_RECEIVED = signalPairRsdoReceived;
 		TSDO_READY = signalPairTsdoReady;

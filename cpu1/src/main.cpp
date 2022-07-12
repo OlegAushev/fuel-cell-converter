@@ -136,9 +136,9 @@ void main()
 	/*##########*/
 	Syslog::IpcSignals syslogIpcSignals =
 	{
-		.reset = mcu::IpcFlagPair(10),
-		.addMessage = mcu::IpcFlagPair(11),
-		.popMessage = mcu::IpcFlagPair(12)
+		.reset = mcu::IpcFlag(10),
+		.addMessage = mcu::IpcFlag(11),
+		.popMessage = mcu::IpcFlag(12)
 	};
 	Syslog::init(syslogIpcSignals);
 	Syslog::addMessage(Syslog::DEVICE_CPU1_BOOT_SUCCESS);
@@ -170,12 +170,12 @@ void main()
 
 	microcanopen::IpcSignals canIpcSignalsTest =
 	{
-		.rpdo1 = mcu::IpcFlagPair(14),
-		.rpdo2 = mcu::IpcFlagPair(15),
-		.rpdo3 = mcu::IpcFlagPair(16),
-		.rpdo4 = mcu::IpcFlagPair(17),
-		.rsdo = mcu::IpcFlagPair(18),
-		.tsdo = mcu::IpcFlagPair(19),
+		.rpdo1 = mcu::IpcFlag(14),
+		.rpdo2 = mcu::IpcFlag(15),
+		.rpdo3 = mcu::IpcFlag(16),
+		.rpdo4 = mcu::IpcFlag(17),
+		.rsdo = mcu::IpcFlag(18),
+		.tsdo = mcu::IpcFlag(19),
 	};
 
 	microcanopen::SdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoServiceTest(NULL);
@@ -291,12 +291,12 @@ void main()
 	/*#######*/
 	microcanopen::IpcSignals canIpcSignals =
 	{
-		.rpdo1 = mcu::IpcFlagPair(4),
-		.rpdo2 = mcu::IpcFlagPair(5),
-		.rpdo3 = mcu::IpcFlagPair(6),
-		.rpdo4 = mcu::IpcFlagPair(7),
-		.rsdo = mcu::IpcFlagPair(8),
-		.tsdo = mcu::IpcFlagPair(9),
+		.rpdo1 = mcu::IpcFlag(4),
+		.rpdo2 = mcu::IpcFlag(5),
+		.rpdo3 = mcu::IpcFlag(6),
+		.rpdo4 = mcu::IpcFlag(7),
+		.rsdo = mcu::IpcFlag(8),
+		.tsdo = mcu::IpcFlag(9),
 	};
 
 	microcanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);

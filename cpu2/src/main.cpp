@@ -55,9 +55,9 @@ void main()
 	/*##########*/
 	Syslog::IpcSignals syslogIpcSignals =
 	{
-		.reset = mcu::IpcFlagPair(10),
-		.addMessage = mcu::IpcFlagPair(11),
-		.popMessage = mcu::IpcFlagPair(12)
+		.reset = mcu::IpcFlag(10),
+		.addMessage = mcu::IpcFlag(11),
+		.popMessage = mcu::IpcFlag(12)
 	};
 	Syslog::init(syslogIpcSignals);
 

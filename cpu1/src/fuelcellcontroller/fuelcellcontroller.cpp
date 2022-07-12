@@ -7,8 +7,8 @@
 #include "fuelcellcontroller.h"
 
 
-const mcu::IpcFlagPair FuelCellController::SIG_START(21);
-const mcu::IpcFlagPair FuelCellController::SIG_STOP(22);
+const mcu::IpcFlag FuelCellController::SIG_START(21);
+const mcu::IpcFlag FuelCellController::SIG_STOP(22);
 
 
 ///

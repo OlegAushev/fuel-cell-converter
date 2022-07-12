@@ -34,12 +34,12 @@ namespace microcanopen {
  */
 struct IpcSignals
 {
-	mcu::IpcFlagPair rpdo1;
-	mcu::IpcFlagPair rpdo2;
-	mcu::IpcFlagPair rpdo3;
-	mcu::IpcFlagPair rpdo4;
-	mcu::IpcFlagPair rsdo;
-	mcu::IpcFlagPair tsdo;
+	mcu::IpcFlag rpdo1;
+	mcu::IpcFlag rpdo2;
+	mcu::IpcFlag rpdo3;
+	mcu::IpcFlag rpdo4;
+	mcu::IpcFlag rsdo;
+	mcu::IpcFlag tsdo;
 };
 
 
@@ -64,12 +64,12 @@ private:
 	emb::Array<uint64_t, 4> m_tpdoPeriods;
 
 	// IPC signals
-	mcu::IpcFlagPair RSDO_RECEIVED;
-	mcu::IpcFlagPair TSDO_READY;
-	mcu::IpcFlagPair RPDO1_RECEIVED;
-	mcu::IpcFlagPair RPDO2_RECEIVED;
-	mcu::IpcFlagPair RPDO3_RECEIVED;
-	mcu::IpcFlagPair RPDO4_RECEIVED;
+	mcu::IpcFlag RSDO_RECEIVED;
+	mcu::IpcFlag TSDO_READY;
+	mcu::IpcFlag RPDO1_RECEIVED;
+	mcu::IpcFlag RPDO2_RECEIVED;
+	mcu::IpcFlag RPDO3_RECEIVED;
+	mcu::IpcFlag RPDO4_RECEIVED;
 
 public:
 	/**

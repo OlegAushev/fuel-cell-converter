@@ -131,10 +131,10 @@ private:
 	// APP-SPECIFIC objects
 	BoostConverter* converter;
 private:
-	mcu::IpcFlagPair RPDO1_RECEIVED;
-	mcu::IpcFlagPair RPDO2_RECEIVED;
-	mcu::IpcFlagPair RPDO3_RECEIVED;
-	mcu::IpcFlagPair RPDO4_RECEIVED;
+	mcu::IpcFlag RPDO1_RECEIVED;
+	mcu::IpcFlag RPDO2_RECEIVED;
+	mcu::IpcFlag RPDO3_RECEIVED;
+	mcu::IpcFlag RPDO4_RECEIVED;
 
 	/// Data-storage for IPC
 	ProcessedRpdoData* s_rpdoProcessedData;
@@ -187,10 +187,10 @@ public:
 	 * @brief Configures IPC signals.
 	 * @return (none)
 	 */
-	void initIpcSignals(const mcu::IpcFlagPair& signalPairRpdo1Received,
-			const mcu::IpcFlagPair& signalPairRpdo2Received,
-			const mcu::IpcFlagPair& signalPairRpdo3Received,
-			const mcu::IpcFlagPair& signalPairRpdo4Received)
+	void initIpcSignals(const mcu::IpcFlag& signalPairRpdo1Received,
+			const mcu::IpcFlag& signalPairRpdo2Received,
+			const mcu::IpcFlag& signalPairRpdo3Received,
+			const mcu::IpcFlag& signalPairRpdo4Received)
 	{
 		RPDO1_RECEIVED = signalPairRpdo1Received;
 		RPDO2_RECEIVED = signalPairRpdo2Received;

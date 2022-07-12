@@ -59,14 +59,14 @@ struct RemoteIpcFlag
 
 
 /**
- * @brief Local-Remote flag pair for objects which are created on both CPUs.
+ * @brief Local-Remote flag "pair".
  */
-struct IpcFlagPair
+struct IpcFlag
 {
 	LocalIpcFlag local;
 	RemoteIpcFlag remote;
-	IpcFlagPair() {}
-	explicit IpcFlagPair(uint32_t flagNo)
+	IpcFlag() {}
+	explicit IpcFlag(uint32_t flagNo)
 		: local(flagNo)
 		, remote(flagNo)
 	{}
@@ -146,7 +146,7 @@ inline void resetLocalIpcFlag(LocalIpcFlag ipcFlag)
  * @param mode - IPC mode
  * @return \c true if flag is set, \c false otherwise.
  */
-inline bool isIpcFlagSet(const IpcFlagPair& ipcFlagPair, IpcMode mode)
+inline bool isIpcFlagSet(const IpcFlag& ipcFlagPair, IpcMode mode)
 {
 	switch (mode)
 	{
@@ -165,7 +165,7 @@ inline bool isIpcFlagSet(const IpcFlagPair& ipcFlagPair, IpcMode mode)
  * @param mode - IPC mode
  * @return (none)
  */
-inline void resetIpcFlag(const IpcFlagPair& ipcFlagPair, IpcMode mode)
+inline void resetIpcFlag(const IpcFlag& ipcFlagPair, IpcMode mode)
 {
 	switch (mode)
 	{

@@ -97,9 +97,9 @@ public:
 
 	struct IpcSignals
 	{
-		mcu::IpcFlagPair reset;
-		mcu::IpcFlagPair addMessage;
-		mcu::IpcFlagPair popMessage;
+		mcu::IpcFlag reset;
+		mcu::IpcFlag addMessage;
+		mcu::IpcFlag popMessage;
 	};
 
 private:
@@ -130,9 +130,9 @@ private:
 	static FaultData* m_thisCpuFaultData;
 
 	// IPC signals
-	static mcu::IpcFlagPair RESET_FAULTS_AND_WARNINGS;
-	static mcu::IpcFlagPair ADD_MESSAGE;
-	static mcu::IpcFlagPair POP_MESSAGE;
+	static mcu::IpcFlag RESET_FAULTS_AND_WARNINGS;
+	static mcu::IpcFlag ADD_MESSAGE;
+	static mcu::IpcFlag POP_MESSAGE;
 
 public:
 	static const char* DEVICE_NAME;
