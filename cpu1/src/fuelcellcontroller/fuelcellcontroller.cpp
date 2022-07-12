@@ -15,10 +15,9 @@ const mcu::IpcFlag FuelCellController::SIG_STOP(22);
 ///
 ///
 FuelCellController::FuelCellController(const BoostConverter* converter,
-		const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-		mcu::GpioPin& clkPin, uint32_t bitrate)
+		const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin)
 	: m_converter(converter)
-	, m_transceiver(txPin, rxPin, clkPin, bitrate, canbygpio::tag::disable_bit_stuffing())
+	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::enable_bit_stuffing()) // TODO disable bit stuffing
 {
 
 }
@@ -50,6 +49,9 @@ void FuelCellController::run()
 
 		tpdo.voltage = emb::clamp(m_converter->voltageOut(), 0.f, float(USHRT_MAX));
 		tpdo.current = emb::clamp(m_converter->currentIn(), 0.f, float(USHRT_MAX));
+
+		// TODO remove this later
+		tpdo.reserved = mcu::SystemClock::now();
 
 		emb::c28x::to_bytes8<FuelCellTpdo>(tpdoBytes, tpdo);
 

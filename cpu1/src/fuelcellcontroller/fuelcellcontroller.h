@@ -39,8 +39,7 @@ private:
 
 public:
 	FuelCellController(const BoostConverter* converter,
-			const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin,
-			mcu::GpioPin& clkPin, uint32_t bitrate);
+			const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin);
 
 	void run();
 

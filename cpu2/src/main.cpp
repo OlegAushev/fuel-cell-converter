@@ -1,9 +1,4 @@
 ///
-#define CAN_BY_GPIO
-
-#ifdef CAN_BY_GPIO
-#warning "CAN_BY_GPIO test build."
-#endif
 
 
 #include "F28x_Project.h"
@@ -89,18 +84,13 @@ void main()
 	/*###############*/
 	/*# CAN BY GPIO #*/
 	/*###############*/
-#ifdef CAN_BY_GPIO
 	mcu::GpioPinConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::GpioPinConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
 	mcu::GpioPinConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
 	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
-
-	canbygpio::Transceiver cbgTransceiver(canbygpioTx, canbygpioRx, canbygpioClk, 125000,
-			canbygpio::tag::enable_bit_stuffing());
-#endif
-	FuelCellController fuelcellController(converter, canbygpioTx, canbygpioRx, canbygpioClk, 125000);
+	FuelCellController fcController(converter, canbygpioTx, canbygpioRx, canbygpioClk);
 
 /*####################################################################################################################*/
 	/*##################*/
@@ -121,25 +111,7 @@ void main()
 	while (true)
 	{
 		mcu::SystemClock::runTasks();
-
-#ifdef CAN_BY_GPIO
-		int nBytes = cbgTransceiver.recv(frameId, testRxData);
-		if (nBytes < 0)
-		{
-			for (size_t i = 0; i < 10; ++i)
-			{
-				mcu::toggleLed(mcu::LED_RED);
-				mcu::delay_us(50000);
-			}
-		}
-		else if (nBytes == 8)
-		{
-			if (cbgTransceiver.send(frameId, testRxData, nBytes) == 8)
-			{
-				mcu::delay_us(10000);
-			}
-		}
-#endif
+		fcController.run();
 	}
 }
 

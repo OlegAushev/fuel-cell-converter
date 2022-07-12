@@ -42,6 +42,7 @@
 #include "boostconverter/boostconverter.h"
 #include "settings/settings.h"
 #include "canbygpio/canbygpio.h"
+#include "fuelcellcontroller/fuelcellcontroller.h"
 
 #ifdef CRD300
 #include "support/crd300/controller.h"
@@ -372,6 +373,23 @@ void main()
 
 #ifdef CAN_BY_GPIO
 		mcoServerTest.run();
+		static uint64_t sigPrev = 0;
+		static bool hasStarted = false;
+		if (mcu::SystemClock::now() > (sigPrev + 1000))
+		{
+			if (!hasStarted)
+			{
+				FuelCellController::start();
+				hasStarted = true;
+			}
+			else
+			{
+				FuelCellController::stop();
+				hasStarted = false;
+			}
+
+			sigPrev = mcu::SystemClock::now();
+		}
 #endif
 	}
 }
