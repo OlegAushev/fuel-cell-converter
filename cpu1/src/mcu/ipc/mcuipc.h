@@ -75,7 +75,7 @@ struct IpcFlagPair
 
 /**
  * @brief Sends IPC signal by setting local IPC flag.
- * @param ipcFlag
+ * @param ipcFlag - local IPC flag
  * @return (none)
  */
 inline void setLocalIpcFlag(LocalIpcFlag ipcFlag)
@@ -86,7 +86,7 @@ inline void setLocalIpcFlag(LocalIpcFlag ipcFlag)
 
 /**
  * @brief Waits for IPC signal in blocking-mode.
- * @param ipcFlag
+ * @param ipcFlag - remote IPC flag
  * @return (none)
  */
 inline void waitForRemoteIpcFlag(RemoteIpcFlag ipcFlag)
@@ -97,9 +97,9 @@ inline void waitForRemoteIpcFlag(RemoteIpcFlag ipcFlag)
 
 
 /**
- * @brief Checks if remote IPC signal has been sent.
- * @param ipcFlag
- * @return \c true if remote IPC signal has been sent, \c false otherwise.
+ * @brief Checks if remote IPC flag is set.
+ * @param ipcFlag - remote IPC flag
+ * @return \c true if remote IPC flag is set, \c false otherwise.
  */
 inline bool isRemoteIpcFlagSet(RemoteIpcFlag ipcFlag)
 {
@@ -108,9 +108,9 @@ inline bool isRemoteIpcFlagSet(RemoteIpcFlag ipcFlag)
 
 
 /**
- * @brief Checks if local IPC signal has been sent.
- * @param ipcFlag
- * @return \c true if local IPC signal has been sent, \c false otherwise.
+ * @brief Checks if local IPC flag is set.
+ * @param ipcFlag - local IPC flag
+ * @return \c true if local IPC flag is set, \c false otherwise.
  */
 inline bool isLocalIpcFlagSet(LocalIpcFlag ipcFlag)
 {
@@ -119,8 +119,8 @@ inline bool isLocalIpcFlagSet(LocalIpcFlag ipcFlag)
 
 
 /**
- * @brief Acknowledges remote IPC signal.
- * @param ipcFlag
+ * @brief Acknowledges remote IPC flag.
+ * @param ipcFlag - remote IPC flag
  * @return (none)
  */
 inline void acknowledgeRemoteIpcFlag(RemoteIpcFlag ipcFlag)
@@ -130,8 +130,8 @@ inline void acknowledgeRemoteIpcFlag(RemoteIpcFlag ipcFlag)
 
 
 /**
- * @brief Revokes local IPC signal.
- * @param ipcFlag
+ * @brief Resets local IPC flag.
+ * @param ipcFlag - local IPC flag
  * @return (none)
  */
 inline void resetLocalIpcFlag(LocalIpcFlag ipcFlag)
@@ -141,7 +141,7 @@ inline void resetLocalIpcFlag(LocalIpcFlag ipcFlag)
 
 
 /**
- * @brief Checks local or remote flag according to ipc mode.
+ * @brief Checks if local or remote (according to ipc mode) flag is set.
  * @param ipcFlagPair - IPC flag pair
  * @param mode - IPC mode
  * @return \c true if flag is set, \c false otherwise.
@@ -160,7 +160,7 @@ inline bool isIpcFlagSet(const IpcFlagPair& ipcFlagPair, IpcMode mode)
 
 
 /**
- * @brief Resets local or remote flag according to ipc mode.
+ * @brief Resets local or remote flag (according to ipc mode).
  * @param ipcFlagPair - IPC flag pair
  * @param mode - IPC mode
  * @return (none)
@@ -208,8 +208,6 @@ inline void registerIpcInterruptHandler(IpcInterrupt ipcInterrupt, void (*handle
 
 /// @addtogroup mcu_ipc
 /// @{
-
-
 #if (defined(DUALCORE) && defined(CPU1))
 extern const mcu::LocalIpcFlag CPU1_PERIPHERY_CONFIGURED;
 
