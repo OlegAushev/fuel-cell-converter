@@ -44,8 +44,8 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.fuelCellVoltageMin = 120,
 	.cvVoltageIn = 160,
 	.currentInMin = 0.3,
-	.currentInMax = 10,
-	.batteryChargedVoltage = 365.0,
+	.currentInMax = 20,
+	.batteryChargedVoltage = 375.0,
 
 	.fltPin = mcu::GpioPin(),
 },
