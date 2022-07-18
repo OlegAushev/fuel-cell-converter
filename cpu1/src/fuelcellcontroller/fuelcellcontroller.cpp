@@ -7,30 +7,36 @@
 #include "fuelcellcontroller.h"
 
 
-const mcu::IpcFlag FuelCellController::SIG_START(21);
-const mcu::IpcFlag FuelCellController::SIG_STOP(22);
+namespace fuelcell {
+
+
+const mcu::IpcFlag Controller::SIG_START(21);
+const mcu::IpcFlag Controller::SIG_STOP(22);
+
+#pragma DATA_SECTION("SHARED_FUELCELL_DATA")
+emb::Array<Data, Controller::FUELCELL_COUNT> Controller::s_data;
 
 
 ///
 ///
 ///
-FuelCellController::FuelCellController(const BoostConverter* converter,
+Controller::Controller(const BoostConverter* converter,
 		const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin)
 	: m_converter(converter)
 	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::enable_bit_stuffing()) // TODO disable bit stuffing
 {
-	EMB_STATIC_ASSERT(sizeof(FuelCellTpdo) == 4);
-	EMB_STATIC_ASSERT(sizeof(FuelCellRpdo) == 4);
+	EMB_STATIC_ASSERT(sizeof(TpdoMessage) == 4);
+	EMB_STATIC_ASSERT(sizeof(RpdoMessage) == 4);
 }
 
 
 ///
 ///
 ///
-void FuelCellController::_runTx()
+void Controller::_runTx()
 {
 	static uint64_t timeTxPrev = 0;
-	FuelCellTpdo tpdo;
+	TpdoMessage tpdo;
 	uint16_t tpdoBytes[8];
 
 	if (mcu::SystemClock::now() >= (timeTxPrev + TPDO_PERIOD))
@@ -54,7 +60,7 @@ void FuelCellController::_runTx()
 		// TODO remove this later
 		tpdo.reserved = mcu::SystemClock::now();
 
-		emb::c28x::to_bytes8<FuelCellTpdo>(tpdoBytes, tpdo);
+		emb::c28x::to_bytes8<TpdoMessage>(tpdoBytes, tpdo);
 
 		if (m_transceiver.send(TPDO_FRAME_ID, tpdoBytes, 8) == 8)
 		{
@@ -78,35 +84,34 @@ void FuelCellController::_runTx()
 ///
 ///
 ///
-void FuelCellController::_runRx()
+void Controller::_runRx()
 {
 	unsigned int rpdoId;
 	uint16_t rpdoBytes[8];
-	FuelCellRpdo rpdo;
+	RpdoMessage rpdo;
 
 	if (m_transceiver.recv(rpdoId, rpdoBytes) == 8)
 	{
-		emb::c28x::from_bytes8(rpdo, rpdoBytes);
+		if ((rpdoId < 0x180) || (rpdoId > 184))
+			return;
 
-		switch(rpdoId)
+		emb::c28x::from_bytes8<RpdoMessage>(rpdo, rpdoBytes);
+		size_t cell = rpdoId - 0x180;
+
+		s_data[cell].temperature = -40.0f + rpdo.temperature;
+		s_data[cell].cellVoltage = 0.1f * rpdo.cellVoltage;
+		s_data[cell].battVoltage = 15.0f + 0.1f * rpdo.battVoltage;
+
+		if (emb::Range<unsigned int>(0,7).contains(rpdo.status))
 		{
-		case 0x180:
-
-			break;
-		case 0x181:
-
-			break;
-		case 0x182:
-
-			break;
-		case 0x183:
-
-			break;
-		case 0x184:
-
-			break;
+			s_data[cell].status = static_cast<Status>(rpdo.status);
 		}
+
+		s_data[cell].current = 0.1f * rpdo.current;
 	}
 }
+
+
+} // namespace fuelcell
 
 

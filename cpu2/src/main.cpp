@@ -90,7 +90,7 @@ void main()
 	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
 	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
-	FuelCellController fcController(converter, canbygpioTx, canbygpioRx, canbygpioClk);
+	fuelcell::Controller fcController(converter, canbygpioTx, canbygpioRx, canbygpioClk);
 
 /*####################################################################################################################*/
 	/*##################*/

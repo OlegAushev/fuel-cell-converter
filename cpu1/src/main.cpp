@@ -379,12 +379,12 @@ void main()
 		{
 			if (!hasStarted)
 			{
-				FuelCellController::start();
+				fuelcell::Controller::start();
 				hasStarted = true;
 			}
 			else
 			{
-				FuelCellController::stop();
+				fuelcell::Controller::stop();
 				hasStarted = false;
 			}
 
