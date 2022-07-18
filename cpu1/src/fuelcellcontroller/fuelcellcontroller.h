@@ -17,12 +17,28 @@
 #include "canbygpio/canbygpio.h"
 
 
+/**
+ * @brief TPDO message.
+ */
 struct FuelCellTpdo
 {
 	uint64_t cmd : 8;
 	uint64_t voltage : 16;
 	uint64_t current : 16;
 	uint64_t reserved : 24;
+};
+
+
+/**
+ * @brief RPDO message.
+ */
+struct FuelCellRpdo
+{
+	uint64_t temperature : 8;
+	uint64_t cellVoltage : 16;
+	uint64_t battVoltage : 16;
+	uint64_t status : 8;
+	uint64_t current : 16;
 };
 
 
@@ -41,7 +57,11 @@ public:
 	FuelCellController(const BoostConverter* converter,
 			const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin);
 
-	void run();
+	void run()
+	{
+		_runTx();
+		_runRx();
+	}
 
 	static void start()
 	{
@@ -52,6 +72,10 @@ public:
 	{
 		mcu::setLocalIpcFlag(SIG_STOP.local);
 	}
+
+private:
+	void _runTx();
+	void _runRx();
 };
 
 

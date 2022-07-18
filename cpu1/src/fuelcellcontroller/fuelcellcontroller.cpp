@@ -19,14 +19,15 @@ FuelCellController::FuelCellController(const BoostConverter* converter,
 	: m_converter(converter)
 	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::enable_bit_stuffing()) // TODO disable bit stuffing
 {
-
+	EMB_STATIC_ASSERT(sizeof(FuelCellTpdo) == 4);
+	EMB_STATIC_ASSERT(sizeof(FuelCellRpdo) == 4);
 }
 
 
 ///
 ///
 ///
-void FuelCellController::run()
+void FuelCellController::_runTx()
 {
 	static uint64_t timeTxPrev = 0;
 	FuelCellTpdo tpdo;
@@ -69,6 +70,41 @@ void FuelCellController::run()
 			}
 
 			timeTxPrev = mcu::SystemClock::now();
+		}
+	}
+}
+
+
+///
+///
+///
+void FuelCellController::_runRx()
+{
+	unsigned int rpdoId;
+	uint16_t rpdoBytes[8];
+	FuelCellRpdo rpdo;
+
+	if (m_transceiver.recv(rpdoId, rpdoBytes) == 8)
+	{
+		emb::c28x::from_bytes8(rpdo, rpdoBytes);
+
+		switch(rpdoId)
+		{
+		case 0x180:
+
+			break;
+		case 0x181:
+
+			break;
+		case 0x182:
+
+			break;
+		case 0x183:
+
+			break;
+		case 0x184:
+
+			break;
 		}
 	}
 }
