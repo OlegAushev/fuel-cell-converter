@@ -20,14 +20,14 @@ Syslog::Message Syslog::m_cpu2Message __attribute__((section("SHARED_SYSLOG_MESS
 
 
 #ifdef DUALCORE
-Syslog::FaultData Syslog::m_cpu1FaultData __attribute__((section("SHARED_SYSLOG_DATA_CPU1"), retain));
-Syslog::FaultData Syslog::m_cpu2FaultData __attribute__((section("SHARED_SYSLOG_DATA_CPU2"), retain));
+Syslog::Data Syslog::m_cpu1Data __attribute__((section("SHARED_SYSLOG_DATA_CPU1"), retain));
+Syslog::Data Syslog::m_cpu2Data __attribute__((section("SHARED_SYSLOG_DATA_CPU2"), retain));
 #else
-Syslog::FaultData Syslog::m_cpu1FaultData;
+Syslog::Data Syslog::m_cpu1Data;
 #endif
 
 
-Syslog::FaultData* Syslog::m_thisCpuFaultData;
+Syslog::Data* Syslog::m_thisCpuData;
 
 
 // IPC signals

@@ -113,7 +113,7 @@ private:
 	static Syslog::Message m_cpu2Message;
 #endif
 
-	struct FaultData
+	struct Data
 	{
 		uint32_t faults;
 		uint32_t warnings;
@@ -122,12 +122,12 @@ private:
 		uint32_t criticalWarningMask;	// warnings that cannot be reseted by reset()
 	};
 
-	static FaultData m_cpu1FaultData;
+	static Data m_cpu1Data;
 #ifdef DUALCORE
-	static FaultData m_cpu2FaultData;
+	static Data m_cpu2Data;
 #endif
 
-	static FaultData* m_thisCpuFaultData;
+	static Data* m_thisCpuData;
 
 	// IPC flags
 	static mcu::IpcFlag RESET_FAULTS_AND_WARNINGS;
@@ -153,17 +153,17 @@ public:
 		m_messages.clear();
 
 #ifdef CPU1
-		m_thisCpuFaultData = &m_cpu1FaultData;
+		m_thisCpuData = &m_cpu1Data;
 #endif
 #ifdef CPU2
-		m_thisCpuFaultData = &m_cpu2FaultData;
+		m_thisCpuData = &m_cpu2Data;
 #endif
 
-		m_thisCpuFaultData->faults = 0;
-		m_thisCpuFaultData->warnings = 0;
-		m_thisCpuFaultData->enabledFaultMask = 0xFFFFFFFF;
-		m_thisCpuFaultData->criticalFaultMask = Fault::CRITICAL_FAULTS;
-		m_thisCpuFaultData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
+		m_thisCpuData->faults = 0;
+		m_thisCpuData->warnings = 0;
+		m_thisCpuData->enabledFaultMask = 0xFFFFFFFF;
+		m_thisCpuData->criticalFaultMask = Fault::CRITICAL_FAULTS;
+		m_thisCpuData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
 
 		RESET_FAULTS_AND_WARNINGS = ipcFlags.RESET;
 		ADD_MESSAGE = ipcFlags.ADD_MESSAGE;
@@ -277,7 +277,7 @@ public:
 	static void enableFault(Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->enabledFaultMask = m_thisCpuFaultData->enabledFaultMask | (1UL << fault);
+		m_thisCpuData->enabledFaultMask = m_thisCpuData->enabledFaultMask | (1UL << fault);
 	}
 
 	/**
@@ -288,7 +288,7 @@ public:
 	static void enableAllFaults()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->enabledFaultMask = 0xFFFFFFFF;
+		m_thisCpuData->enabledFaultMask = 0xFFFFFFFF;
 	}
 
 	/**
@@ -299,7 +299,7 @@ public:
 	static void disableFault(Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->enabledFaultMask = m_thisCpuFaultData->enabledFaultMask & ((1UL << fault) ^ 0xFFFFFFFF);
+		m_thisCpuData->enabledFaultMask = m_thisCpuData->enabledFaultMask & ((1UL << fault) ^ 0xFFFFFFFF);
 	}
 
 	/**
@@ -310,7 +310,7 @@ public:
 	static void disableAllFaults()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->enabledFaultMask = 0;
+		m_thisCpuData->enabledFaultMask = 0;
 	}
 
 	/**
@@ -321,7 +321,7 @@ public:
 	static void setFault(Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->faults = m_thisCpuFaultData->faults | ((1UL << fault) & m_thisCpuFaultData->enabledFaultMask);
+		m_thisCpuData->faults = m_thisCpuData->faults | ((1UL << fault) & m_thisCpuData->enabledFaultMask);
 	}
 
 	/**
@@ -332,9 +332,9 @@ public:
 	static bool hasFault(Fault::Fault fault)
 	{
 #ifdef DUALCORE
-		return (m_cpu1FaultData.faults | m_cpu2FaultData.faults) & (1UL << fault);
+		return (m_cpu1Data.faults | m_cpu2Data.faults) & (1UL << fault);
 #else
-		return m_thisCpuFaultData->faults & (1UL << fault);
+		return m_thisCpuData->faults & (1UL << fault);
 #endif
 	}
 
@@ -346,7 +346,7 @@ public:
 	static void resetFault(Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->faults = m_thisCpuFaultData->faults & ((1UL << fault) ^ 0xFFFFFFFF);
+		m_thisCpuData->faults = m_thisCpuData->faults & ((1UL << fault) ^ 0xFFFFFFFF);
 	}
 
 	/**
@@ -357,9 +357,9 @@ public:
 	static uint32_t faults()
 	{
 #ifdef DUALCORE
-		return m_cpu1FaultData.faults | m_cpu2FaultData.faults;
+		return m_cpu1Data.faults | m_cpu2Data.faults;
 #else
-		return m_thisCpuFaultData->faults;
+		return m_thisCpuData->faults;
 #endif
 	}
 
@@ -371,9 +371,9 @@ public:
 	static bool criticalFaultDetected()
 	{
 #ifdef DUALCORE
-		return (m_cpu1FaultData.faults & m_cpu1FaultData.criticalFaultMask) || (m_cpu2FaultData.faults & m_cpu2FaultData.criticalFaultMask);
+		return (m_cpu1Data.faults & m_cpu1Data.criticalFaultMask) || (m_cpu2Data.faults & m_cpu2Data.criticalFaultMask);
 #else
-		return m_thisCpuFaultData->faults & m_thisCpuFaultData->criticalFaultMask;
+		return m_thisCpuData->faults & m_thisCpuData->criticalFaultMask;
 #endif
 	}
 
@@ -385,7 +385,7 @@ public:
 	static void setWarning(Warning::Warning warning)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->warnings = m_thisCpuFaultData->warnings | (1UL << warning);
+		m_thisCpuData->warnings = m_thisCpuData->warnings | (1UL << warning);
 	}
 
 	/**
@@ -396,9 +396,9 @@ public:
 	static bool hasWarning(Warning::Warning warning)
 	{
 #ifdef DUALCORE
-		return (m_cpu1FaultData.warnings | m_cpu2FaultData.warnings) & (1UL << warning);
+		return (m_cpu1Data.warnings | m_cpu2Data.warnings) & (1UL << warning);
 #else
-		return m_thisCpuFaultData->warnings & (1UL << warning);
+		return m_thisCpuData->warnings & (1UL << warning);
 #endif
 	}
 
@@ -410,7 +410,7 @@ public:
 	static void resetWarning(Warning::Warning warning)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->warnings = m_thisCpuFaultData->warnings & ((1UL << warning) ^ 0xFFFFFFFF);
+		m_thisCpuData->warnings = m_thisCpuData->warnings & ((1UL << warning) ^ 0xFFFFFFFF);
 	}
 
 	/**
@@ -421,9 +421,9 @@ public:
 	static uint32_t warnings()
 	{
 #ifdef DUALCORE
-		return m_cpu1FaultData.warnings | m_cpu2FaultData.warnings;
+		return m_cpu1Data.warnings | m_cpu2Data.warnings;
 #else
-		return m_thisCpuFaultData->warnings;
+		return m_thisCpuData->warnings;
 #endif
 	}
 
@@ -435,8 +435,8 @@ public:
 	static void resetFaultsAndWarnings()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->faults = m_thisCpuFaultData->faults & m_thisCpuFaultData->criticalFaultMask;
-		m_thisCpuFaultData->warnings = m_thisCpuFaultData->warnings & m_thisCpuFaultData->criticalWarningMask;
+		m_thisCpuData->faults = m_thisCpuData->faults & m_thisCpuData->criticalFaultMask;
+		m_thisCpuData->warnings = m_thisCpuData->warnings & m_thisCpuData->criticalWarningMask;
 #if (defined(CPU1) && defined(DUALCORE))
 		mcu::setLocalIpcFlag(RESET_FAULTS_AND_WARNINGS.local);
 #endif
@@ -450,8 +450,8 @@ public:
 	static void clearCriticalMasks()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->criticalFaultMask = 0;
-		m_thisCpuFaultData->criticalWarningMask = 0;
+		m_thisCpuData->criticalFaultMask = 0;
+		m_thisCpuData->criticalWarningMask = 0;
 	}
 
 	/**
@@ -462,8 +462,8 @@ public:
 	static void enableCriticalMasks()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuFaultData->criticalFaultMask = Fault::CRITICAL_FAULTS;
-		m_thisCpuFaultData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
+		m_thisCpuData->criticalFaultMask = Fault::CRITICAL_FAULTS;
+		m_thisCpuData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
 	}
 };
 
