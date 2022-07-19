@@ -2,7 +2,7 @@
 #define FIRMWARE_VERSION_DEF 2206
 
 
-#define TEST_CAN_BY_GPIO
+//#define TEST_CAN_BY_GPIO
 #ifdef TEST_CAN_BY_GPIO
 #warning "TEST_CAN_BY_GPIO test build."
 #endif

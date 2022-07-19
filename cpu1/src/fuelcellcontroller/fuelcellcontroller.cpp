@@ -23,7 +23,7 @@ Data Controller::s_data __attribute__((section("SHARED_FUELCELL_DATA"), retain))
 Controller::Controller(const BoostConverter* converter,
 		const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin)
 	: m_converter(converter)
-	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::enable_bit_stuffing()) // TODO disable bit stuffing
+	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::disable_bit_stuffing()) // TODO disable bit stuffing
 {
 	EMB_STATIC_ASSERT(sizeof(TpdoMessage) == 4);
 	EMB_STATIC_ASSERT(sizeof(RpdoMessage) == 4);
@@ -64,7 +64,7 @@ void Controller::_runTx()
 		tpdo.current = emb::clamp(m_converter->currentIn(), 0.f, float(USHRT_MAX));
 
 		// TODO remove this later
-		tpdo.reserved = mcu::SystemClock::now();
+		//tpdo.reserved = mcu::SystemClock::now();
 
 		emb::c28x::to_bytes8<TpdoMessage>(tpdoBytes, tpdo);
 
