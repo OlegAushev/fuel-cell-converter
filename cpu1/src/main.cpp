@@ -2,9 +2,9 @@
 #define FIRMWARE_VERSION_DEF 2206
 
 
-#define CAN_BY_GPIO
-#ifdef CAN_BY_GPIO
-#warning "CAN_BY_GPIO test build."
+#define TEST_CAN_BY_GPIO
+#ifdef TEST_CAN_BY_GPIO
+#warning "TEST_CAN_BY_GPIO test build."
 #endif
 
 #ifdef CRD300
@@ -159,7 +159,17 @@ void main()
 	/*-------------------------*/
 	/* PERFORMANCE TESTS BEGIN */
 	/*-------------------------*/
-#ifdef CAN_BY_GPIO
+
+
+
+	/*-----------------------*/
+	/* PERFORMANCE TESTS END */
+	/*-----------------------*/
+
+/*####################################################################################################################*/
+	/*###############*/
+	/*# CAN BY GPIO #*/
+	/*###############*/
 	mcu::GpioPinConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::GpioPinConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
 	mcu::GpioPinConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
@@ -168,6 +178,7 @@ void main()
 	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
 	canbygpioRx.setInterrupt(GPIO_INT_XINT5);
 
+#ifdef TEST_CAN_BY_GPIO
 	microcanopen::IpcFlags canIpcSignalsTest =
 	{
 		.RPDO1_RECEIVED = mcu::IpcFlag(14),
@@ -197,9 +208,6 @@ void main()
 	mcoServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x200);
 	mcoServerTest.enable();
 #endif
-	/*-----------------------*/
-	/* PERFORMANCE TESTS END */
-	/*-----------------------*/
 
 /*####################################################################################################################*/
 #ifdef CRD300
@@ -370,7 +378,7 @@ void main()
 		mcoServer.run();
 		mcu::SystemClock::runTasks();
 
-#ifdef CAN_BY_GPIO
+#ifdef TEST_CAN_BY_GPIO
 		mcoServerTest.run();
 		static uint64_t sigPrev = 0;
 		static bool hasStarted = false;
