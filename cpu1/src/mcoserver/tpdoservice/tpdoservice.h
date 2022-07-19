@@ -56,7 +56,12 @@ struct CobTpdo1
 		} can1;
 		struct
 		{
-			uint64_t reserved;
+			// FIXME fuel cell emulation
+			uint64_t temperature : 8;
+			uint64_t cellVoltage : 16;
+			uint64_t battVoltage : 16;
+			uint64_t status : 8;
+			uint64_t current : 16;
 		} can2;
 	};
 	CobTpdo1()
@@ -96,7 +101,12 @@ struct CobTpdo2
 		} can1;
 		struct
 		{
-			uint64_t reserved;
+			// FIXME fuel cell emulation
+			uint64_t temperature : 8;
+			uint64_t cellVoltage : 16;
+			uint64_t battVoltage : 16;
+			uint64_t status : 8;
+			uint64_t current : 16;
 		} can2;
 	};
 	CobTpdo2()
@@ -136,7 +146,12 @@ struct CobTpdo3
 		} can1;
 		struct
 		{
-			uint64_t reserved;
+			// FIXME fuel cell emulation
+			uint64_t temperature : 8;
+			uint64_t cellVoltage : 16;
+			uint64_t battVoltage : 16;
+			uint64_t status : 8;
+			uint64_t current : 16;
 		} can2;
 	};
 	CobTpdo3()
@@ -169,7 +184,12 @@ struct CobTpdo4
 		} can1;
 		struct
 		{
-			uint64_t reserved;
+			// FIXME fuel cell emulation
+			uint64_t temperature : 8;
+			uint64_t cellVoltage : 16;
+			uint64_t battVoltage : 16;
+			uint64_t status : 8;
+			uint64_t current : 16;
 		} can2;
 	};
 	CobTpdo4()
@@ -266,7 +286,12 @@ public:
 			*/
 			break;
 		case MCO_CAN2:
-			// RESERVED;
+			// FIXME fuel cell emulation
+			msg.can2.temperature = 10;
+			msg.can2.cellVoltage = 10;
+			msg.can2.battVoltage = 10;
+			msg.can2.status = 1;
+			msg.can2.temperature = 10;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -300,7 +325,12 @@ public:
 			*/
 			break;
 		case MCO_CAN2:
-			// RESERVED;
+			// FIXME fuel cell emulation
+			msg.can2.temperature = 20;
+			msg.can2.cellVoltage = 20;
+			msg.can2.battVoltage = 20;
+			msg.can2.status = 2;
+			msg.can2.temperature = 20;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -324,7 +354,12 @@ public:
 			Syslog::popMessage();
 			break;
 		case MCO_CAN2:
-			// RESERVED;
+			// FIXME fuel cell emulation
+			msg.can2.temperature = 30;
+			msg.can2.cellVoltage = 30;
+			msg.can2.battVoltage = 30;
+			msg.can2.status = 3;
+			msg.can2.temperature = 30;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -348,7 +383,12 @@ public:
 			saveWarnings(msg, Syslog::warnings());
 			break;
 		case MCO_CAN2:
-			// RESERVED;
+			// FIXME fuel cell emulation
+			msg.can2.temperature = 40;
+			msg.can2.cellVoltage = 40;
+			msg.can2.battVoltage = 40;
+			msg.can2.status = 4;
+			msg.can2.temperature = 40;
 			break;
 		}
 		// APP-SPECIFIC END

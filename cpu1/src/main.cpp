@@ -186,14 +186,14 @@ void main()
 			mcu::GpioPinConfig(6, GPIO_6_CANTXB),
 			mcu::GpioPinConfig(7, GPIO_7_CANRXB),
 			mcu::CAN_BITRATE_125K, mcu::CAN_LOOPBACK_MODE,
-			microcanopen::NodeId(0x02),
+			microcanopen::NodeId(0x01),
 			&tpdoServiceTest, &rpdoServiceTest, &sdoServiceTest, canIpcSignalsTest);
 
 	mcoServerTest.setHeartbeatPeriod(0);
 	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM1, 200);
-	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM2, 0);
-	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 0);
-	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM4, 0);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM2, 200);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM3, 200);
+	mcoServerTest.setTpdoPeriod(microcanopen::TPDO_NUM4, 200);
 
 	mcoServerTest.setRpdoId(microcanopen::RPDO_NUM1, 0x200);
 	mcoServerTest.enable();
