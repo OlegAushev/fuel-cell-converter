@@ -53,8 +53,7 @@
 #endif
 
 
-#pragma DATA_SECTION("SHARED_CONVERTER")
-unsigned char converterobj_loc[sizeof(BoostConverter)];
+unsigned char converterobj_loc[sizeof(BoostConverter)] __attribute__((section("SHARED_CONVERTER")));
 BoostConverter* converter;
 
 

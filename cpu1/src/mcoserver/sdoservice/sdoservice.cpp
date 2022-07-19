@@ -11,10 +11,8 @@ namespace microcanopen {
 
 
 #ifdef DUALCORE
-#pragma DATA_SECTION("SHARED_MCO_CAN1_RSDO_DATA")
-CobSdo mcoCan1RsdoDataShared;
-#pragma DATA_SECTION("SHARED_MCO_CAN2_RSDO_DATA")
-CobSdo mcoCan2RsdoDataShared;
+CobSdo mcoCan1RsdoDataShared __attribute__((section("SHARED_MCO_CAN1_RSDO_DATA"), retain));
+CobSdo mcoCan2RsdoDataShared __attribute__((section("SHARED_MCO_CAN2_RSDO_DATA"), retain));
 CobSdo mcoCan1RsdoDataNonShared;
 CobSdo mcoCan2RsdoDataNonShared;
 #else
@@ -26,10 +24,8 @@ CobSdo mcoCan2RsdoDataNonShared;
 
 
 #ifdef DUALCORE
-#pragma DATA_SECTION("SHARED_MCO_CAN1_TSDO_DATA")
-CobSdo mcoCan1TsdoDataShared;
-#pragma DATA_SECTION("SHARED_MCO_CAN2_TSDO_DATA")
-CobSdo mcoCan2TsdoDataShared;
+CobSdo mcoCan1TsdoDataShared __attribute__((section("SHARED_MCO_CAN1_TSDO_DATA"), retain));
+CobSdo mcoCan2TsdoDataShared __attribute__((section("SHARED_MCO_CAN2_TSDO_DATA"), retain));
 CobSdo mcoCan1TsdoDataNonShared;
 CobSdo mcoCan2TsdoDataNonShared;
 #else

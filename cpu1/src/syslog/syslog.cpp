@@ -8,24 +8,20 @@
 
 
 #ifdef DUALCORE
-#pragma DATA_SECTION("SHARED_SYSLOG_MESSAGES")
-emb::Queue<Syslog::Message, 32> Syslog::m_messages;
+emb::Queue<Syslog::Message, 32> Syslog::m_messages __attribute__((section("SHARED_SYSLOG_MESSAGES"), retain));
 #else
 emb::Queue<Syslog::Message, 32> Syslog::m_messages;
 #endif
 
 
 #ifdef DUALCORE
-#pragma DATA_SECTION("SHARED_SYSLOG_MESSAGE_CPU2")
-Syslog::Message Syslog::m_cpu2Message = Syslog::NO_MESSAGE;
+Syslog::Message Syslog::m_cpu2Message __attribute__((section("SHARED_SYSLOG_MESSAGE_CPU2"), retain)) = Syslog::NO_MESSAGE;
 #endif
 
 
 #ifdef DUALCORE
-#pragma DATA_SECTION("SHARED_SYSLOG_DATA_CPU1")
-Syslog::FaultData Syslog::m_cpu1FaultData;
-#pragma DATA_SECTION("SHARED_SYSLOG_DATA_CPU2")
-Syslog::FaultData Syslog::m_cpu2FaultData;
+Syslog::FaultData Syslog::m_cpu1FaultData __attribute__((section("SHARED_SYSLOG_DATA_CPU1"), retain));
+Syslog::FaultData Syslog::m_cpu2FaultData __attribute__((section("SHARED_SYSLOG_DATA_CPU2"), retain));
 #else
 Syslog::FaultData Syslog::m_cpu1FaultData;
 #endif

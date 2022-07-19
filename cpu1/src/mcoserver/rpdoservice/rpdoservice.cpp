@@ -12,8 +12,7 @@ namespace microcanopen {
 
 /// Common IPC data storage for all MCO servers.
 #ifdef DUALCORE
-#pragma DATA_SECTION("SHARED_MCO_RPDO_DATA")
-ProcessedRpdoData rpdoProcessedDataShared;
+ProcessedRpdoData rpdoProcessedDataShared __attribute__((section("SHARED_MCO_RPDO_DATA"), retain));
 ProcessedRpdoData rpdoProcessedDataNonShared;
 #else
 ProcessedRpdoData rpdoProcessedDataShared;

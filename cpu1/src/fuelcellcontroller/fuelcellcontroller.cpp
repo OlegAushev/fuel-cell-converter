@@ -14,8 +14,7 @@ const mcu::IpcFlag Controller::SIG_START(21);
 const mcu::IpcFlag Controller::SIG_STOP(22);
 
 
-#pragma DATA_SECTION("SHARED_FUELCELL_DATA")
-Data Controller::s_data;
+Data Controller::s_data __attribute__((section("SHARED_FUELCELL_DATA"), retain));
 
 
 ///

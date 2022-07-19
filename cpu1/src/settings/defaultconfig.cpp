@@ -10,8 +10,7 @@
 ///
 ///
 ///
-#pragma DATA_SECTION("SHARED_SYSTEMCONFIG")
-Settings::SystemConfig Settings::SYSTEM_CONFIG;
+Settings::SystemConfig Settings::SYSTEM_CONFIG __attribute__((section("SHARED_SYSTEMCONFIG")));
 
 
 ///
