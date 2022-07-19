@@ -29,7 +29,7 @@ public:
 	IFilter() {}
 	virtual ~IFilter() {}
 
-	virtual void process(T value) {}
+	virtual void push(T value) {}
 	virtual T output() const = 0;
 	virtual void setOutput(T value) = 0;
 	virtual void reset() = 0;
@@ -80,7 +80,7 @@ public:
 		}
 	}
 
-	virtual void process(T value)
+	virtual void push(T value)
 	{
 		m_sum = m_sum + value - m_window[m_index];
 		m_window[m_index] = value;
@@ -141,7 +141,7 @@ public:
 		reset();
 	}
 
-	virtual void process(T value)
+	virtual void push(T value)
 	{
 		m_window.push(value);
 		Array<T, WindowSize> windowSorted;
@@ -189,7 +189,7 @@ public:
 		reset();
 	}
 
-	virtual void process(T value)
+	virtual void push(T value)
 	{
 		m_out = m_outPrev + m_smoothFactor * (value - m_outPrev);
 		m_outPrev = m_out;
@@ -239,7 +239,7 @@ public:
 		reset();
 	}
 
-	virtual void process(T value)
+	virtual void push(T value)
 	{
 		m_window.push(value);
 		Array<T, WindowSize> windowSorted;

@@ -26,9 +26,10 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	: emb::c28x::Singleton<BoostConverter>(this)
 	, m_config(converterConfig)
 	, m_state(CONVERTER_OFF)
-	, m_voltageIn(VDC_SMOOTH_FACTOR)
-	, m_voltageOut(VDC_SMOOTH_FACTOR)
+	, m_voltageInFilter(VDC_SMOOTH_FACTOR)
+	, m_voltageOutFilter(VDC_SMOOTH_FACTOR)
 	, m_currentIn(0, 0)
+	, m_currentInFilter(IDC_SMOOTH_FACTOR)
 	, m_dutycycleController(converterConfig.kP_dutycycle, converterConfig.kI_dutycucle,
 			1 / pwmConfig.switchingFreq, 0, 0.55f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
@@ -96,13 +97,13 @@ __interrupt void BoostConverter::onAdcVoltageInInterrupt()
 	BoostConverter* converter = BoostConverter::instance();
 
 	float vIn = converter->inVoltageSensor.read();
-	converter->m_voltageIn.process(vIn);
+	converter->m_voltageInFilter.push(vIn);
 
-	if (converter->m_voltageIn.output() > converter->m_config.ovpVoltageIn)
+	if (converter->m_voltageInFilter.output() > converter->m_config.ovpVoltageIn)
 	{
 		Syslog::setFault(Fault::OVP_IN);
 	}
-	else if (converter->m_voltageIn.output() < converter->m_config.uvpVoltageIn)
+	else if (converter->m_voltageInFilter.output() < converter->m_config.uvpVoltageIn)
 	{
 		// TODO Syslog::setFault(Fault::UVP_IN);
 	}
@@ -120,19 +121,19 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 	BoostConverter* converter = BoostConverter::instance();
 
 	float vOut = converter->outVoltageSensor.read();
-	converter->m_voltageOut.process(vOut);
+	converter->m_voltageOutFilter.push(vOut);
 
-	if (converter->m_voltageOut.output() > converter->m_config.ovpVoltageOut)
+	if (converter->m_voltageOutFilter.output() > converter->m_config.ovpVoltageOut)
 	{
 		Syslog::setFault(Fault::OVP_OUT);
 	}
 
-	if (converter->m_voltageOut.output() > converter->m_config.batteryChargedVoltage)
+	if (converter->m_voltageOutFilter.output() > converter->m_config.batteryChargedVoltage)
 	{
 		Syslog::setWarning(Warning::BATTERY_CHARGED);
 		converter->stop();
 	}
-	else if (converter->m_voltageOut.output() < converter->m_config.batteryChargedVoltage - 10)
+	else if (converter->m_voltageOutFilter.output() < converter->m_config.batteryChargedVoltage - 10)
 	{
 		Syslog::resetWarning(Warning::BATTERY_CHARGED);
 	}
@@ -184,14 +185,14 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 	}
 
 	// calculate average inductor current
-	converter->m_currentInAvg = (converter->m_currentIn.first + converter->m_currentIn.second) / 2;
+	converter->m_currentInFilter.push((converter->m_currentIn.first + converter->m_currentIn.second) / 2);
 
 	// run current controller to achieve cvVoltageIn
-	converter->m_currentController.process(converter->m_config.cvVoltageIn, converter->m_voltageIn.output());
+	converter->m_currentController.update(converter->m_config.cvVoltageIn, converter->m_voltageInFilter.output());
 
 	// run duty cycle controller to achieve needed current
-	converter->m_dutycycleController.process(converter->m_currentController.output(),
-			converter->m_currentInAvg);
+	converter->m_dutycycleController.update(converter->m_currentController.output(),
+			converter->m_currentInFilter.output());
 
 	converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
 

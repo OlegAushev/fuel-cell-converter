@@ -51,7 +51,7 @@ public:
 	{}
 
 	virtual ~IPiController() {}
-	virtual void process(float ref, float meas) = 0;
+	virtual void update(float ref, float meas) = 0;
 	virtual void reset()
 	{
 		m_sumI = 0;
@@ -94,7 +94,7 @@ public:
 		, m_kC(kC)
 	{}
 
-	virtual void process(float ref, float meas)
+	virtual void update(float ref, float meas)
 	{
 		float error = IPiController<Logic>::_error(ref, meas);
 		float out = emb::clamp(error * this->m_kP + this->m_sumI, -FLT_MAX, FLT_MAX);
@@ -137,7 +137,7 @@ public:
 		, m_error(0)
 	{}
 
-	virtual void process(float ref, float meas)
+	virtual void update(float ref, float meas)
 	{
 		float error = IPiController<Logic>::_error(ref, meas);
 		float outp = error * this->m_kP;

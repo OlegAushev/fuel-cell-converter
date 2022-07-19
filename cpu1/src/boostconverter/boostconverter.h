@@ -72,10 +72,11 @@ private:
 	BoostConverterState m_state;
 
 	static const float VDC_SMOOTH_FACTOR = 0.001;
-	emb::ExponentialMedianFilter<float, 3> m_voltageIn;
-	emb::ExponentialMedianFilter<float, 3> m_voltageOut;
+	emb::ExponentialMedianFilter<float, 3> m_voltageInFilter;
+	emb::ExponentialMedianFilter<float, 3> m_voltageOutFilter;
 	emb::Pair<float, float> m_currentIn;	// inductor current measured twice per PWM period
-	float m_currentInAvg;
+	static const float IDC_SMOOTH_FACTOR = 0.1;
+	emb::ExponentialMedianFilter<float, 3> m_currentInFilter;
 
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;
 	emb::PiControllerCl<emb::CONTROLLER_INVERSE> m_currentController;
@@ -143,9 +144,9 @@ public:
 	 */
 	void reset();
 
-	float voltageIn() const { return m_voltageIn.output(); }
-	float voltageOut() const { return m_voltageOut.output(); }
-	float currentIn() const { return m_currentInAvg; }
+	float voltageIn() const { return m_voltageInFilter.output(); }
+	float voltageOut() const { return m_voltageOutFilter.output(); }
+	float currentIn() const { return m_currentInFilter.output(); }
 	void relOn() const
 	{
 #ifndef CRD300
