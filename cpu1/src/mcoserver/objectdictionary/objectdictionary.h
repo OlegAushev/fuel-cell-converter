@@ -20,6 +20,7 @@
 // APP-SPECIFIC headers
 #include "syslog/syslog.h"
 #include "boostconverter/boostconverter.h"
+#include "fuelcellcontroller/fuelcellcontroller.h"
 
 
 namespace microcanopen {

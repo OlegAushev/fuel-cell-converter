@@ -86,17 +86,32 @@ inline ODAccessStatus getConverterCurrentIn(CobSdoData& dest)
 
 
 //////////////
-///
 
-inline ODAccessStatus converterPowerUp(CobSdoData val)
+
+inline ODAccessStatus converterRelayOn(CobSdoData val)
 {
 	converter->relOn();
 	return OD_ACCESS_SUCCESS;
 }
 
-inline ODAccessStatus converterPowerDown(CobSdoData val)
+
+inline ODAccessStatus converterRelayOff(CobSdoData val)
 {
 	converter->relOff();
+	return OD_ACCESS_SUCCESS;
+}
+
+
+inline ODAccessStatus fuelcellStart(CobSdoData val)
+{
+	fuelcell::Controller::start();
+	return OD_ACCESS_SUCCESS;
+}
+
+
+inline ODAccessStatus fuelcellStop(CobSdoData val)
+{
+	fuelcell::Controller::stop();
 	return OD_ACCESS_SUCCESS;
 }
 
@@ -115,8 +130,12 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	OD_NO_WRITE_ACCESS}},
 
 
-{{0x2001, 0x00}, {"DRIVE CONTROL", 	"DRIVE CONTROL", "POWER UP DRIVE", 	"",	OD_TASK,	false,	true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterPowerUp}},
-{{0x2001, 0x01}, {"DRIVE CONTROL",	"DRIVE CONTROL", "POWER DOWN DRIVE",	"",	OD_TASK, 	false,	true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterPowerDown}},
+{{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterRelayOn}},
+{{0x2001, 0x01}, {"CONVERTER",	"CONVERTER", "RELAY OFF",	"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterRelayOff}},
+
+
+{{0x2002, 0x03}, {"FUELCELL", 	"FUELCELL", "START",		"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::fuelcellStart}},
+{{0x2002, 0x04}, {"FUELCELL", 	"FUELCELL", "STOP",		"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::fuelcellStop}},
 
 
 {{0xFFFF, 0xFF}, {"NULL", "NULL", "END_OF_OD", "", OD_TASK, false, false, OD_NO_DIRECT_ACCESS, OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}}};
