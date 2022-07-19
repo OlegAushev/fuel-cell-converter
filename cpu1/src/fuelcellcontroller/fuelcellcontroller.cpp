@@ -13,8 +13,9 @@ namespace fuelcell {
 const mcu::IpcFlag Controller::SIG_START(21);
 const mcu::IpcFlag Controller::SIG_STOP(22);
 
+
 #pragma DATA_SECTION("SHARED_FUELCELL_DATA")
-emb::Array<Data, Controller::FUELCELL_COUNT> Controller::s_data;
+Data Controller::s_data;
 
 
 ///
@@ -27,6 +28,12 @@ Controller::Controller(const BoostConverter* converter,
 {
 	EMB_STATIC_ASSERT(sizeof(TpdoMessage) == 4);
 	EMB_STATIC_ASSERT(sizeof(RpdoMessage) == 4);
+
+	s_data.temperature.fill(0);
+	s_data.cellVoltage.fill(0);
+	s_data.battVoltage.fill(0);
+	s_data.status.fill(FUELCELL_NA);
+	s_data.temperature.fill(0);
 }
 
 
@@ -98,16 +105,16 @@ void Controller::_runRx()
 		emb::c28x::from_bytes8<RpdoMessage>(rpdo, rpdoBytes);
 		size_t cell = rpdoId - 0x180;
 
-		s_data[cell].temperature = -40.0f + rpdo.temperature;
-		s_data[cell].cellVoltage = 0.1f * rpdo.cellVoltage;
-		s_data[cell].battVoltage = 15.0f + 0.1f * rpdo.battVoltage;
+		s_data.temperature[cell] = -40.0f + rpdo.temperature;
+		s_data.cellVoltage[cell] = 0.1f * rpdo.cellVoltage;
+		s_data.battVoltage[cell] = 15.0f + 0.1f * rpdo.battVoltage;
 
 		if (emb::Range<unsigned int>(0,7).contains(rpdo.status))
 		{
-			s_data[cell].status = static_cast<Status>(rpdo.status);
+			s_data.status[cell] = static_cast<Status>(rpdo.status);
 		}
 
-		s_data[cell].current = 0.1f * rpdo.current;
+		s_data.current[cell] = 0.1f * rpdo.current;
 	}
 }
 

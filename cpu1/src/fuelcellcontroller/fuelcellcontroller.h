@@ -63,16 +63,19 @@ enum Status
 };
 
 
+const size_t FUELCELL_COUNT = 5;
+
+
 /**
  * @brief Fuel cell data.
  */
 struct Data
 {
-	float temperature;
-	float cellVoltage;
-	float battVoltage;
-	float status;
-	float current;
+	emb::Array<float, FUELCELL_COUNT> temperature;
+	emb::Array<float, FUELCELL_COUNT> cellVoltage;
+	emb::Array<float, FUELCELL_COUNT> battVoltage;
+	emb::Array<Status, FUELCELL_COUNT> status;
+	emb::Array<float, FUELCELL_COUNT> current;
 };
 
 
@@ -84,8 +87,7 @@ private:
 	static const mcu::IpcFlag SIG_START;
 	static const mcu::IpcFlag SIG_STOP;
 
-	static const size_t FUELCELL_COUNT = 5;
-	static emb::Array<Data, FUELCELL_COUNT> s_data;
+	static Data s_data;
 
 	static const uint64_t TPDO_PERIOD = 200;
 	static const unsigned int TPDO_FRAME_ID = 0x200;
@@ -110,7 +112,7 @@ public:
 		mcu::setLocalIpcFlag(SIG_STOP.local);
 	}
 
-	static const emb::Array<Data, FUELCELL_COUNT>& data()
+	static const Data& data()
 	{
 		return s_data;
 	}
