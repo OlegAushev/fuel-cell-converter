@@ -291,7 +291,7 @@ public:
 			msg.can2.cellVoltage = 10;
 			msg.can2.battVoltage = 10;
 			msg.can2.status = 1;
-			msg.can2.temperature = 10;
+			msg.can2.current = 10;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -330,7 +330,7 @@ public:
 			msg.can2.cellVoltage = 20;
 			msg.can2.battVoltage = 20;
 			msg.can2.status = 2;
-			msg.can2.temperature = 20;
+			msg.can2.current = 20;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -359,7 +359,7 @@ public:
 			msg.can2.cellVoltage = 30;
 			msg.can2.battVoltage = 30;
 			msg.can2.status = 3;
-			msg.can2.temperature = 30;
+			msg.can2.current = 30;
 			break;
 		}
 		// APP-SPECIFIC END
@@ -388,7 +388,7 @@ public:
 			msg.can2.cellVoltage = 40;
 			msg.can2.battVoltage = 40;
 			msg.can2.status = 4;
-			msg.can2.temperature = 40;
+			msg.can2.current = 40;
 			break;
 		}
 		// APP-SPECIFIC END

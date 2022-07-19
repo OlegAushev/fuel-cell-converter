@@ -74,7 +74,7 @@ void Transceiver::reset()
 
 	m_rxActive = false;
 	m_rxSyncFlag = 0;
-	m_rxBitCount = STREAM_SIZE;
+	m_rxBitCount = 0;
 	m_rxIdx = 0;
 	m_rxDataReady = false;
 
@@ -105,19 +105,52 @@ __interrupt void Transceiver::onClockInterrupt()
 
 	if ((transceiver->m_rxActive) && (transceiver->m_clkFlag == transceiver->m_rxSyncFlag))
 	{
-		if (transceiver->m_rxIdx < transceiver->m_rxBitCount)
+		static int prevBit = 0;
+		static int sameBits = 0;
+
+		if (transceiver->m_rxIdx < STREAM_SIZE)
 		{
-			rxCanBitStream[transceiver->m_rxIdx++] =
-					GPIO_readPin(transceiver->m_rxPin.config().no);
+			int bit = GPIO_readPin(transceiver->m_rxPin.config().no);
+			rxCanBitStream[transceiver->m_rxIdx++] = bit;
+			if (bit == prevBit)
+			{
+				if(!sameBits)
+					sameBits = 2;
+				else
+					++sameBits;
+			}
+			else
+			{
+				sameBits = 0;
+			}
+			prevBit = bit;
+			if (sameBits == 10)
+			{
+				prevBit = 0;
+				sameBits = 0;
+				transceiver->_terminateRx();
+			}
 		}
 		else
 		{
-			transceiver->m_rxActive = false;
-			transceiver->m_rxPin.enableInterrupts(); // ready for new frame;
-			transceiver->m_rxDataReady = true;	// RX data can be read by recv()
-			GPIO_togglePin(transceiver->m_clkPin.config().no);
+			prevBit = 0;
+			sameBits = 0;
+			transceiver->_terminateRx();
 		}
 	}
+}
+
+
+///
+///
+///
+void Transceiver::_terminateRx()
+{
+	m_rxActive = false;
+	m_rxBitCount = m_rxIdx;
+	m_rxPin.enableInterrupts();	// ready for new frame;
+	m_rxDataReady = true;		// RX data can be read by recv()
+	GPIO_togglePin(m_clkPin.config().no);
 }
 
 
@@ -142,8 +175,6 @@ __interrupt void Transceiver::onRxStart()
 ///
 int Transceiver::_generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled)
 {
-	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
-
 	assert(len <= 9);
 	assert(frameId <= 0x7FF);
 
@@ -267,8 +298,6 @@ int Transceiver::_generateTxCanFrame(unsigned int frameId, const uint16_t* buf, 
 ///
 int Transceiver::_parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled)
 {
-	LOG_DURATION_VIA_PIN_ONOFF(m_clkPin.config().no);
-
 	// init bit stream
 	rxBitStream.fill(-1);
 

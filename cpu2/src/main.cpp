@@ -23,10 +23,6 @@ unsigned char converterobj_loc[sizeof(BoostConverter)] __attribute__((section("S
 BoostConverter* converter;
 
 
-uint16_t testRxData[8] = {0};
-unsigned int frameId;
-
-
 /* ========================================================================== */
 /* ================================ MAIN ==================================== */
 /* ========================================================================== */

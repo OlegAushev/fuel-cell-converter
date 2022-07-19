@@ -92,15 +92,21 @@ void Controller::_runTx()
 ///
 void Controller::_runRx()
 {
+	static uint64_t frameCount = 0;
+	static uint64_t errorCount = 0;
 	unsigned int rpdoId;
-	uint16_t rpdoBytes[8];
+	uint16_t rpdoBytes[8] = {0};
 	RpdoMessage rpdo;
 
 	if (m_transceiver.recv(rpdoId, rpdoBytes) == 8)
 	{
-		if ((rpdoId < 0x180) || (rpdoId > 184))
+		if ((rpdoId < 0x180) || (rpdoId > 0x184))
+		{
+			++errorCount;
 			return;
+		}
 
+		++frameCount;
 		emb::c28x::from_bytes8<RpdoMessage>(rpdo, rpdoBytes);
 		size_t cell = rpdoId - 0x180;
 

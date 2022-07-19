@@ -161,6 +161,7 @@ protected:
 			const mcu::GpioPin& clkPin, uint32_t bitrate);
 	int _generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
 	int _parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);
+	void _terminateRx();
 	static __interrupt void onClockInterrupt();
 	static __interrupt void onRxStart();
 
