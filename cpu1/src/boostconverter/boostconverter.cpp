@@ -187,14 +187,20 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 	// calculate average inductor current
 	converter->m_currentInFilter.push((converter->m_currentIn.first + converter->m_currentIn.second) / 2);
 
-	// run current controller to achieve cvVoltageIn
-	converter->m_currentController.update(converter->m_config.cvVoltageIn, converter->m_voltageInFilter.output());
+	if (converter->m_state == CONVERTER_ON)
+	{
+		// run current controller to achieve cvVoltageIn
+		converter->m_currentController.update(
+				converter->m_config.cvVoltageIn,
+				converter->m_voltageInFilter.output());
 
-	// run duty cycle controller to achieve needed current
-	converter->m_dutycycleController.update(converter->m_currentController.output(),
-			converter->m_currentInFilter.output());
+		// run duty cycle controller to achieve needed current
+		converter->m_dutycycleController.update(
+				converter->m_currentController.output(),
+				converter->m_currentInFilter.output());
 
-	converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
+		converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
+	}
 
 	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_SECOND);
 }

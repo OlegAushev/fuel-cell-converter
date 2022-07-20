@@ -84,6 +84,12 @@ inline ODAccessStatus getConverterCurrentIn(CobSdoData& dest)
 	return OD_ACCESS_SUCCESS;
 }
 
+inline ODAccessStatus setConverterCurrentIn(CobSdoData val)
+{
+	converter->setCurrentIn(val.f32);
+	return OD_ACCESS_SUCCESS;
+}
+
 
 //////////////
 
@@ -127,7 +133,7 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x2000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	true,	false,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_WRITE_ACCESS}},
 {{0x2000, 0x03}, {"WATCH", "WATCH", "VOLTAGE_IN",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_WRITE_ACCESS}},
 {{0x2000, 0x04}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_WRITE_ACCESS}},
-{{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	OD_NO_WRITE_ACCESS}},
+{{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	true,	true,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
 
 
 {{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterRelayOn}},

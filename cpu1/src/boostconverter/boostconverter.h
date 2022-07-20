@@ -135,6 +135,8 @@ public:
 	{
 		pwmUnit.stop();
 		m_state = CONVERTER_OFF;
+		m_currentController.reset();
+		m_dutycycleController.reset();
 	}
 
 	/**
@@ -147,6 +149,16 @@ public:
 	float voltageIn() const { return m_voltageInFilter.output(); }
 	float voltageOut() const { return m_voltageOutFilter.output(); }
 	float currentIn() const { return m_currentInFilter.output(); }
+
+	void setCurrentIn(float value)
+	{
+		if ((value >= m_config.currentInMin) && (value <= m_config.currentInMax))
+		{
+			m_currentController.setOutputMax(value);
+			m_currentController.reset();
+		}
+	}
+
 	void relOn() const
 	{
 #ifndef CRD300
