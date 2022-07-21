@@ -106,7 +106,7 @@ private:
 	static Irq m_irqs[ADC_IRQ_COUNT];
 	static void initIRQs();
 
-	static const uint32_t SAMPLE_WINDOW = 100;			// duration in ns
+	static const uint32_t SAMPLE_WINDOW = 250;			// duration in ns
 	static const uint32_t SAMPLE_WINDOW_CYCLES = SAMPLE_WINDOW / 5;	// 5ns - one SYSCLK
 
 	AdcUnit(const AdcUnit& other);			// no copy constructor

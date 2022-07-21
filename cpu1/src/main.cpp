@@ -36,6 +36,7 @@
 #include "mcu/can/mcucan.h"
 #include "mcoserver/mcoserver.h"
 #include "mcu/spi/mcuspi.h"
+#include "mcu/dac/mcudac.h"
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
@@ -56,6 +57,8 @@
 unsigned char converterobj_loc[sizeof(BoostConverter)] __attribute__((section("SHARED_CONVERTER")));
 BoostConverter* converter;
 
+uint16_t dacaInput = 0;
+uint16_t dacbInput = 0;
 
 /* ========================================================================== */
 /* ============================ SYSTEM INFO ================================= */
@@ -270,6 +273,13 @@ void main()
 	mcu::AdcUnit mcuAdcUnit(mcu::ADC_CHANNEL_COUNT);
 
 /*####################################################################################################################*/
+	/*#######*/
+	/*# DAC #*/
+	/*#######*/
+	mcu::DacUnit<mcu::DACA> daca;
+	mcu::DacUnit<mcu::DACB> dacb;
+
+/*####################################################################################################################*/
 	/*#############*/
 	/*# CONVERTER #*/
 	/*#############*/
@@ -398,6 +408,9 @@ void main()
 			sigPrev = mcu::SystemClock::now();
 		}
 #endif
+
+		daca.convert(mcu::DacInput(dacaInput));
+		dacb.convert(mcu::DacInput(dacbInput));
 	}
 }
 
