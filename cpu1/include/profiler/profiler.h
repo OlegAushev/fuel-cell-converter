@@ -8,6 +8,9 @@
 #include "mcu/gpio/mcu_gpio.h"
 
 
+//#define PIN_PROFILER_ENABLED
+
+
 enum LoggerPinMode
 {
 	LOGGER_ON_OFF,
@@ -84,12 +87,16 @@ inline void initDurationLoggerPin(mcu::Gpio& pin, GPIO_CoreSelect masterCore)
 #endif
 
 
+#ifdef PIN_PROFILER_ENABLED
 #define LOG_DURATION_VIA_PIN_ONOFF(pin) \
 		volatile DurationLoggerPin<LOGGER_ON_OFF> EMB_UNIQ_ID(__LINE__)(pin);
 
 
 #define LOG_DURATION_VIA_PIN_TOGGLE(pin) \
 		volatile DurationLoggerPin<LOGGER_TOGGLE> EMB_UNIQ_ID(__LINE__)(pin);
-
+#else
+#define LOG_DURATION_VIA_PIN_ONOFF(pin) ((void)0)
+#define LOG_DURATION_VIA_PIN_TOGGLE(pin) ((void)0)
+#endif
 
 

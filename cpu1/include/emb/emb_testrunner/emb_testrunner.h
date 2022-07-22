@@ -111,20 +111,28 @@ public:
 /**
  * @brief
  */
+#ifdef TEST_BUILD
 #define EMB_ASSERT_EQUAL(x, y) \
 { \
 	const char* hint = "[  WARN  ] Assertion failed: " #x " != " #y ", file: " __FILE__ ", line: " _STR(__LINE__); \
 	emb::TestRunner::assertEqual(x, y, hint); \
 }
+#else
+#define EMB_ASSERT_EQUAL(x, y) ((void)0)
+#endif
 
 
 /**
  * @brief
  */
+#ifdef TEST_BUILD
 #define EMB_ASSERT_TRUE(x) \
 { \
 	const char* hint = "[  WARN  ] Assertion failed: " #x " is false, file: " __FILE__ ", line: " _STR(__LINE__); \
 	emb::TestRunner::assertTrue(x, hint); \
 }
+#else
+#define EMB_ASSERT_TRUE(x) ((void)0)
+#endif
 
 
