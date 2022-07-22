@@ -12,8 +12,8 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "../system/mcusystem.h"
-#include "../gpio/mcugpio.h"
+#include "../system/mcu_system.h"
+#include "../gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 
 
@@ -87,23 +87,23 @@ extern const uint32_t i2cBases[2];
  * @brief I2C unit class.
  */
 template <I2CModule Module>
-class I2CUnit : public emb::c28x::Singleton<I2CUnit<Module> >
+class I2C : public emb::c28x::Singleton<I2C<Module> >
 {
 private:
 	detail::I2CModuleImpl m_module;
 
 private:
-	I2CUnit(const I2CUnit& other);			// no copy constructor
-	I2CUnit& operator=(const I2CUnit& other);	// no copy assignment operator
+	I2C(const I2C& other);			// no copy constructor
+	I2C& operator=(const I2C& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU I2C unit.
 	 * @param sdaPin - MCU I2C-SDA pin config
 	 * @param sclPin - MCU I2C-SCL pin config
-	 * @param slaveAddr - slave address
+	 * @param cfg - I2C config
 	 */
-	I2CUnit(const GpioPinConfig& sdaPin, const GpioPinConfig& sclPin, const I2CConfig& cfg)
-		: emb::c28x::Singleton<I2CUnit<Module> >(this)
+	I2C(const GpioConfig& sdaPin, const GpioConfig& sclPin, const I2CConfig& cfg)
+		: emb::c28x::Singleton<I2C<Module> >(this)
 		, m_module(detail::i2cBases[Module])
 	{
 #ifdef CPU1
@@ -127,7 +127,7 @@ public:
 	 * @param sclPin - MCU I2C-SCL pin config
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(const GpioPinConfig& sdaPin, const GpioPinConfig& sclPin)
+	static void transferControlToCpu2(const GpioConfig& sdaPin, const GpioConfig& sclPin)
 	{
 		_initPins(sdaPin, sclPin);
 		GPIO_setMasterCore(sdaPin.no, GPIO_CORE_CPU2);
@@ -167,7 +167,7 @@ public:
 
 protected:
 #ifdef CPU1
-	static void _initPins(const GpioPinConfig& sdaPin, const GpioPinConfig& sclPin)
+	static void _initPins(const GpioConfig& sdaPin, const GpioConfig& sclPin)
 	{
 		GPIO_setPadConfig(sdaPin.no, GPIO_PIN_TYPE_PULLUP);
 		GPIO_setQualificationMode(sdaPin.no, GPIO_QUAL_ASYNC);

@@ -6,13 +6,13 @@
 
 #include "profiler/profiler.h"
 
-#include "mcu/system/mcusystem.h"
-#include "mcu/support/mcusupport.h"
-#include "mcu/ipc/mcuipc.h"
-#include "mcu/cputimers/mcucputimers.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/support/mcu_support.h"
+#include "mcu/ipc/mcu_ipc.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 #include "mcoserver/mcoserver.h"
-#include "mcu/spi/mcuspi.h"
-#include "mcu/dac/mcudac.h"
+#include "mcu/spi/mcu_spi.h"
+#include "mcu/dac/mcu_dac.h"
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu2clocktasks.h"
@@ -79,12 +79,12 @@ void main()
 	/*###############*/
 	/*# CAN BY GPIO #*/
 	/*###############*/
-	mcu::GpioPinConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::GpioPinConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
-	mcu::GpioPinConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
-	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
-	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
+	mcu::GpioConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
+	mcu::Gpio canbygpioTx(canbygpioTxCfg);
+	mcu::Gpio canbygpioRx(canbygpioRxCfg);
+	mcu::Gpio canbygpioClk(canbygpioClkCfg);
 	fuelcell::Controller fcController(converter, canbygpioTx, canbygpioRx, canbygpioClk);
 
 /*####################################################################################################################*/

@@ -12,7 +12,7 @@
 #include "emb/emb_filter.h"
 #include "emb/emb_pair.h"
 #include "emb/emb_picontroller.h"
-#include "mcu/pwm/mcupwm.h"
+#include "mcu/pwm/mcu_pwm.h"
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
 #include "syslog/syslog.h"
@@ -50,7 +50,7 @@ struct BoostConverterConfig
 	float currentInMax;
 	float batteryChargedVoltage;
 
-	mcu::GpioPin fltPin;
+	mcu::Gpio fltPin;
 };
 
 
@@ -81,12 +81,12 @@ private:
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;
 	emb::PiControllerCl<emb::CONTROLLER_INVERSE> m_currentController;
 
-	const mcu::GpioPin FLT_PIN;
-	const mcu::GpioPin RST_PIN;
-	const mcu::GpioPin ERR_PIN;
-	const mcu::GpioPin REL_PIN;
+	const mcu::Gpio FLT_PIN;
+	const mcu::Gpio RST_PIN;
+	const mcu::Gpio ERR_PIN;
+	const mcu::Gpio REL_PIN;
 public:
-	mcu::PwmUnit<mcu::PWM_ONE_PHASE> pwmUnit;
+	mcu::Pwm<mcu::PWM_ONE_PHASE> pwm;
 	InVoltageSensor inVoltageSensor;
 	OutVoltageSensor outVoltageSensor;
 	InCurrentSensor inCurrentSensor;
@@ -122,7 +122,7 @@ public:
 				&& (m_state == CONVERTER_OFF)))
 		{
 			m_state = CONVERTER_ON;
-			pwmUnit.start();
+			pwm.start();
 		}
 	}
 
@@ -133,7 +133,7 @@ public:
 	 */
 	void stop()
 	{
-		pwmUnit.stop();
+		pwm.stop();
 		m_state = CONVERTER_OFF;
 		m_currentController.reset();
 		m_dutycycleController.reset();

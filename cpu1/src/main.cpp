@@ -28,15 +28,15 @@
 #include "emb/emb_profiler/emb_profiler.h"
 #include "profiler/profiler.h"
 
-#include "mcu/system/mcusystem.h"
-#include "mcu/support/mcusupport.h"
-#include "mcu/ipc/mcuipc.h"
-#include "mcu/cputimers/mcucputimers.h"
-#include "mcu/adc/mcuadc.h"
-#include "mcu/can/mcucan.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/support/mcu_support.h"
+#include "mcu/ipc/mcu_ipc.h"
+#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu/adc/mcu_adc.h"
+#include "mcu/can/mcu_can.h"
 #include "mcoserver/mcoserver.h"
-#include "mcu/spi/mcuspi.h"
-#include "mcu/dac/mcudac.h"
+#include "mcu/spi/mcu_spi.h"
+#include "mcu/dac/mcu_dac.h"
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
@@ -78,18 +78,18 @@ const char* Syslog::BUILD_CONFIGURATION = "RLS";
 /* ========================================================================== */
 /* ============================ PROFILER PINS =============================== */
 /* ========================================================================== */
-const mcu::GpioPinConfig P61_CFG =
-	mcu::GpioPinConfig(61, GPIO_61_GPIO61, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig P123_CFG =
-	mcu::GpioPinConfig(123, GPIO_123_GPIO123, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig P122_CFG =
-	mcu::GpioPinConfig(122, GPIO_122_GPIO122, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig P22_CFG =
-	mcu::GpioPinConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig P111_CFG =
-	mcu::GpioPinConfig(111, GPIO_111_GPIO111, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig P56_CFG =
-	mcu::GpioPinConfig(56, GPIO_56_GPIO56, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig P61_CFG =
+	mcu::GpioConfig(61, GPIO_61_GPIO61, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig P123_CFG =
+	mcu::GpioConfig(123, GPIO_123_GPIO123, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig P122_CFG =
+	mcu::GpioConfig(122, GPIO_122_GPIO122, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig P22_CFG =
+	mcu::GpioConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig P111_CFG =
+	mcu::GpioConfig(111, GPIO_111_GPIO111, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig P56_CFG =
+	mcu::GpioConfig(56, GPIO_56_GPIO56, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 
 
 /* ========================================================================== */
@@ -125,12 +125,12 @@ void main()
 #endif
 
 #ifdef CRD300
-	mcu::GpioPin p61(P61_CFG);
-	mcu::GpioPin p123(P123_CFG);
-	mcu::GpioPin p122(P122_CFG);
-	mcu::GpioPin p22(P22_CFG);
-	mcu::GpioPin p111(P111_CFG);
-	mcu::GpioPin p56(P56_CFG);
+	mcu::Gpio p61(P61_CFG);
+	mcu::Gpio p123(P123_CFG);
+	mcu::Gpio p122(P122_CFG);
+	mcu::Gpio p22(P22_CFG);
+	mcu::Gpio p111(P111_CFG);
+	mcu::Gpio p56(P56_CFG);
 #endif
 
 /*####################################################################################################################*/
@@ -173,12 +173,12 @@ void main()
 	/*###############*/
 	/*# CAN BY GPIO #*/
 	/*###############*/
-	mcu::GpioPinConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::GpioPinConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
-	mcu::GpioPinConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::GpioPin canbygpioTx(canbygpioTxCfg);
-	mcu::GpioPin canbygpioRx(canbygpioRxCfg);
-	mcu::GpioPin canbygpioClk(canbygpioClkCfg);
+	mcu::GpioConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
+	mcu::Gpio canbygpioTx(canbygpioTxCfg);
+	mcu::Gpio canbygpioRx(canbygpioRxCfg);
+	mcu::Gpio canbygpioClk(canbygpioClkCfg);
 	canbygpioRx.setInterrupt(GPIO_INT_XINT5);
 
 #ifdef TEST_CAN_BY_GPIO
@@ -248,11 +248,11 @@ void main()
 	Settings::SYSTEM_CONFIG = Settings::DEFAULT_CONFIG;
 
 #ifdef CRD300
-	mcu::GpioPinConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #else
-	mcu::GpioPinConfig drvFltPinCfg;
+	mcu::GpioConfig drvFltPinCfg;
 #endif
-	mcu::GpioPin drvFltPin(drvFltPinCfg);
+	mcu::Gpio drvFltPin(drvFltPinCfg);
 	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
 
 /*####################################################################################################################*/
@@ -270,14 +270,19 @@ void main()
 	/*#######*/
 	/*# ADC #*/
 	/*#######*/
-	mcu::AdcUnit mcuAdcUnit(mcu::ADC_CHANNEL_COUNT);
+	mcu::AdcConfig adcConfig =
+	{
+		.sampleWindow_ns = 200,
+	};
+
+	mcu::Adc adc(adcConfig);
 
 /*####################################################################################################################*/
 	/*#######*/
 	/*# DAC #*/
 	/*#######*/
-	mcu::DacUnit<mcu::DACA> daca;
-	mcu::DacUnit<mcu::DACB> dacb;
+	mcu::Dac<mcu::DACA> daca;
+	mcu::Dac<mcu::DACB> dacb;
 
 /*####################################################################################################################*/
 	/*#############*/
@@ -321,8 +326,8 @@ void main()
 	microcanopen::TpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoService(converter);
 	microcanopen::RpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> rpdoService(converter);
 	microcanopen::McoServer<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> mcoServer(
-			mcu::GpioPinConfig(19, GPIO_19_CANTXA),
-			mcu::GpioPinConfig(18, GPIO_18_CANRXA),
+			mcu::GpioConfig(19, GPIO_19_CANTXA),
+			mcu::GpioConfig(18, GPIO_18_CANRXA),
 			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
 			microcanopen::NodeId(0x01),
 			&tpdoService, &rpdoService, &sdoService, canIpcFlags);
@@ -355,15 +360,15 @@ void main()
 	/*###################*/
 	/*# ADC PREPARATION #*/
 	/*###################*/
-	mcuAdcUnit.enableInterrupts();
+	adc.enableInterrupts();
 
 	// wait for pending ADC INTs (after ADC calibrating) be served
 	mcu::delay_us(100);
 
 	// now PWM can be launched
-	converter->pwmUnit.acknowledgeInterrupt();
-	converter->pwmUnit.enableEventInterrupts();
-	converter->pwmUnit.enableTripInterrupts();
+	converter->pwm.acknowledgeEventInterrupt();
+	converter->pwm.enableEventInterrupts();
+	converter->pwm.enableTripInterrupts();
 
 // END of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/

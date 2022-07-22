@@ -4,8 +4,8 @@
 
 #include "F28x_Project.h"
 #include "F2837xD_Ipc_drivers.h"
-#include "mcu/support/mcusupport.h"
-#include "mcu/cputimers/mcucputimers.h"
+#include "mcu/support/mcu_support.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 #include "syslog/syslog.h"
 
 

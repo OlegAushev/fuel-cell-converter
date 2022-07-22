@@ -3,10 +3,10 @@
 #define TESTS_MCU_TEST_MCU_TEST_H_
 
 #include "emb/emb_testrunner/emb_testrunner.h"
-#include "mcu/system/mcusystem.h"
-#include "mcu/gpio/mcugpio.h"
-#include "mcu/cputimers/mcucputimers.h"
-#include "mcu/support/mcusupport.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/gpio/mcu_gpio.h"
+#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu/support/mcu_support.h"
 
 
 class McuTest

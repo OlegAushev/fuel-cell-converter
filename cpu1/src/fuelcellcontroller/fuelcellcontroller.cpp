@@ -21,7 +21,7 @@ Data Controller::s_data __attribute__((section("SHARED_FUELCELL_DATA"), retain))
 ///
 ///
 Controller::Controller(const BoostConverter* converter,
-		const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin)
+		const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin)
 	: m_converter(converter)
 	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::disable_bit_stuffing()) // TODO disable bit stuffing
 {

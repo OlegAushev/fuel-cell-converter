@@ -12,7 +12,7 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "mcu/system/mcusystem.h"
+#include "mcu/system/mcu_system.h"
 #include "emb/emb_common.h"
 
 
@@ -82,21 +82,21 @@ public:
  * @brief DAC unit class.
  */
 template <DacModule Module>
-class DacUnit : public emb::c28x::Singleton<DacUnit<Module> >
+class Dac : public emb::c28x::Singleton<Dac<Module> >
 {
 private:
 	detail::DacModuleImpl m_module;
 
 private:
-	DacUnit(const DacUnit& other);			// no copy constructor
-	DacUnit& operator=(const DacUnit& other);	// no copy assignment operator
+	Dac(const Dac& other);			// no copy constructor
+	Dac& operator=(const Dac& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU DAC unit.
 	 * @param (none)
 	 */
-	DacUnit()
-		: emb::c28x::Singleton<DacUnit<Module> >(this)
+	Dac()
+		: emb::c28x::Singleton<Dac<Module> >(this)
 		, m_module(detail::dacBases[Module])
 	{
 		DAC_setReferenceVoltage(m_module.base, DAC_REF_ADC_VREFHI);

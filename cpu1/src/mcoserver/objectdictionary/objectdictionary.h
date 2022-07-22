@@ -14,8 +14,8 @@
 
 #include "../mcodef.h"
 #include "emb/emb_math.h"
-#include "mcu/system/mcusystem.h"
-#include "mcu/cputimers/mcucputimers.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 
 // APP-SPECIFIC headers
 #include "syslog/syslog.h"

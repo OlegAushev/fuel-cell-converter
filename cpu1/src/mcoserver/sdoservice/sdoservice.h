@@ -19,8 +19,8 @@
 #include "../objectdictionary/objectdictionary.h"
 #include "emb/emb_common.h"
 #include "emb/emb_algorithm.h"
-#include "mcu/can/mcucan.h"
-#include "mcu/ipc/mcuipc.h"
+#include "mcu/can/mcu_can.h"
+#include "mcu/ipc/mcu_ipc.h"
 
 // APP-SPECIFIC headers
 #include "syslog/syslog.h"

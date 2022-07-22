@@ -2,10 +2,10 @@
 #pragma once
 
 
-#include "mcu/system/mcusystem.h"
-#include "mcu/support/mcusupport.h"
-#include "mcu/cputimers/mcucputimers.h"
-#include "mcu/spi/mcuspi.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/support/mcu_support.h"
+#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu/spi/mcu_spi.h"
 #include "emb/emb_pair.h"
 #include "emb/emb_math.h"
 

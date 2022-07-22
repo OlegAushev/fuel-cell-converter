@@ -12,8 +12,8 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "../system/mcusystem.h"
-#include "../gpio/mcugpio.h"
+#include "../system/mcu_system.h"
+#include "../gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 
 
@@ -92,14 +92,14 @@ extern const uint32_t canPieIntNums[2];
  * @brief CAN unit class.
  */
 template <CanModule Module>
-class CanUnit : public emb::c28x::Singleton<CanUnit<Module> >
+class Can : public emb::c28x::Singleton<Can<Module> >
 {
 private:
 	detail::CanModuleImpl m_module;
 
 private:
-	CanUnit(const CanUnit& other);			// no copy constructor
-	CanUnit& operator=(const CanUnit& other);	// no copy assignment operator
+	Can(const Can& other);			// no copy constructor
+	Can& operator=(const Can& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU CAN unit.
@@ -107,9 +107,9 @@ public:
 	 * @param rxPin	- MCU CAN-RX pin config
 	 * @param bitrate - CAN bus bitrate
 	 */
-	CanUnit(const GpioPinConfig& txPin, const GpioPinConfig& rxPin,
+	Can(const GpioConfig& txPin, const GpioConfig& rxPin,
 			CanBitrate bitrate, CanMode mode)
-		: emb::c28x::Singleton<CanUnit<Module> >(this)
+		: emb::c28x::Singleton<Can<Module> >(this)
 		, m_module(detail::canBases[Module], detail::canPieIntNums[Module])
 	{
 #ifdef CPU1
@@ -148,7 +148,7 @@ public:
 	 * @param rxPin - MCU CAN-RX pin config
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(const GpioPinConfig& txPin, const GpioPinConfig& rxPin)
+	static void transferControlToCpu2(const GpioConfig& txPin, const GpioConfig& rxPin)
 	{
 		_initPins(txPin, rxPin);
 		GPIO_setMasterCore(txPin.no, GPIO_CORE_CPU2);
@@ -240,7 +240,7 @@ public:
 
 protected:
 #ifdef CPU1
-	static void _initPins(const GpioPinConfig& txPin, const GpioPinConfig& rxPin)
+	static void _initPins(const GpioConfig& txPin, const GpioConfig& rxPin)
 	{
 		GPIO_setPinConfig(txPin.mux);
 		GPIO_setPinConfig(rxPin.mux);

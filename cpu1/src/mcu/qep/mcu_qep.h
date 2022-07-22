@@ -12,7 +12,7 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "../gpio/mcugpio.h"
+#include "../gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 
 
@@ -113,22 +113,22 @@ extern const uint32_t qepPieIntNums[3];
  * @brief QEP unit class.
  */
 template <QepModule Module>
-class QepUnit : public emb::c28x::Singleton<QepUnit<Module> >
+class Qep : public emb::c28x::Singleton<Qep<Module> >
 {
 private:
 	detail::QepModuleImpl m_module;
 
 private:
-	QepUnit(const QepUnit& other);			// no copy constructor
-	QepUnit& operator=(const QepUnit& other);	// no copy assignment operator
+	Qep(const Qep& other);			// no copy constructor
+	Qep& operator=(const Qep& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU QEP unit.
 	 * @param (none)
 	 */
-	QepUnit(const GpioPinConfig& qepaPin, const GpioPinConfig& qepbPin,
-			const GpioPinConfig& qepiPin, const QepConfig& cfg)
-		: emb::c28x::Singleton<QepUnit<Module> >(this)
+	Qep(const GpioConfig& qepaPin, const GpioConfig& qepbPin,
+			const GpioConfig& qepiPin, const QepConfig& cfg)
+		: emb::c28x::Singleton<Qep<Module> >(this)
 		, m_module(detail::qepBases[Module], cfg.intFlags, detail::qepPieIntNums[Module])
 	{
 #ifdef CPU1
@@ -203,8 +203,8 @@ public:
 
 protected:
 #ifdef CPU1
-	static void _initPins(const GpioPinConfig& qepaPin, const GpioPinConfig& qepbPin,
-			const GpioPinConfig& qepiPin)
+	static void _initPins(const GpioConfig& qepaPin, const GpioConfig& qepbPin,
+			const GpioConfig& qepiPin)
 	{
 		GPIO_setPadConfig(qepaPin.no, GPIO_PIN_TYPE_STD);
 		GPIO_setPinConfig(qepaPin.mux);

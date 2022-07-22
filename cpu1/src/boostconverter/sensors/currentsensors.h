@@ -10,8 +10,9 @@
 #pragma once
 
 
-#include "mcu/adc/mcuadc.h"
+#include "mcu/adc/mcu_adc.h"
 #include "emb/emb_common.h"
+#include "emb/emb_array.h"
 
 
 /// @addtogroup boost_converter_sensors
@@ -30,7 +31,7 @@ public:
 		SECOND
 	};
 
-	mcu::AdcUnit* adcUnit;
+	emb::Array<mcu::AdcChannel, 2> adcChannel;
 private:
 	bool m_ready;
 	float m_zeroError;
@@ -45,8 +46,10 @@ public:
 	 * @param (none)
 	 */
 	InCurrentSensor()
-		: adcUnit(mcu::AdcUnit::instance())
 	{
+		adcChannel[FIRST].init(mcu::ADC_CURRENT_IN_FIRST);
+		adcChannel[SECOND].init(mcu::ADC_CURRENT_IN_SECOND);
+
 		m_ready = false;
 		m_zeroError = 0;
 		calibrate();
@@ -54,31 +57,22 @@ public:
 
 	/**
 	 * @brief Starts ADC conversion.
-	 * @param (none)
+	 * @param no - current measurement number
 	 * @return (none)
 	 */
-	void run() const
+	void run(Measurement no) const
 	{
-		adcUnit->startCurrentIn();
+		adcChannel[no].start();
 	}
 
 	/**
 	 * @brief Returns current value.
-	 * @param phase - phase
+	 * @param no - current measurement number
 	 * @return Current value.
 	 */
 	float read(Measurement no) const
 	{
-		uint16_t rawData;
-		switch (no)
-		{
-		case FIRST:
-			rawData = adcUnit->read(mcu::ADC_CURRENT_IN_FIRST);
-			break;
-		case SECOND:
-			rawData = adcUnit->read(mcu::ADC_CURRENT_IN_SECOND);
-			break;
-		}
+		uint16_t rawData = adcChannel[no].read();
 #ifdef CRD300
 		return 800.f * (float(rawData) / 4095.f) - 400.f - m_zeroError;
 #else
@@ -123,11 +117,11 @@ private:
 
 		for (size_t i = 0; i < CALIBRATION_CYCLES; ++i)
 		{
-			run();
-			while (!adcUnit->interruptPending(mcu::ADC_IRQ_CURRENT_IN_FIRST))
+			run(FIRST);
+			while (!mcu::Adc::instance()->interruptPending(mcu::ADC_IRQ_CURRENT_IN_FIRST))
 			{  /* WAIT */ }
 			sum += read(FIRST);
-			adcUnit->clearInterruptStatus(mcu::ADC_IRQ_CURRENT_IN_FIRST);
+			mcu::Adc::instance()->clearInterruptStatus(mcu::ADC_IRQ_CURRENT_IN_FIRST);
 			mcu::delay_us(10);
 		}
 

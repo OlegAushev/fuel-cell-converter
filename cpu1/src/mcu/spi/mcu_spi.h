@@ -12,7 +12,7 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "../gpio/mcugpio.h"
+#include "../gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 
 
@@ -105,15 +105,15 @@ extern const uint32_t spiRxPieIntNums[3];
  * @brief SPI unit class.
  */
 template <SpiModule Module>
-class SpiUnit : public emb::c28x::Singleton<SpiUnit<Module> >
+class Spi : public emb::c28x::Singleton<Spi<Module> >
 {
 private:
 	detail::SpiModuleImpl m_module;
 	SpiWordLen m_wordLen;
 
 private:
-	SpiUnit(const SpiUnit& other);			// no copy constructor
-	SpiUnit& operator=(const SpiUnit& other);	// no copy assignment operator
+	Spi(const Spi& other);			// no copy constructor
+	Spi& operator=(const Spi& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU SPI unit.
@@ -123,10 +123,10 @@ public:
 	 * @param csPin
 	 * @param cfg
 	 */
-	SpiUnit(const GpioPinConfig& mosiPin, const GpioPinConfig& misoPin,
-			const GpioPinConfig& clkPin, const GpioPinConfig& csPin,
+	Spi(const GpioConfig& mosiPin, const GpioConfig& misoPin,
+			const GpioConfig& clkPin, const GpioConfig& csPin,
 			const SpiConfig& cfg)
-		: emb::c28x::Singleton<SpiUnit<Module> >(this)
+		: emb::c28x::Singleton<Spi<Module> >(this)
 		, m_module(detail::spiBases[Module], detail::spiRxPieIntNums[Module])
 	{
 		assert((cfg.dataSize >= 1) && (cfg.dataSize <= 16));
@@ -160,8 +160,8 @@ public:
 	 * @param csMode
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(const GpioPinConfig& mosiPin, const GpioPinConfig& misoPin,
-			const GpioPinConfig& clkPin, const GpioPinConfig& csPin)
+	static void transferControlToCpu2(const GpioConfig& mosiPin, const GpioConfig& misoPin,
+			const GpioConfig& clkPin, const GpioConfig& csPin)
 	{
 		_initPins(mosiPin, misoPin, clkPin, csPin);
 		GPIO_setMasterCore(mosiPin.no, GPIO_CORE_CPU2);
@@ -238,7 +238,7 @@ public:
 		{
 		case SPI_WORD_8BIT:
 			uint16_t byte8[sizeof(T)*2];
-			emb::c28x::to_8bit_bytes<T>(byte8, data);
+			emb::c28x::to_bytes8<T>(byte8, data);
 			for (size_t i = 0; i < sizeof(T)*2; ++i)
 			{
 				SPI_writeDataBlockingFIFO(m_module.base, byte8[i] << 8);
@@ -321,8 +321,8 @@ public:
 	}
 
 protected:
-	static void _initPins(const GpioPinConfig& mosiPin, const GpioPinConfig& misoPin,
-			const GpioPinConfig& clkPin, const GpioPinConfig& csPin)
+	static void _initPins(const GpioConfig& mosiPin, const GpioConfig& misoPin,
+			const GpioConfig& clkPin, const GpioConfig& csPin)
 	{
 		GPIO_setPinConfig(mosiPin.mux);
 		//GPIO_setPadConfig(mosiPin.no, GPIO_PIN_TYPE_PULLUP);

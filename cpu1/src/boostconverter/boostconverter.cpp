@@ -8,13 +8,13 @@
 
 
 #ifndef CRD300
-const mcu::GpioPinConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioPinConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #else
-const mcu::GpioPinConfig rstPinCfg;
-const mcu::GpioPinConfig errPinCfg;
-const mcu::GpioPinConfig relPinCfg;
+const mcu::GpioConfig rstPinCfg;
+const mcu::GpioConfig errPinCfg;
+const mcu::GpioConfig relPinCfg;
 #endif
 
 
@@ -38,18 +38,18 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, RST_PIN(rstPinCfg)
 	, ERR_PIN(errPinCfg)
 	, REL_PIN(relPinCfg)
-	, pwmUnit(pwmConfig)
+	, pwm(pwmConfig)
 {
 #ifdef CRD300
-	pwmUnit.initTzSubmodule(FLT_PIN, XBAR_INPUT1);
+	pwm.initTzSubmodule(FLT_PIN, XBAR_INPUT1);
 #endif
-	pwmUnit.registerEventInterruptHandler(onPwmEventInterrupt);
-	pwmUnit.registerTripInterruptHandler(onPwmTripInterrupt);
+	pwm.registerEventInterruptHandler(onPwmEventInterrupt);
+	pwm.registerTripInterruptHandler(onPwmTripInterrupt);
 
-	inVoltageSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_IN, onAdcVoltageInInterrupt);
-	outVoltageSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_OUT, onAdcVoltageOutInterrupt);
-	inCurrentSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_FIRST, onAdcCurrentInFirstInterrupt);
-	inCurrentSensor.adcUnit->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_SECOND, onAdcCurrentInSecondInterrupt);
+	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_IN, onAdcVoltageInInterrupt);
+	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_OUT, onAdcVoltageOutInterrupt);
+	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_FIRST, onAdcCurrentInFirstInterrupt);
+	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_SECOND, onAdcCurrentInSecondInterrupt);
 
 #ifndef CRD300
 	RST_PIN.set();
@@ -75,7 +75,7 @@ void BoostConverter::reset()
 __interrupt void BoostConverter::onPwmEventInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(22);
-	BoostConverter::instance()->pwmUnit.acknowledgeInterrupt();
+	BoostConverter::instance()->pwm.acknowledgeEventInterrupt();
 }
 
 
@@ -84,7 +84,7 @@ __interrupt void BoostConverter::onPwmEventInterrupt()
 ///
 __interrupt void BoostConverter::onPwmTripInterrupt()
 {
-	BoostConverter::instance()->pwmUnit.acknowledgeTripInterrupt();
+	BoostConverter::instance()->pwm.acknowledgeTripInterrupt();
 }
 
 
@@ -108,7 +108,7 @@ __interrupt void BoostConverter::onAdcVoltageInInterrupt()
 		// TODO Syslog::setFault(Fault::UVP_IN);
 	}
 
-	converter->inVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_IN);
+	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_IN);
 }
 
 
@@ -138,7 +138,7 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 		Syslog::resetWarning(Warning::BATTERY_CHARGED);
 	}
 
-	converter->outVoltageSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_OUT);
+	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_VOLTAGE_OUT);
 }
 
 
@@ -161,7 +161,7 @@ __interrupt void BoostConverter::onAdcCurrentInFirstInterrupt()
 		Syslog::setFault(Fault::OCP_IN);
 	}
 
-	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_FIRST);
+	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_FIRST);
 }
 
 
@@ -199,10 +199,10 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 				converter->m_currentController.output(),
 				converter->m_currentInFilter.output());
 
-		converter->pwmUnit.setDutyCycle(converter->m_dutycycleController.output());
+		converter->pwm.setDutyCycle(converter->m_dutycycleController.output());
 	}
 
-	converter->inCurrentSensor.adcUnit->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_SECOND);
+	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_SECOND);
 }
 
 

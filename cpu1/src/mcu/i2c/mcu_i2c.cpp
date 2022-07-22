@@ -4,7 +4,7 @@
  */
 
 
-#include "mcui2c.h"
+#include "mcu_i2c.h"
 
 
 namespace mcu {

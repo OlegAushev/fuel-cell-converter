@@ -4,7 +4,7 @@
  */
 
 
-#include "mcuipc.h"
+#include "mcu_ipc.h"
 
 
 #if (defined(DUALCORE) && defined(CPU1))

@@ -13,7 +13,7 @@
 #include "driverlib.h"
 #include "device.h"
 #include "emb/emb_common.h"
-#include "../system/mcusystem.h"
+#include "../system/mcu_system.h"
 
 
 namespace mcu {
@@ -54,7 +54,10 @@ public:
 	 * @param period - task period in milliseconds
 	 * @return (none)
 	 */
-	static void setTaskPeriod(size_t index, uint64_t period) { m_taskPeriods[index] = period; }
+	static void setTaskPeriod(size_t index, uint64_t period)
+	{
+		m_taskPeriods[index] = period;
+	}
 
 	/**
 	 * @brief Registers periodic task.
@@ -62,37 +65,9 @@ public:
 	 * @param task - pointer to task function
 	 * @return (none)
 	 */
-	static void registerTask(size_t index, ClockTaskStatus (*task)()) { m_tasks[index] = task; }
-
-	/**
-	 * @brief Checks and runs periodic and delayed tasks.
-	 * @param (none)
-	 * @return (none)
-	 */
-	static void runTasks()
+	static void registerTask(size_t index, ClockTaskStatus (*task)())
 	{
-		for (size_t i = 0; i < TASK_COUNT; ++i)
-		{
-			if (m_taskPeriods[i] != 0)
-			{
-				if (now() >= (m_taskTimestamps[i] + m_taskPeriods[i]))
-				{
-					if (m_tasks[i]() == CLOCK_TASK_SUCCESS)
-					{
-						m_taskTimestamps[i] = now();
-					}
-				}
-			}
-		}
-
-		if (m_delayedTaskDelay != 0)
-		{
-			if (now() >= (m_delayedTaskStart + m_delayedTaskDelay))
-			{
-				m_delayedTask();
-				m_delayedTaskDelay = 0;
-			}
-		}
+		m_tasks[index] = task;
 	}
 
 /* ========================================================================== */
@@ -110,35 +85,50 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void enableWatchdog() { m_watchdogEnabled = true; }
+	static void enableWatchdog()
+	{
+		m_watchdogEnabled = true;
+	}
 
 	/**
 	 * @brief Disables watchdog.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void disableWatchdog() {m_watchdogEnabled = false; }
+	static void disableWatchdog()
+	{
+		m_watchdogEnabled = false;
+	}
 
 	/**
 	 * @brief Sets watchdog bound.
 	 * @param watchdogBoundMsec - bound in milliseconds
 	 * @return (none)
 	 */
-	static void setWatchdogPeriod(uint64_t watchdogBound_ms) { m_watchdogPeriod = watchdogBound_ms; }
+	static void setWatchdogPeriod(uint64_t watchdogBound_ms)
+	{
+		m_watchdogPeriod = watchdogBound_ms;
+	}
 
 	/**
 	 * @brief Resets watchdog timer.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void resetWatchdogTimer() { m_watchdogTimer = 0; }
+	static void resetWatchdogTimer()
+	{
+		m_watchdogTimer = 0;
+	}
 
 	/**
 	 * @brief Checks if watchdog timeout is detected.
 	 * @param (none)
 	 * @return \c true if timeout is detected, \c false otherwise.
 	 */
-	static bool watchdogTimeoutDetected() { return m_watchdogTimeoutDetected; }
+	static bool watchdogTimeoutDetected()
+	{
+		return m_watchdogTimeoutDetected;
+	}
 
 	/**
 	 * @brief Resets watchdog.
@@ -156,7 +146,10 @@ public:
 	 * @param task - pointer to task function
 	 * @return (none)
 	 */
-	static void registerWatchdogTask(ClockTaskStatus (*task)()) { m_watchdogTask = task; }
+	static void registerWatchdogTask(ClockTaskStatus (*task)())
+	{
+		m_watchdogTask = task;
+	}
 
 /* ========================================================================== */
 /* = Delayed Task = */
@@ -183,30 +176,6 @@ private:
 	SystemClock();						// no constructor
 	SystemClock(const SystemClock& other);			// no copy constructor
 	SystemClock& operator=(const SystemClock& other);	// no copy assignment operator
-protected:
-	/**
-	 * @brief
-	 */
-	static __interrupt void onInterrupt()
-	{
-		m_time += TIME_STEP;
-
-		if (m_watchdogEnabled == true)
-		{
-			m_watchdogTimer += TIME_STEP;
-			if (m_watchdogTimer >= m_watchdogPeriod)
-			{
-				m_watchdogTimeoutDetected = true;
-				if (m_watchdogTask() == CLOCK_TASK_SUCCESS)
-				{
-					resetWatchdog();
-				}
-			}
-		}
-
-		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
-	}
-
 public:
 	/**
 	 * @brief Initializes clock.
@@ -220,14 +189,20 @@ public:
 	 * @param (none)
 	 * @return A time point representing the current time in milliseconds.
 	 */
-	static uint64_t now() { return m_time; }
+	static uint64_t now()
+	{
+		return m_time;
+	}
 
 	/**
 	 * @brief Returns clock step.
 	 * @param (none)
 	 * @return Clock step in milliseconds.
 	 */
-	static uint32_t step() { return TIME_STEP; }
+	static uint32_t step()
+	{
+		return TIME_STEP;
+	}
 
 	/**
 	 * @brief Resets clock.
@@ -242,6 +217,21 @@ public:
 			m_taskTimestamps[i] = now();
 		}
 	}
+
+	/**
+	 * @brief Checks and runs periodic and delayed tasks.
+	 * @param (none)
+	 * @return (none)
+	 */
+	static void runTasks();
+
+protected:
+	/**
+	 * @brief Main system clock ISR.
+	 * @param (none)
+	 * @return (none)
+	 */
+	static __interrupt void onInterrupt();
 };
 
 
@@ -260,28 +250,17 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void init(uint32_t period_us)
-	{
-		if (initialized()) return;
-
-		CPUTimer_stopTimer(CPUTIMER1_BASE);             	// Make sure timer is stopped
-		CPUTimer_setPeriod(CPUTIMER1_BASE, 0xFFFFFFFF); 	// Initialize timer period to maximum
-		CPUTimer_setPreScaler(CPUTIMER1_BASE, 0);       	// Initialize pre-scale counter to divide by 1 (SYSCLKOUT)
-		CPUTimer_reloadTimerCounter(CPUTIMER1_BASE);    	// Reload counter register with period value
-
-		m_period = (uint32_t)(mcu::sysclkFreq() / 1000000) * period_us - 1;
-		CPUTimer_setPeriod(CPUTIMER1_BASE, m_period);
-		CPUTimer_setEmulationMode(CPUTIMER1_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
-
-		setInitialized();
-	}
+	static void init(uint32_t period_us);
 
 	/**
 	 * @brief Returns systick timer counter value.
 	 * @param (none)
 	 * @return Systick timer counter value.
 	 */
-	static uint32_t counter() { return CPUTimer_getTimerCount(CPUTIMER1_BASE); };
+	static uint32_t counter()
+	{
+		return CPUTimer_getTimerCount(CPUTIMER1_BASE);
+	}
 
 	/**
 	 * @brief Returns a time point representing the current point in time.
@@ -298,14 +277,20 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void start() { CPUTimer_startTimer(CPUTIMER1_BASE); }
+	static void start()
+	{
+		CPUTimer_startTimer(CPUTIMER1_BASE);
+	}
 
 	/**
 	 * @brief Stops systick timer.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void stop() { CPUTimer_stopTimer(CPUTIMER1_BASE); }
+	static void stop()
+	{
+		CPUTimer_stopTimer(CPUTIMER1_BASE);
+	}
 
 	/**
 	 * @brief Registers systick timer interrupt handler.

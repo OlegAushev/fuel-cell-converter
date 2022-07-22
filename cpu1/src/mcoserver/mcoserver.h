@@ -12,9 +12,9 @@
 
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
-#include "mcu/can/mcucan.h"
-#include "mcu/ipc/mcuipc.h"
-#include "mcu/cputimers/mcucputimers.h"
+#include "mcu/can/mcu_can.h"
+#include "mcu/ipc/mcu_ipc.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 #include "mcodef.h"
 #include "tpdoservice/tpdoservice.h"
 #include "rpdoservice/rpdoservice.h"
@@ -50,7 +50,7 @@ template <mcu::CanModule Module, mcu::IpcMode Ipc, emb::MasterSlaveMode Mode>
 class McoServer : public emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >
 {
 private:
-	mcu::CanUnit<Module>* m_canUnit;
+	mcu::Can<Module>* m_can;
 	TpdoService<Module, Ipc, Mode>* m_tpdoService;
 	RpdoService<Module, Ipc, Mode>* m_rpdoService;
 	SdoService<Module, Ipc, Mode>* m_sdoService;
@@ -83,7 +83,7 @@ public:
 			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcFlags& ipcFlags)
 		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
-		, m_canUnit(NULL)
+		, m_can(NULL)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
@@ -114,7 +114,7 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(mcu::GpioPinConfig txPin, mcu::GpioPinConfig rxPin,
+	McoServer(mcu::GpioConfig txPin, mcu::GpioConfig rxPin,
 			mcu::CanBitrate bitrate, mcu::CanMode mode,
 			NodeId nodeId,
 			TpdoService<Module, Ipc, Mode>* tpdoService,
@@ -141,18 +141,18 @@ public:
 		sdoService->initIpcFlags(RSDO_RECEIVED, TSDO_READY);
 
 		m_state = INITIALIZING;
-		m_canUnit = new mcu::CanUnit<Module>(txPin, rxPin, bitrate, mode);
+		m_can = new mcu::Can<Module>(txPin, rxPin, bitrate, mode);
 
 		initMsgObjects();
 		for (size_t i = 1; i < COB_TYPE_COUNT; ++i)
 		{
-			m_canUnit->setupMessageObject(m_msgObjects[i]);
+			m_can->setupMessageObject(m_msgObjects[i]);
 		}
 
 		m_heartbeatPeriod = 0;
 		m_tpdoPeriods.fill(0);
 
-		m_canUnit->registerInterruptHandler(onFrameReceived);
+		m_can->registerInterruptHandler(onFrameReceived);
 		m_state = PRE_OPERATIONAL;
 	}
 
@@ -161,9 +161,9 @@ public:
 	 */
 	~McoServer()
 	{
-		if (m_canUnit)
+		if (m_can)
 		{
-			delete m_canUnit;
+			delete m_can;
 		}
 	}
 
@@ -200,7 +200,7 @@ public:
 	{
 		size_t RPDOx = RPDO1 + rpdoNum * 2;
 		m_msgObjects[RPDOx].frameId = frameId;
-		m_canUnit->setupMessageObject(m_msgObjects[RPDOx]);
+		m_can->setupMessageObject(m_msgObjects[RPDOx]);
 	}
 
 	/**
@@ -210,7 +210,7 @@ public:
 	 */
 	void enable()
 	{
-		m_canUnit->enableInterrupts();
+		m_can->enableInterrupts();
 		m_state = OPERATIONAL;
 	}
 
@@ -221,7 +221,7 @@ public:
 	 */
 	void disable()
 	{;
-		m_canUnit->disableRxInterrupt();
+		m_can->disableRxInterrupt();
 		m_state = STOPPED;
 	}
 
@@ -308,7 +308,7 @@ public:
 		if (!mcu::isIpcFlagSet(TSDO_READY, Ipc)) return;
 
 		emb::c28x::to_bytes8<CobSdo>(m_msgObjects[TSDO].data, SdoService<Module, Ipc, Mode>::tsdoData());
-		m_canUnit->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
+		m_can->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
 
 		mcu::resetIpcFlag(TSDO_READY, Ipc);
 	}
@@ -361,7 +361,7 @@ protected:
 	{
 		uint64_t heartbeatData = m_state;
 		emb::c28x::to_bytes8<uint64_t>(m_msgObjects[HEARTBEAT].data, heartbeatData);
-		m_canUnit->send(HEARTBEAT, m_msgObjects[HEARTBEAT].data, cobDataLen[HEARTBEAT]);
+		m_can->send(HEARTBEAT, m_msgObjects[HEARTBEAT].data, cobDataLen[HEARTBEAT]);
 	}
 
 	/**
@@ -374,7 +374,7 @@ protected:
 	{
 		size_t TPDOx = TPDO1 + tpdoNum * 2;
 		emb::c28x::to_bytes8<uint64_t>(m_msgObjects[TPDOx].data, tpdoData);
-		m_canUnit->send(TPDOx, m_msgObjects[TPDOx].data, cobDataLen[TPDOx]);
+		m_can->send(TPDOx, m_msgObjects[TPDOx].data, cobDataLen[TPDOx]);
 	}
 
 /* ========================================================================== */
@@ -389,10 +389,10 @@ protected:
 	static __interrupt void onFrameReceived()
 	{
 		McoServer<Module, Ipc, Mode>* server = McoServer<Module, Ipc, Mode>::instance();
-		mcu::CanUnit<Module>* canUnit = mcu::CanUnit<Module>::instance();
+		mcu::Can<Module>* can = mcu::Can<Module>::instance();
 
-		uint32_t interruptCause = CAN_getInterruptCause(canUnit->base());
-		uint16_t status = CAN_getStatus(canUnit->base());
+		uint32_t interruptCause = CAN_getInterruptCause(can->base());
+		uint16_t status = CAN_getStatus(can->base());
 
 		switch (interruptCause)
 		{
@@ -414,7 +414,7 @@ protected:
 
 		case RPDO1:
 		{
-			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
 			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo1(rawPdoMsg);
@@ -423,7 +423,7 @@ protected:
 
 		case RPDO2:
 		{
-			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
 			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo2(rawPdoMsg);
@@ -432,7 +432,7 @@ protected:
 
 		case RPDO3:
 		{
-			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
 			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo3(rawPdoMsg);
@@ -441,7 +441,7 @@ protected:
 
 		case RPDO4:
 		{
-			canUnit->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
 			uint64_t rawPdoMsg = 0;
 			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
 			server->m_rpdoService->processRpdo4(rawPdoMsg);
@@ -450,7 +450,7 @@ protected:
 
 		case RSDO:
 		{
-			canUnit->recv(RSDO, server->m_msgObjects[RSDO].data);
+			can->recv(RSDO, server->m_msgObjects[RSDO].data);
 			uint64_t rawSdoMsg = 0;
 			emb::c28x::from_bytes8<uint64_t>(rawSdoMsg, server->m_msgObjects[RSDO].data);
 			server->m_sdoService->processRsdo(rawSdoMsg);
@@ -461,7 +461,7 @@ protected:
 			break;
 		}
 
-		canUnit->acknowledgeInterrupt(interruptCause);
+		can->acknowledgeInterrupt(interruptCause);
 	}
 };
 

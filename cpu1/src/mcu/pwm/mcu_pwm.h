@@ -13,7 +13,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "mcu/gpio/mcugpio.h"
+#include "mcu/gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 #include <math.h>
@@ -155,7 +155,7 @@ extern const uint32_t pwmPinOutBConfigs[12];
  * @brief PWM unit class.
  */
 template <PwmPhaseCount PhaseCount>
-class PwmUnit
+class Pwm
 {
 private:
 	// there is a divider ( EPWMCLKDIV ) of the system clock
@@ -174,15 +174,15 @@ private:
 	uint16_t m_phaseShift[PhaseCount];	// TBPHS registers values
 
 private:
-	PwmUnit(const PwmUnit& other);			// no copy constructor
-	PwmUnit& operator=(const PwmUnit& other);	// no copy assignment operator
+	Pwm(const Pwm& other);			// no copy constructor
+	Pwm& operator=(const Pwm& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU PWM unit.
-	 * @param config - PWM config
+	 * @param cfg - PWM config
 	 * @param (none)
 	 */
-	PwmUnit(const PwmConfig<PhaseCount>& cfg)
+	Pwm(const PwmConfig<PhaseCount>& cfg)
 		: TBCLK_FREQ(PWMCLK_FREQ / cfg.clockPrescaler)
 		, TBCLK_CYCLE_NS(PWMCLK_CYCLE_NS * cfg.clockPrescaler)
 		, m_counterMode(cfg.counterMode)
@@ -458,7 +458,7 @@ public:
 	 * @param pin - trip input
 	 * @return (none)
 	 */
-	void initTzSubmodule(const mcu::GpioPin& pin, XBAR_InputNum xbarInput)
+	void initTzSubmodule(const mcu::Gpio& pin, XBAR_InputNum xbarInput)
 	{
 		assert(static_cast<uint32_t>(xbarInput) <= static_cast<uint32_t>(XBAR_INPUT3));
 
@@ -744,7 +744,7 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void acknowledgeInterrupt() const
+	void acknowledgeEventInterrupt() const
 	{
 		EPWM_clearEventTriggerInterruptFlag(m_module.base[0]);
 		Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP3);

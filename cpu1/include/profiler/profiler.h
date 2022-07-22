@@ -5,7 +5,7 @@
 #include "driverlib.h"
 #include "device.h"
 #include "emb/emb_common.h"
-#include "mcu/gpio/mcugpio.h"
+#include "mcu/gpio/mcu_gpio.h"
 
 
 enum LoggerPinMode
@@ -24,7 +24,7 @@ class DurationLoggerPin
 private:
 	const uint32_t m_pin;
 public:
-	explicit DurationLoggerPin(const mcu::GpioPin& pin)
+	explicit DurationLoggerPin(const mcu::Gpio& pin)
 	: m_pin(pin.config().no)
 	{
 		switch (Mode)
@@ -77,7 +77,7 @@ public:
  * @param pin
  * @param masterCore
  */
-inline void initDurationLoggerPin(mcu::GpioPin& pin, GPIO_CoreSelect masterCore)
+inline void initDurationLoggerPin(mcu::Gpio& pin, GPIO_CoreSelect masterCore)
 {
 	pin.setMasterCore(masterCore);
 }

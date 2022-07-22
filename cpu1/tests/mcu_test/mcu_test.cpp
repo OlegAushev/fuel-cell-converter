@@ -7,11 +7,11 @@
 void McuTest::GpioTest()
 {
 #ifdef _LAUNCHXL_F28379D
-	mcu::GpioPinConfig ledBlueCfg(31, GPIO_31_GPIO31, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-	mcu::GpioPinConfig ledRedCfg(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
+	mcu::GpioConfig ledBlueCfg(31, GPIO_31_GPIO31, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
+	mcu::GpioConfig ledRedCfg(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 
-	mcu::GpioPin ledBlue(ledBlueCfg);
-	mcu::GpioPin ledRed(ledRedCfg);
+	mcu::Gpio ledBlue(ledBlueCfg);
+	mcu::Gpio ledRed(ledRedCfg);
 
 	mcu::turnLedOff(mcu::LED_BLUE);
 	mcu::turnLedOff(mcu::LED_RED);
@@ -44,13 +44,13 @@ void McuTest::GpioTest()
 #endif
 
 #ifdef _LAUNCHXL_F28379D
-	mcu::GpioPinConfig outCfg(27, GPIO_27_GPIO27, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-	mcu::GpioPinConfig in1Cfg(25, GPIO_25_GPIO25, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-	mcu::GpioPinConfig in2Cfg(25, GPIO_25_GPIO25, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
+	mcu::GpioConfig outCfg(27, GPIO_27_GPIO27, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
+	mcu::GpioConfig in1Cfg(25, GPIO_25_GPIO25, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
+	mcu::GpioConfig in2Cfg(25, GPIO_25_GPIO25, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 
-	mcu::GpioPin out(outCfg);
-	mcu::GpioPin in1(in1Cfg);
-	mcu::PinDebouncer db1(in1, 10, 20, 30);
+	mcu::Gpio out(outCfg);
+	mcu::Gpio in1(in1Cfg);
+	mcu::GpioDebouncer db1(in1, 10, 20, 30);
 
 	EMB_ASSERT_EQUAL(in1.read(), mcu::PIN_INACTIVE);
 	EMB_ASSERT_EQUAL(db1.state(), mcu::PIN_INACTIVE);
@@ -88,8 +88,8 @@ void McuTest::GpioTest()
 
 
 	out.set(mcu::PIN_INACTIVE);
-	mcu::GpioPin in2(in2Cfg);
-	mcu::PinDebouncer db2(in2, 10, 40, 20);
+	mcu::Gpio in2(in2Cfg);
+	mcu::GpioDebouncer db2(in2, 10, 40, 20);
 	EMB_ASSERT_EQUAL(in2.read(), mcu::PIN_ACTIVE);
 	EMB_ASSERT_EQUAL(db2.state(), mcu::PIN_INACTIVE);
 	EMB_ASSERT_TRUE(!db2.stateChanged());

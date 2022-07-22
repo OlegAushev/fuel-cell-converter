@@ -4,7 +4,7 @@
  */
 
 
-#include "mcuqep.h"
+#include "mcu_qep.h"
 
 
 namespace mcu {

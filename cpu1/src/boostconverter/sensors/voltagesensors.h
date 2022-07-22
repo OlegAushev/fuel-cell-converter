@@ -7,7 +7,7 @@
 #pragma once
 
 
-#include "mcu/adc/mcuadc.h"
+#include "mcu/adc/mcu_adc.h"
 #include "emb/emb_common.h"
 
 
@@ -21,7 +21,7 @@
 class InVoltageSensor
 {
 public:
-	mcu::AdcUnit* adcUnit;
+	mcu::AdcChannel adcChannel;
 private:
 	bool m_ready;
 	InVoltageSensor(const InVoltageSensor& other);			// no copy constructor
@@ -32,7 +32,7 @@ public:
 	 * @param (none)
 	 */
 	InVoltageSensor()
-		: adcUnit(mcu::AdcUnit::instance())
+		: adcChannel(mcu::ADC_CURRENT_IN_FIRST)
 	{
 		m_ready = false;
 	}
@@ -44,7 +44,7 @@ public:
 	 */
 	void run()
 	{
-		adcUnit->startVoltageIn();
+		adcChannel.start();
 	}
 
 	/**
@@ -54,7 +54,7 @@ public:
 	 */
 	float read() const
 	{
-		uint16_t rawData = adcUnit->voltageIn();
+		uint16_t rawData = adcChannel.read();
 #ifdef CRD300
 		return 2400.f * (float(rawData) / 4095.f) - 1200.f;
 #else
@@ -100,7 +100,7 @@ public:
 class OutVoltageSensor
 {
 public:
-	mcu::AdcUnit* adcUnit;
+	mcu::AdcChannel adcChannel;
 private:
 	bool m_ready;
 	OutVoltageSensor(const OutVoltageSensor& other);			// no copy constructor
@@ -111,7 +111,7 @@ public:
 	 * @param (none)
 	 */
 	OutVoltageSensor()
-		: adcUnit(mcu::AdcUnit::instance())
+		: adcChannel(mcu::ADC_VOLTAGE_OUT)
 	{
 		m_ready = false;
 	}
@@ -123,7 +123,7 @@ public:
 	 */
 	void run() const
 	{
-		adcUnit->startVoltageOut();
+		adcChannel.start();
 	}
 
 	/**
@@ -133,7 +133,7 @@ public:
 	 */
 	float read() const
 	{
-		uint16_t rawData = adcUnit->voltageOut();
+		uint16_t rawData = adcChannel.read();
 #ifdef CRD300
 		return 1200.f * (float(rawData) / 4095.f);
 #else

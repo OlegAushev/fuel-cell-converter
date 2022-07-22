@@ -3,7 +3,7 @@
 #include "emb/tests/emb_test.h"
 
 #include "mcu_test/mcu_test.h"
-#include "mcu/adc/mcuadc.h"
+#include "mcu/adc/mcu_adc.h"
 #include "mcoserver_test/tpdoservice_test/tpdoservice_test.h"
 #include "mcoserver_test/rpdoservice_test/rpdoservice_test.h"
 #include "mcoserver_test/sdoservice_test/sdoservice_test.h"
@@ -16,8 +16,13 @@ void RUN_TESTS()
 #endif
 	Syslog::init(Syslog::IpcFlags());
 	mcu::SystemClock::init();
-	mcu::AdcUnit mcuAdcUnit(mcu::ADC_CHANNEL_COUNT);
-	mcuAdcUnit.enableInterrupts();
+
+	mcu::AdcConfig adcConfig =
+	{
+		.sampleWindow_ns = 200,
+	};
+	mcu::Adc adc(adcConfig);
+	adc.enableInterrupts();
 
 	for (size_t i = 0; i < 10; ++i)
 	{

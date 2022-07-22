@@ -14,7 +14,7 @@
 #include "device.h"
 
 #include "../mcodef.h"
-#include "mcu/can/mcucan.h"
+#include "mcu/can/mcu_can.h"
 
 // APP-SPECIFIC headers
 #include "syslog/syslog.h"

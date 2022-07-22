@@ -4,7 +4,7 @@
  */
 
 
-#include "mcucputimers.h"
+#include "mcu_cputimers.h"
 
 
 namespace mcu {
@@ -79,7 +79,81 @@ void SystemClock::init()
 ///
 ///
 ///
+void SystemClock::runTasks()
+{
+	for (size_t i = 0; i < TASK_COUNT; ++i)
+	{
+		if (m_taskPeriods[i] != 0)
+		{
+			if (now() >= (m_taskTimestamps[i] + m_taskPeriods[i]))
+			{
+				if (m_tasks[i]() == CLOCK_TASK_SUCCESS)
+				{
+					m_taskTimestamps[i] = now();
+				}
+			}
+		}
+	}
+
+	if (m_delayedTaskDelay != 0)
+	{
+		if (now() >= (m_delayedTaskStart + m_delayedTaskDelay))
+		{
+			m_delayedTask();
+			m_delayedTaskDelay = 0;
+		}
+	}
+}
+
+
+///
+///
+///
+__interrupt void SystemClock::onInterrupt()
+{
+	m_time += TIME_STEP;
+
+	if (m_watchdogEnabled == true)
+	{
+		m_watchdogTimer += TIME_STEP;
+		if (m_watchdogTimer >= m_watchdogPeriod)
+		{
+			m_watchdogTimeoutDetected = true;
+			if (m_watchdogTask() == CLOCK_TASK_SUCCESS)
+			{
+				resetWatchdog();
+			}
+		}
+	}
+
+	Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
+}
+
+
+/*####################################################################################################################*/
+
+
 uint32_t HighResolutionClock::m_period;
+
+
+///
+///
+///
+void HighResolutionClock::init(uint32_t period_us)
+{
+	if (initialized()) return;
+
+	CPUTimer_stopTimer(CPUTIMER1_BASE);             	// Make sure timer is stopped
+	CPUTimer_setPeriod(CPUTIMER1_BASE, 0xFFFFFFFF); 	// Initialize timer period to maximum
+	CPUTimer_setPreScaler(CPUTIMER1_BASE, 0);       	// Initialize pre-scale counter to divide by 1 (SYSCLKOUT)
+	CPUTimer_reloadTimerCounter(CPUTIMER1_BASE);    	// Reload counter register with period value
+
+	m_period = (uint32_t)(mcu::sysclkFreq() / 1000000) * period_us - 1;
+	CPUTimer_setPeriod(CPUTIMER1_BASE, m_period);
+	CPUTimer_setEmulationMode(CPUTIMER1_BASE, CPUTIMER_EMULATIONMODE_STOPAFTERNEXTDECREMENT);
+
+	setInitialized();
+}
 
 
 } // namespace mcu

@@ -14,7 +14,7 @@
 #include "device.h"
 #include <assert.h>
 
-#include "../system/mcusystem.h"
+#include "../system/mcu_system.h"
 
 
 namespace mcu {
@@ -83,7 +83,7 @@ extern const uint16_t PIE_XINT_GROUPS[5];
 /**
  * @brief GPIO pin config.
  */
-struct GpioPinConfig
+struct GpioConfig
 {
 	bool valid;
 	uint32_t no;
@@ -99,7 +99,7 @@ struct GpioPinConfig
 	 * @brief Constructs default GPIO pin config.
 	 * @param (none)
 	 */
-	GpioPinConfig() : valid(false) {}
+	GpioConfig() : valid(false) {}
 
 	/**
 	 * @brief Constructs GPIO pin config.
@@ -112,7 +112,7 @@ struct GpioPinConfig
 	 * @param _qualPeriod - pin qualification period (divider)
 	 * @param _masterCore - master core
 	 */
-	GpioPinConfig(uint32_t _no, uint32_t _mux, PinDirection _direction, PinActiveState _activeState,
+	GpioConfig(uint32_t _no, uint32_t _mux, PinDirection _direction, PinActiveState _activeState,
 			PinType _type, PinQualMode _qualMode, uint32_t _qualPeriod,
 			GPIO_CoreSelect _masterCore = GPIO_CORE_CPU1)
 		: valid(true)
@@ -139,7 +139,7 @@ struct GpioPinConfig
 	 * @param _no - pin number
 	 * @param _mux - pin mux
 	 */
-	GpioPinConfig(uint32_t _no, uint32_t _mux)
+	GpioConfig(uint32_t _no, uint32_t _mux)
 		: valid(true)
 		, no(_no)
 		, mux(_mux)
@@ -148,17 +148,17 @@ struct GpioPinConfig
 	/**
 	 * @brief Constructs config for pin which must not be configured.
 	 */
-	GpioPinConfig(tag::not_configured) : valid(false) {}
+	GpioConfig(tag::not_configured) : valid(false) {}
 };
 
 
 /**
  * @brief GPIO pin class.
  */
-class GpioPin
+class Gpio
 {
 private:
-	GpioPinConfig m_cfg;
+	GpioConfig m_cfg;
 	bool m_initialized;
 
 	GPIO_ExternalIntNum m_intNum;
@@ -167,7 +167,7 @@ public:
 	 * @brief Gpio pin default constructor.
 	 * @param (none)
 	 */
-	GpioPin()
+	Gpio()
 		: m_initialized(false)
 	{}
 
@@ -175,7 +175,7 @@ public:
 	 * @brief Constructs GPIO pin.
 	 * @param cfg - pin config
 	 */
-	GpioPin(const GpioPinConfig& cfg)
+	Gpio(const GpioConfig& cfg)
 		: m_initialized(false)
 	{
 		init(cfg);
@@ -186,7 +186,7 @@ public:
 	 * @param cfg - pin config
 	 * @return (none)
 	 */
-	void init(const GpioPinConfig& cfg)
+	void init(const GpioConfig& cfg)
 	{
 		m_cfg = cfg;
 		if (m_cfg.valid)
@@ -263,7 +263,7 @@ public:
 	 * @param (none)
 	 * @return Reference to pin config.
 	 */
-	const GpioPinConfig& config() const { return m_cfg; }
+	const GpioConfig& config() const { return m_cfg; }
 
 private:
 	/**
@@ -355,25 +355,37 @@ public:
 
 
 /**
- * @brief Pin debouncing class.
+ * @brief GPIO pin debouncing class.
  */
-class PinDebouncer
+class GpioDebouncer
 {
+private:
+	const Gpio m_pin;
+public:
+	const unsigned int ACQ_PERIOD_MSEC;
+	const unsigned int ACTIVE_DEBOUNCE_MSEC;
+	const unsigned int INACTIVE_DEBOUNCE_MSEC;
+private:
+	const unsigned int ACTIVE_DEBOUNCE_COUNT;
+	const unsigned int INACTIVE_DEBOUNCE_COUNT;
+	unsigned int m_count;
+	PinState m_state;
+	bool m_stateChanged;
 public:
 	/**
 	 * @brief Debouncer constructor.
-	 * @param pin - GPIO pin struct
-	 * @param acqPeriod - acquisition period (msec)
-	 * @param actMsec - time(msec) before registering active state
-	 * @param inactMsec - time(msec) before registering inactive state
+	 * @param pin - GPIO pin
+	 * @param acqPeriod_msec - acquisition period (msec)
+	 * @param act_msec - time(msec) before registering active state
+	 * @param inact_msec - time(msec) before registering inactive state
 	 */
-	PinDebouncer(const GpioPin& pin, unsigned int acqPeriod, unsigned int actMsec, unsigned int inactMsec)
+	GpioDebouncer(const Gpio& pin, unsigned int acqPeriod_msec, unsigned int act_msec, unsigned int inact_msec)
 		: m_pin(pin)
-		, ACQ_PERIOD_MSEC(acqPeriod)
-		, ACTIVE_DEBOUNCE_MSEC(actMsec)
-		, INACTIVE_DEBOUNCE_MSEC(inactMsec)
-		, ACTIVE_DEBOUNCE_COUNT(actMsec / acqPeriod)
-		, INACTIVE_DEBOUNCE_COUNT(inactMsec / acqPeriod)
+		, ACQ_PERIOD_MSEC(acqPeriod_msec)
+		, ACTIVE_DEBOUNCE_MSEC(act_msec)
+		, INACTIVE_DEBOUNCE_MSEC(inact_msec)
+		, ACTIVE_DEBOUNCE_COUNT(act_msec / acqPeriod_msec)
+		, INACTIVE_DEBOUNCE_COUNT(inact_msec / acqPeriod_msec)
 		, m_state(PIN_INACTIVE)
 		, m_stateChanged(false)
 	{
@@ -432,24 +444,10 @@ public:
 	 * @return \c true if state has changed at last debounce(), \c false otherwise.
 	 */
 	bool stateChanged() const { return m_stateChanged; };
-
-private:
-	const GpioPin m_pin;
-public:
-	const unsigned int ACQ_PERIOD_MSEC;
-	const unsigned int ACTIVE_DEBOUNCE_MSEC;
-	const unsigned int INACTIVE_DEBOUNCE_MSEC;
-private:
-	const unsigned int ACTIVE_DEBOUNCE_COUNT;
-	const unsigned int INACTIVE_DEBOUNCE_COUNT;
-	unsigned int m_count;
-	PinState m_state;
-	bool m_stateChanged;
 };
 
 
 /// @}
 } // namespace mcu
-
 
 

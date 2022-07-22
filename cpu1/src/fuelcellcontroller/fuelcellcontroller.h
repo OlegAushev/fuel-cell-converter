@@ -13,8 +13,8 @@
 #include "emb/emb_algorithm.h"
 #include "emb/emb_array.h"
 #include "emb/emb_math.h"
-#include "mcu/cputimers/mcucputimers.h"
-#include "mcu/ipc/mcuipc.h"
+#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu/ipc/mcu_ipc.h"
 #include "boostconverter/boostconverter.h"
 #include "canbygpio/canbygpio.h"
 
@@ -94,7 +94,7 @@ private:
 
 public:
 	Controller(const BoostConverter* converter,
-			const mcu::GpioPin& txPin, const mcu::GpioPin& rxPin, mcu::GpioPin& clkPin);
+			const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin);
 
 	void run()
 	{

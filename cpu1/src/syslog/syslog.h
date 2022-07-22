@@ -13,8 +13,8 @@
 #include <stddef.h>
 #include "emb/emb_common.h"
 #include "emb/emb_queue.h"
-#include "mcu/system/mcusystem.h"
-#include "mcu/ipc/mcuipc.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/ipc/mcu_ipc.h"
 
 
 /// @addtogroup syslog

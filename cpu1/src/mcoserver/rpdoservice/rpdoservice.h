@@ -15,10 +15,10 @@
 
 #include "emb/emb_common.h"
 #include "../mcodef.h"
-#include "mcu/can/mcucan.h"
-#include "mcu/ipc/mcuipc.h"
-#include "mcu/gpio/mcugpio.h"
-#include "mcu/cputimers/mcucputimers.h"
+#include "mcu/can/mcu_can.h"
+#include "mcu/ipc/mcu_ipc.h"
+#include "mcu/gpio/mcu_gpio.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 
 // APP-SPECIFIC headers
 #include "boostconverter/boostconverter.h"

@@ -1,0 +1,72 @@
+/**
+ * @file
+ * @ingroup mcu mcu_adc
+ */
+
+
+#include "../mcu_adc.h"
+
+
+namespace mcu {
+/// @addtogroup mcu_adc
+/// @{
+
+
+///
+///
+///
+void initAdcChannels(emb::Array<detail::AdcChannelImpl, ADC_CHANNEL_COUNT>& channels)
+{
+#ifdef CRD300
+	channels[ADC_VOLTAGE_IN] = detail::AdcChannelImpl(
+			ADCC_BASE, ADCCRESULT_BASE, ADC_CH_ADCIN2, ADC_SOC_NUMBER0, ADC_TRIGGER_EPWM1_SOCA);
+	channels[ADC_VOLTAGE_OUT] = detail::AdcChannelImpl(
+			ADCC_BASE, ADCCRESULT_BASE, ADC_CH_ADCIN3, ADC_SOC_NUMBER1, ADC_TRIGGER_EPWM1_SOCA);
+	channels[ADC_CURRENT_IN_FIRST] = detail::AdcChannelImpl(
+			ADCA_BASE, ADCARESULT_BASE, ADC_CH_ADCIN0, ADC_SOC_NUMBER0, ADC_TRIGGER_EPWM1_SOCA);
+	channels[ADC_CURRENT_IN_SECOND] = detail::AdcChannelImpl(
+			ADCA_BASE, ADCARESULT_BASE, ADC_CH_ADCIN0, ADC_SOC_NUMBER1, ADC_TRIGGER_EPWM1_SOCB);
+#else
+	channels[ADC_VOLTAGE_IN] = detail::AdcChannelImpl(
+			ADCB_BASE, ADCBRESULT_BASE, ADC_CH_ADCIN14, ADC_SOC_NUMBER0, ADC_TRIGGER_EPWM1_SOCA);
+	channels[ADC_VOLTAGE_OUT] = detail::AdcChannelImpl(
+			ADCB_BASE, ADCBRESULT_BASE, ADC_CH_ADCIN2, ADC_SOC_NUMBER1, ADC_TRIGGER_EPWM1_SOCA);
+	channels[ADC_CURRENT_IN_FIRST] = detail::AdcChannelImpl(
+			ADCA_BASE, ADCARESULT_BASE, ADC_CH_ADCIN15, ADC_SOC_NUMBER0, ADC_TRIGGER_EPWM1_SOCA);
+	channels[ADC_CURRENT_IN_SECOND] = detail::AdcChannelImpl(
+			ADCA_BASE, ADCARESULT_BASE, ADC_CH_ADCIN15, ADC_SOC_NUMBER1, ADC_TRIGGER_EPWM1_SOCB);
+#endif
+}
+
+
+///
+///
+///
+void initAdcIrqs(emb::Array<detail::AdcIrqImpl, ADC_IRQ_COUNT>& irqs)
+{
+#ifdef CRD300
+	irqs[ADC_IRQ_VOLTAGE_IN] = detail::AdcIrqImpl(
+			ADCC_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0, INT_ADCC1);
+	irqs[ADC_IRQ_VOLTAGE_OUT] = detail::AdcIrqImpl(
+			ADCC_BASE, ADC_INT_NUMBER2, ADC_SOC_NUMBER1, INT_ADCC2);
+	irqs[ADC_IRQ_CURRENT_IN_FIRST] = detail::AdcIrqImpl(
+			ADCA_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0, INT_ADCA1);
+	irqs[ADC_IRQ_CURRENT_IN_SECOND] = detail::AdcIrqImpl(
+			ADCA_BASE, ADC_INT_NUMBER2, ADC_SOC_NUMBER1, INT_ADCA2);
+#else
+	irqs[ADC_IRQ_VOLTAGE_IN] = detail::AdcIrqImpl(
+			ADCB_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0, INT_ADCB1);
+	irqs[ADC_IRQ_VOLTAGE_OUT] = detail::AdcIrqImpl(
+			ADCB_BASE, ADC_INT_NUMBER2, ADC_SOC_NUMBER1, INT_ADCB2);
+	irqs[ADC_IRQ_CURRENT_IN_FIRST] = detail::AdcIrqImpl(
+			ADCA_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0, INT_ADCA1);
+	irqs[ADC_IRQ_CURRENT_IN_SECOND] = detail::AdcIrqImpl(
+			ADCA_BASE, ADC_INT_NUMBER2, ADC_SOC_NUMBER1, INT_ADCA2);
+#endif
+}
+
+
+/// @}
+} // namespace mcu
+
+

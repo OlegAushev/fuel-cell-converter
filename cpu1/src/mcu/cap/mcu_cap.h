@@ -13,7 +13,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "mcu/gpio/mcugpio.h"
+#include "mcu/gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 
@@ -42,7 +42,7 @@ template <unsigned int ChannelCount>
 struct CapConfig
 {
 	CapModule module[ChannelCount];
-	mcu::GpioPin inputPin[ChannelCount];
+	mcu::Gpio inputPin[ChannelCount];
 };
 
 
@@ -74,20 +74,20 @@ extern const uint32_t capPieIntNums[6];
  * @brief CAP unit class.
  */
 template <unsigned int ChannelCount>
-class CapUnit
+class Cap
 {
 private:
 	detail::CapModuleImpl<ChannelCount> m_module;
 
 private:
-	CapUnit(const CapUnit& other);			// no copy constructor
-	CapUnit& operator=(const CapUnit& other);	// no copy assignment operator
+	Cap(const Cap& other);			// no copy constructor
+	Cap& operator=(const Cap& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Initializes MCU CAP unit.
 	 * @param cfg - CAP unit config
 	 */
-	CapUnit(const CapConfig<ChannelCount>& cfg)
+	Cap(const CapConfig<ChannelCount>& cfg)
 	{
 		EMB_STATIC_ASSERT(ChannelCount > 0);
 		EMB_STATIC_ASSERT(ChannelCount <= 6);
