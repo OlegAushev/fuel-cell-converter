@@ -212,7 +212,7 @@ public:
 			{
 				byte8[i] = SPI_readDataBlockingFIFO(m_module.base) & 0x00FF;
 			}
-			emb::c28x::from_8bit_bytes<T>(data, byte8);
+			emb::c28x::from_bytes8<T>(data, byte8);
 			break;
 
 		case SPI_WORD_16BIT:

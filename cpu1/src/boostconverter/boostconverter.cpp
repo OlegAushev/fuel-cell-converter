@@ -117,7 +117,7 @@ __interrupt void BoostConverter::onAdcVoltageInInterrupt()
 ///
 __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 {
-	LOG_DURATION_VIA_PIN_ONOFF(111)
+	LOG_DURATION_VIA_PIN_ONOFF(111);
 	BoostConverter* converter = BoostConverter::instance();
 
 	float vOut = converter->outVoltageSensor.read();
