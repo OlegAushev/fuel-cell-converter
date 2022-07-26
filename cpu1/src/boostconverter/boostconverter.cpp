@@ -28,6 +28,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	, m_state(CONVERTER_OFF)
 	, m_voltageInFilter(VDC_SMOOTH_FACTOR)
 	, m_voltageOutFilter(VDC_SMOOTH_FACTOR)
+	, m_tempHeatsinkFilter(TEMP_SMOOTH_FACTOR)
 	, m_currentIn(0, 0)
 	, m_currentInFilter(IDC_SMOOTH_FACTOR)
 	, m_dutycycleController(converterConfig.kP_dutycycle, converterConfig.kI_dutycucle,
@@ -50,6 +51,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_VOLTAGE_OUT, onAdcVoltageOutInterrupt);
 	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_FIRST, onAdcCurrentInFirstInterrupt);
 	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_CURRENT_IN_SECOND, onAdcCurrentInSecondInterrupt);
+	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_TEMP_HEATSINK, onAdcTempHeatsinkInterrupt);
 
 #ifndef CRD300
 	RST_PIN.set();
@@ -68,13 +70,16 @@ void BoostConverter::reset()
 }
 
 
-
 ///
 ///
 ///
 __interrupt void BoostConverter::onPwmEventInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(22);
+	if (Syslog::faults() != 0)
+	{
+		BoostConverter::instance()->stop();
+	}
 	BoostConverter::instance()->pwm.acknowledgeEventInterrupt();
 }
 
@@ -206,6 +211,32 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 }
 
 
+///
+///
+///
+__interrupt void BoostConverter::onAdcTempHeatsinkInterrupt()
+{
+	BoostConverter::instance()->tempSensor.setReady();
+	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_TEMP_HEATSINK);
+}
+
+
+///
+///
+///
+void BoostConverter::processTemperatureMeasurements()
+{
+	if (tempSensor.ready())
+	{
+		m_tempHeatsinkFilter.push(tempSensor.read());
+		tempSensor.resetReady();
+
+		if (m_tempHeatsinkFilter.output() > m_config.otpTempHeatsink)
+		{
+			Syslog::setFault(Fault::HEATSINK_OVERTEMP);
+		}
+	}
+}
 
 
 

@@ -7,6 +7,7 @@
 #include "mcu/support/mcu_support.h"
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "syslog/syslog.h"
+#include "boostconverter/boostconverter.h"
 
 
 /**
@@ -16,12 +17,21 @@
  */
 mcu::ClockTaskStatus taskWatchdogTimeout();
 
+
 /**
  * @brief Toggling led task.
  * @param (none)
  * @return Task execution status.
  */
 mcu::ClockTaskStatus taskToggleLed();
+
+
+/**
+ * @brief Start temperature sensors task.
+ * @param (none)
+ * @return Task execution status.
+ */
+mcu::ClockTaskStatus taskStartTempSensors();
 
 
 

@@ -1,6 +1,7 @@
 ///
 #include "clocktasks/cpu1clocktasks.h"
 
+
 ///
 ///
 ///
@@ -9,6 +10,7 @@ mcu::ClockTaskStatus taskWatchdogTimeout()
 	Syslog::setFault(Fault::CONNECTION_LOST);
 	return mcu::CLOCK_TASK_SUCCESS;
 }
+
 
 ///
 ///
@@ -32,6 +34,14 @@ mcu::ClockTaskStatus taskToggleLed()
 }
 
 
+///
+///
+///
+mcu::ClockTaskStatus taskStartTempSensors()
+{
+	BoostConverter::instance()->tempSensor.run();
+	return mcu::CLOCK_TASK_SUCCESS;
+}
 
 
 

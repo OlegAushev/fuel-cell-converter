@@ -305,6 +305,9 @@ void main()
 	mcu::SystemClock::setTaskPeriod(0, 1000);
 	mcu::SystemClock::registerTask(0, taskToggleLed);
 
+	mcu::SystemClock::setTaskPeriod(1, 50);
+	mcu::SystemClock::registerTask(1, taskStartTempSensors);
+
 	mcu::SystemClock::setWatchdogPeriod(1000);
 	mcu::SystemClock::registerWatchdogTask(taskWatchdogTimeout);
 
@@ -392,6 +395,7 @@ void main()
 		Syslog::processIpcSignals();
 		mcoServer.run();
 		mcu::SystemClock::runTasks();
+		converter->processTemperatureMeasurements();
 
 #ifdef TEST_CAN_BY_GPIO
 		mcoServerTest.run();

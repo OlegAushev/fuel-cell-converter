@@ -90,6 +90,12 @@ inline ODAccessStatus setConverterCurrentIn(CobSdoData val)
 	return OD_ACCESS_SUCCESS;
 }
 
+inline ODAccessStatus getConverterTempHeatsink(CobSdoData& dest)
+{
+	float value = converter->tempHeatsink();
+	memcpy(&dest, &value, sizeof(uint32_t));
+	return OD_ACCESS_SUCCESS;
+}
 
 //////////////
 
@@ -134,6 +140,7 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x2000, 0x03}, {"WATCH", "WATCH", "VOLTAGE_IN",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_WRITE_ACCESS}},
 {{0x2000, 0x04}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_WRITE_ACCESS}},
 {{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	true,	true,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
+{{0x2000, 0x0C}, {"WATCH", "WATCH", "PHA_TEMP",		"°C",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterTempHeatsink,	OD_NO_WRITE_ACCESS}},
 
 
 {{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterRelayOn}},

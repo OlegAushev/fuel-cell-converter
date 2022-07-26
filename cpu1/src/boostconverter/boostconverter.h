@@ -15,6 +15,7 @@
 #include "mcu/pwm/mcu_pwm.h"
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
+#include "sensors/temperaturesensors.h"
 #include "syslog/syslog.h"
 
 #include "profiler/profiler.h"
@@ -35,7 +36,7 @@ struct BoostConverterConfig
 	float ocpCurrentIn;
 
 	float otpTempJunction;
-	float otpTempCase;
+	float otpTempHeatsink;
 	float fanTempThOn;
 	float fanTempThOff;
 
@@ -57,7 +58,7 @@ struct BoostConverterConfig
 /**
  * @brief Converter class.
  */
-class BoostConverter : emb::c28x::Singleton<BoostConverter>
+class BoostConverter : public emb::c28x::Singleton<BoostConverter>
 {
 public:
 	/// Converter states
@@ -77,6 +78,8 @@ private:
 	emb::Pair<float, float> m_currentIn;	// inductor current measured twice per PWM period
 	static const float IDC_SMOOTH_FACTOR = 0.1;
 	emb::ExponentialMedianFilter<float, 3> m_currentInFilter;
+	static const float TEMP_SMOOTH_FACTOR = 0.05;
+	emb::ExponentialMedianFilter<float, 5> m_tempHeatsinkFilter;
 
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;
 	emb::PiControllerCl<emb::CONTROLLER_INVERSE> m_currentController;
@@ -90,6 +93,7 @@ public:
 	InVoltageSensor inVoltageSensor;
 	OutVoltageSensor outVoltageSensor;
 	InCurrentSensor inCurrentSensor;
+	TemperatureSensor tempSensor;
 
 private:
 	BoostConverter(const BoostConverter& other);		// no copy constructor
@@ -149,6 +153,7 @@ public:
 	float voltageIn() const { return m_voltageInFilter.output(); }
 	float voltageOut() const { return m_voltageOutFilter.output(); }
 	float currentIn() const { return m_currentInFilter.output(); }
+	float tempHeatsink() const { return m_tempHeatsinkFilter.output(); }
 
 	void setCurrentIn(float value)
 	{
@@ -172,6 +177,13 @@ public:
 #endif
 	}
 
+	/**
+	 * @brief Checks if temperature measurements are completed and processes them.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void processTemperatureMeasurements();
+
 protected:
 	static __interrupt void onPwmEventInterrupt();
 	static __interrupt void onPwmTripInterrupt();
@@ -179,6 +191,7 @@ protected:
 	static __interrupt void onAdcVoltageOutInterrupt();
 	static __interrupt void onAdcCurrentInFirstInterrupt();
 	static __interrupt void onAdcCurrentInSecondInterrupt();
+	static __interrupt void onAdcTempHeatsinkInterrupt();
 };
 
 
