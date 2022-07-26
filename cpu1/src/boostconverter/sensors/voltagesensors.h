@@ -32,7 +32,7 @@ public:
 	 * @param (none)
 	 */
 	InVoltageSensor()
-		: adcChannel(mcu::ADC_CURRENT_IN_FIRST)
+		: adcChannel(mcu::ADC_VOLTAGE_IN)
 	{
 		m_ready = false;
 	}
