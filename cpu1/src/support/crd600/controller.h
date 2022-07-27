@@ -15,8 +15,8 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "mcu/system/mcusystem.h"
-#include "mcu/gpio/mcugpio.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 #include <math.h>
@@ -60,42 +60,42 @@ private:
 	Controller(const Controller& other); 		// no copy constructor
 	Controller& operator=(const Controller& other);	// no copy assignment operator
 
-	static const emb::Array<mcu::GpioPinConfig, 6> PSDIS_PINS_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 6> LEN_PINS_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 6> OCEN_PINS_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 6> FAULT_PINS_CONFIG;
-	static const mcu::GpioPinConfig FAULT_PIN_UVW_CONFIG;
-	static const mcu::GpioPinConfig FAULT_PIN_XYZ_CONFIG;
-	static const mcu::GpioPinConfig FAULT_PIN_ALL_CONFIG;
-	static const mcu::GpioPinConfig SHUTDOWN_POS15V_PIN_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 3> LED_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 6> PSDIS_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 6> LEN_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 6> OCEN_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 6> FAULT_PINS_CONFIG;
+	static const mcu::GpioConfig FAULT_PIN_UVW_CONFIG;
+	static const mcu::GpioConfig FAULT_PIN_XYZ_CONFIG;
+	static const mcu::GpioConfig FAULT_PIN_ALL_CONFIG;
+	static const mcu::GpioConfig SHUTDOWN_POS15V_PIN_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 3> LED_PINS_CONFIG;
 #ifdef USE_SD_PINS_FOR_PROFILING
-	static const mcu::GpioPinConfig PROFILER_PIN_C1_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_C2_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_C3_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_D1_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_D2_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_D3_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_C1_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_C2_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_C3_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_D1_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_D2_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_D3_CONFIG;
 #endif
 
-	emb::Array<mcu::GpioPin, 6> psdisPins;
-	emb::Array<mcu::GpioPin, 6> lenPins;
-	emb::Array<mcu::GpioPin, 6> ocenPins;
-	emb::Array<mcu::GpioPin, 6> faultPins;
-	mcu::GpioPin shutdownPos15VPin;
-	emb::Array<mcu::GpioPin, 3> ledPins;
+	emb::Array<mcu::Gpio, 6> psdisPins;
+	emb::Array<mcu::Gpio, 6> lenPins;
+	emb::Array<mcu::Gpio, 6> ocenPins;
+	emb::Array<mcu::Gpio, 6> faultPins;
+	mcu::Gpio shutdownPos15VPin;
+	emb::Array<mcu::Gpio, 3> ledPins;
 
 public:
-	mcu::GpioPin faultPinUVW;
-	mcu::GpioPin faultPinXYZ;
-	mcu::GpioPin faultPinALL;
+	mcu::Gpio faultPinUVW;
+	mcu::Gpio faultPinXYZ;
+	mcu::Gpio faultPinALL;
 #ifdef USE_SD_PINS_FOR_PROFILING
-	mcu::GpioPin profilerPinC1;
-	mcu::GpioPin profilerPinC2;
-	mcu::GpioPin profilerPinC3;
-	mcu::GpioPin profilerPinD1;
+	mcu::Gpio profilerPinC1;
+	mcu::Gpio profilerPinC2;
+	mcu::Gpio profilerPinC3;
+	mcu::Gpio profilerPinD1;
 //	mcu::GpioPin profilerPinD2;
-	mcu::GpioPin profilerPinD3;
+	mcu::Gpio profilerPinD3;
 #endif
 
 	/**
@@ -109,7 +109,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void enableDriverPS(Phase phase) { psdisPins[phase].set(mcu::PIN_INACTIVE); }
+	void enableDriverPS(Phase phase) { psdisPins[phase].set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Enables driver power supply for all phases.
@@ -131,7 +131,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void disableDriverPS(Phase phase) { psdisPins[phase].set(mcu::PIN_ACTIVE); }
+	void disableDriverPS(Phase phase) { psdisPins[phase].set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief  Disables driver power supply for all phases.
@@ -153,7 +153,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void enableDriverLogic(Phase phase) { lenPins[phase].set(mcu::PIN_ACTIVE); }
+	void enableDriverLogic(Phase phase) { lenPins[phase].set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Enables driver logic for all phases.
@@ -175,7 +175,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void disableDriverLogic(Phase phase) { lenPins[phase].set(mcu::PIN_INACTIVE); }
+	void disableDriverLogic(Phase phase) { lenPins[phase].set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Disables driver logic for all phases.
@@ -218,28 +218,28 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enablePos15V() { shutdownPos15VPin.set(mcu::PIN_INACTIVE); }
+	void enablePos15V() { shutdownPos15VPin.set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Disables +15V power supply.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disablePos15V() { shutdownPos15VPin.set(mcu::PIN_ACTIVE); }
+	void disablePos15V() { shutdownPos15VPin.set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Turns specified LED on.
 	 * @param led - LED
 	 * @return (none)
 	 */
-	void turnLedOn(Led led) { ledPins[led].set(mcu::PIN_ACTIVE); }
+	void turnLedOn(Led led) { ledPins[led].set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Turns specified LED off.
 	 * @param led - LED
 	 * @return (none)
 	 */
-	void turnLedOff(Led led) { ledPins[led].set(mcu::PIN_INACTIVE); }
+	void turnLedOff(Led led) { ledPins[led].set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Toggles specified LED.

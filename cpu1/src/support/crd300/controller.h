@@ -15,8 +15,8 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "mcu/system/mcusystem.h"
-#include "mcu/gpio/mcugpio.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 #include <math.h>
@@ -97,7 +97,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void enableDriverPS(Phase phase) { psdisPins[phase].set(mcu::PIN_INACTIVE); }
+	void enableDriverPS(Phase phase) { psdisPins[phase].set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Enables driver power supply for all phases.
@@ -116,7 +116,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void disableDriverPS(Phase phase) { psdisPins[phase].set(mcu::PIN_ACTIVE); }
+	void disableDriverPS(Phase phase) { psdisPins[phase].set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief  Disables driver power supply for all phases.
@@ -135,7 +135,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void enableDriverLogic(Phase phase) { lenPins[phase].set(mcu::PIN_ACTIVE); }
+	void enableDriverLogic(Phase phase) { lenPins[phase].set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Enables driver logic for all phases.
@@ -154,7 +154,7 @@ public:
 	 * @param phase - phase
 	 * @return (none)
 	 */
-	void disableDriverLogic(Phase phase) { lenPins[phase].set(mcu::PIN_INACTIVE); }
+	void disableDriverLogic(Phase phase) { lenPins[phase].set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Disables driver logic for all phases.
@@ -194,42 +194,42 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enablePos15V() { shutdownPos15VPin.set(mcu::PIN_INACTIVE); }
+	void enablePos15V() { shutdownPos15VPin.set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Disables +15V power supply.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disablePos15V() { shutdownPos15VPin.set(mcu::PIN_ACTIVE); }
+	void disablePos15V() { shutdownPos15VPin.set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Enables -15V power supply.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void enableNeg15V() { shutdownNeg15VPin.set(mcu::PIN_INACTIVE); }
+	void enableNeg15V() { shutdownNeg15VPin.set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Disables -15V power supply.
 	 * @param (none)
 	 * @return (none)
 	 */
-	void disableNeg15V() { shutdownNeg15VPin.set(mcu::PIN_ACTIVE); }
+	void disableNeg15V() { shutdownNeg15VPin.set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Turns specified LED on.
 	 * @param led - LED
 	 * @return (none)
 	 */
-	void turnLedOn(Led led) { ledPins[led].set(mcu::PIN_ACTIVE); }
+	void turnLedOn(Led led) { ledPins[led].set(emb::PIN_ACTIVE); }
 
 	/**
 	 * @brief Turns specified LED off.
 	 * @param led - LED
 	 * @return (none)
 	 */
-	void turnLedOff(Led led) { ledPins[led].set(mcu::PIN_INACTIVE); }
+	void turnLedOff(Led led) { ledPins[led].set(emb::PIN_INACTIVE); }
 
 	/**
 	 * @brief Toggles specified LED.

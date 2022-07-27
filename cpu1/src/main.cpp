@@ -79,17 +79,17 @@ const char* Syslog::BUILD_CONFIGURATION = "RLS";
 /* ============================ PROFILER PINS =============================== */
 /* ========================================================================== */
 const mcu::GpioConfig P61_CFG =
-	mcu::GpioConfig(61, GPIO_61_GPIO61, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig(61, GPIO_61_GPIO61, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioConfig P123_CFG =
-	mcu::GpioConfig(123, GPIO_123_GPIO123, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig(123, GPIO_123_GPIO123, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioConfig P122_CFG =
-	mcu::GpioConfig(122, GPIO_122_GPIO122, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig(122, GPIO_122_GPIO122, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioConfig P22_CFG =
-	mcu::GpioConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig(22, GPIO_22_GPIO22, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioConfig P111_CFG =
-	mcu::GpioConfig(111, GPIO_111_GPIO111, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig(111, GPIO_111_GPIO111, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 const mcu::GpioConfig P56_CFG =
-	mcu::GpioConfig(56, GPIO_56_GPIO56, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig(56, GPIO_56_GPIO56, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 
 
 /* ========================================================================== */
@@ -173,9 +173,9 @@ void main()
 	/*###############*/
 	/*# CAN BY GPIO #*/
 	/*###############*/
-	mcu::GpioConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::GpioConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
-	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioTxCfg(14, GPIO_14_GPIO14, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioRxCfg(10, GPIO_10_GPIO10, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::Gpio canbygpioTx(canbygpioTxCfg);
 	mcu::Gpio canbygpioRx(canbygpioRxCfg);
 	mcu::Gpio canbygpioClk(canbygpioClkCfg);
@@ -248,7 +248,7 @@ void main()
 	Settings::SYSTEM_CONFIG = Settings::DEFAULT_CONFIG;
 
 #ifdef CRD300
-	mcu::GpioConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, mcu::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+	mcu::GpioConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #else
 	mcu::GpioConfig drvFltPinCfg;
 #endif

@@ -8,9 +8,9 @@
 
 
 #ifndef CRD300
-const mcu::GpioConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, mcu::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #else
 const mcu::GpioConfig rstPinCfg;
 const mcu::GpioConfig errPinCfg;
