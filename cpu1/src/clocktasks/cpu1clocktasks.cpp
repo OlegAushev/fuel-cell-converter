@@ -39,7 +39,7 @@ mcu::ClockTaskStatus taskToggleLed()
 ///
 mcu::ClockTaskStatus taskStartTempSensors()
 {
-	BoostConverter::instance()->tempSensor.run();
+	fuelcell::Converter::instance()->tempSensor.run();
 	return mcu::CLOCK_TASK_SUCCESS;
 }
 

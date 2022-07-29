@@ -13,7 +13,7 @@ namespace od {
 
 
 // APP-SPECIFIC objects
-BoostConverter* converter = static_cast<BoostConverter*>(NULL);
+fuelcell::Converter* converter = static_cast<fuelcell::Converter*>(NULL);
 
 
 /* ========================================================================== */

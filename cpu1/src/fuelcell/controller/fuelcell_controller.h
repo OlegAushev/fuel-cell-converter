@@ -1,6 +1,4 @@
 /**
- * @defgroup fuel_cell_controller Fuel Cell Controller
- *
  * @file
  * @ingroup fuel_cell_controller
  */
@@ -15,8 +13,10 @@
 #include "emb/emb_math.h"
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "mcu/ipc/mcu_ipc.h"
-#include "boostconverter/boostconverter.h"
 #include "canbygpio/canbygpio.h"
+#include "../fuelcell_def.h"
+#include "../converter/fuelcell_converter.h"
+#include "syslog/syslog.h"
 
 
 namespace fuelcell {
@@ -49,20 +49,6 @@ struct RpdoMessage
 };
 
 
-/// Fuel cell status
-enum Status
-{
-	FUELCELL_NA,
-	FUELCELL_STANDBY,
-	FUELCELL_READY,
-	FUELCELL_INOP,
-	FUELCELL_OVERHEAT,
-	FUELCELL_BATT_LOWCHARGE,
-	FUELCELL_NOCONNECTION,
-	FUELCELL_LOWPRESSURE,
-};
-
-
 const size_t FUELCELL_COUNT = 5;
 
 
@@ -74,7 +60,7 @@ struct Data
 	emb::Array<float, FUELCELL_COUNT> temperature;
 	emb::Array<float, FUELCELL_COUNT> cellVoltage;
 	emb::Array<float, FUELCELL_COUNT> battVoltage;
-	emb::Array<Status, FUELCELL_COUNT> status;
+	emb::Array<FuelcellStatus, FUELCELL_COUNT> status;
 	emb::Array<float, FUELCELL_COUNT> current;
 };
 
@@ -82,7 +68,7 @@ struct Data
 class Controller
 {
 private:
-	const BoostConverter* m_converter;
+	const Converter* m_converter;
 	canbygpio::Transceiver m_transceiver;
 	static const mcu::IpcFlag SIG_START;
 	static const mcu::IpcFlag SIG_STOP;
@@ -93,7 +79,7 @@ private:
 	static const unsigned int TPDO_FRAME_ID = 0x200;
 
 public:
-	Controller(const BoostConverter* converter,
+	Controller(const Converter* converter,
 			const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin);
 
 	/**

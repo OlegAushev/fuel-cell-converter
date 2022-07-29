@@ -1,6 +1,6 @@
 /**
  * @file
- * @ingroup boost_converter
+ * @ingroup fuel_cell_converter
  */
 
 
@@ -11,8 +11,8 @@
 #include "emb/emb_pair.h"
 #include "emb/emb_picontroller.h"
 #include "mcu/pwm/mcu_pwm.h"
-#include "boostconverterdef.h"
-#include "fsm/fsm.h"
+#include "../fuelcell_def.h"
+#include "../fsm/fsm.h"
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
 #include "sensors/temperaturesensors.h"
@@ -21,14 +21,15 @@
 #include "profiler/profiler.h"
 
 
-/// @addtogroup boost_converter
+namespace fuelcell {
+/// @addtogroup fuel_cell_converter
 /// @{
 
 
 /**
  * @brief Converter config.
  */
-struct BoostConverterConfig
+struct ConverterConfig
 {
 	float uvpVoltageIn;
 	float ovpVoltageIn;
@@ -58,22 +59,22 @@ struct BoostConverterConfig
 /**
  * @brief Converter class.
  */
-class BoostConverter : public emb::c28x::Singleton<BoostConverter>
+class Converter : public emb::c28x::Singleton<Converter>
 {
-	friend class boostconverter::IState;
-	friend class boostconverter::STANDBY_State;
-	friend class boostconverter::IDLE_State;
-	friend class boostconverter::POWERUP_State;
-	friend class boostconverter::READY_State;
-	friend class boostconverter::STARTING_State;
-	friend class boostconverter::IN_OPERATION_State;
-	friend class boostconverter::STOPPING_State;
-	friend class boostconverter::POWERDOWN_State;
+	friend class IState;
+	friend class STANDBY_State;
+	friend class IDLE_State;
+	friend class POWERUP_State;
+	friend class READY_State;
+	friend class STARTING_State;
+	friend class IN_OPERATION_State;
+	friend class STOPPING_State;
+	friend class POWERDOWN_State;
 private:
-	boostconverter::IState* m_state;
-	boostconverter::State m_stateId;
+	IState* m_state;
+	ConverterState m_stateId;
 
-	BoostConverterConfig m_config;
+	ConverterConfig m_config;
 
 	static const float VDC_SMOOTH_FACTOR = 0.001;
 	emb::ExponentialMedianFilter<float, 3> m_voltageInFilter;
@@ -99,15 +100,15 @@ public:
 	TemperatureSensor tempSensor;
 
 private:
-	BoostConverter(const BoostConverter& other);		// no copy constructor
-	BoostConverter& operator=(const BoostConverter& other);	// no copy assignment operator
+	Converter(const Converter& other);		// no copy constructor
+	Converter& operator=(const Converter& other);	// no copy assignment operator
 public:
 	/**
 	 * @brief Constructs a new Converter object.
 	 * @param converterConfig - converter config
 	 * @param pwmConfig - PWM config
 	 */
-	BoostConverter(const BoostConverterConfig& converterConfig,
+	Converter(const ConverterConfig& converterConfig,
 			const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig);
 
 	/**
@@ -188,7 +189,7 @@ protected:
 	static __interrupt void onAdcTempHeatsinkInterrupt();
 
 private:
-	void changeState(boostconverter::IState* state)
+	void changeState(IState* state)
 	{
 		m_state = state;
 		m_stateId = state->id();
@@ -196,26 +197,6 @@ private:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /// @}
+} // namespace fuelcell
 

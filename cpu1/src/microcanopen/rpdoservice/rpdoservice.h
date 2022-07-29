@@ -21,7 +21,7 @@
 #include "mcu/cputimers/mcu_cputimers.h"
 
 // APP-SPECIFIC headers
-#include "boostconverter/boostconverter.h"
+#include "fuelcell/converter/fuelcell_converter.h"
 
 
 namespace microcanopen {
@@ -129,7 +129,7 @@ class RpdoService
 	friend class RpdoServiceTest;
 private:
 	// APP-SPECIFIC objects
-	BoostConverter* converter;
+	fuelcell::Converter* converter;
 private:
 	mcu::IpcFlag RPDO1_RECEIVED;
 	mcu::IpcFlag RPDO2_RECEIVED;
@@ -165,7 +165,7 @@ public:
 	 * @ingroup mco_app_spec
 	 * @brief Configures service on server that responds to processed RPDO messages.
 	 */
-	RpdoService(BoostConverter* _converter)
+	RpdoService(fuelcell::Converter* _converter)
 	{
 		switch (Ipc)
 		{

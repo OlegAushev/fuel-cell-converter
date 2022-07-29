@@ -40,10 +40,10 @@
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
-#include "boostconverter/boostconverter.h"
+#include "fuelcell/converter/fuelcell_converter.h"
 #include "settings/settings.h"
 #include "canbygpio/canbygpio.h"
-#include "fuelcellcontroller/fuelcellcontroller.h"
+#include "fuelcell/controller/fuelcell_controller.h"
 
 #ifdef CRD300
 #include "support/crd300/controller.h"
@@ -54,8 +54,8 @@
 #endif
 
 
-unsigned char converterobj_loc[sizeof(BoostConverter)] __attribute__((section("SHARED_CONVERTER")));
-BoostConverter* converter;
+unsigned char converterobj_loc[sizeof(fuelcell::Converter)] __attribute__((section("SHARED_CONVERTER")));
+fuelcell::Converter* converter;
 
 uint16_t dacaInput = 0;
 uint16_t dacbInput = 0;
@@ -288,7 +288,7 @@ void main()
 	/*#############*/
 	/*# CONVERTER #*/
 	/*#############*/
-	converter = new(converterobj_loc) BoostConverter(
+	converter = new(converterobj_loc) fuelcell::Converter(
 			Settings::SYSTEM_CONFIG.CONVERTER_CONFIG,
 			Settings::SYSTEM_CONFIG.PWM_CONFIG);
 

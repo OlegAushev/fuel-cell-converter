@@ -1,10 +1,13 @@
 /**
  * @file
- * @ingroup boost_converter
+ * @ingroup fuel_cell_converter
  */
 
 
-#include "boostconverter.h"
+#include "fuelcell_converter.h"
+
+
+namespace fuelcell {
 
 
 #ifndef CRD300
@@ -21,9 +24,9 @@ const mcu::GpioConfig relPinCfg;
 ///
 ///
 ///
-BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
+Converter::Converter(const ConverterConfig& converterConfig,
 		const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
-	: emb::c28x::Singleton<BoostConverter>(this)
+	: emb::c28x::Singleton<Converter>(this)
 	, m_config(converterConfig)
 	, m_voltageInFilter(VDC_SMOOTH_FACTOR)
 	, m_voltageOutFilter(VDC_SMOOTH_FACTOR)
@@ -63,7 +66,7 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 ///
 ///
 ///
-void BoostConverter::reset()
+void Converter::reset()
 {
 
 }
@@ -72,33 +75,33 @@ void BoostConverter::reset()
 ///
 ///
 ///
-__interrupt void BoostConverter::onPwmEventInterrupt()
+__interrupt void Converter::onPwmEventInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(22);
 	if (Syslog::faults() != 0)
 	{
-		BoostConverter::instance()->stop();
+		Converter::instance()->stop();
 	}
-	BoostConverter::instance()->pwm.acknowledgeEventInterrupt();
+	Converter::instance()->pwm.acknowledgeEventInterrupt();
 }
 
 
 ///
 ///
 ///
-__interrupt void BoostConverter::onPwmTripInterrupt()
+__interrupt void Converter::onPwmTripInterrupt()
 {
-	BoostConverter::instance()->pwm.acknowledgeTripInterrupt();
+	Converter::instance()->pwm.acknowledgeTripInterrupt();
 }
 
 
 ///
 ///
 ///
-__interrupt void BoostConverter::onAdcVoltageInInterrupt()
+__interrupt void Converter::onAdcVoltageInInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(61);
-	BoostConverter* converter = BoostConverter::instance();
+	Converter* converter = Converter::instance();
 
 	float vIn = converter->inVoltageSensor.read();
 	converter->m_voltageInFilter.push(vIn);
@@ -119,10 +122,10 @@ __interrupt void BoostConverter::onAdcVoltageInInterrupt()
 ///
 ///
 ///
-__interrupt void BoostConverter::onAdcVoltageOutInterrupt()
+__interrupt void Converter::onAdcVoltageOutInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(111);
-	BoostConverter* converter = BoostConverter::instance();
+	Converter* converter = Converter::instance();
 
 	float vOut = converter->outVoltageSensor.read();
 	converter->m_voltageOutFilter.push(vOut);
@@ -149,10 +152,10 @@ __interrupt void BoostConverter::onAdcVoltageOutInterrupt()
 ///
 ///
 ///
-__interrupt void BoostConverter::onAdcCurrentInFirstInterrupt()
+__interrupt void Converter::onAdcCurrentInFirstInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(123);
-	BoostConverter* converter = BoostConverter::instance();
+	Converter* converter = Converter::instance();
 
 #ifdef CRD300
 	converter->m_currentIn.first = -1.f * converter->inCurrentSensor.read(InCurrentSensor::FIRST);
@@ -172,10 +175,10 @@ __interrupt void BoostConverter::onAdcCurrentInFirstInterrupt()
 ///
 ///
 ///
-__interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
+__interrupt void Converter::onAdcCurrentInSecondInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(122);
-	BoostConverter* converter = BoostConverter::instance();
+	Converter* converter = Converter::instance();
 
 #ifdef CRD300
 	converter->m_currentIn.second = -1.f * converter->inCurrentSensor.read(InCurrentSensor::SECOND);
@@ -213,9 +216,9 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 ///
 ///
 ///
-__interrupt void BoostConverter::onAdcTempHeatsinkInterrupt()
+__interrupt void Converter::onAdcTempHeatsinkInterrupt()
 {
-	BoostConverter::instance()->tempSensor.setReady();
+	Converter::instance()->tempSensor.setReady();
 	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_TEMP_HEATSINK);
 }
 
@@ -223,7 +226,7 @@ __interrupt void BoostConverter::onAdcTempHeatsinkInterrupt()
 ///
 ///
 ///
-void BoostConverter::processTemperatureMeasurements()
+void Converter::processTemperatureMeasurements()
 {
 	if (tempSensor.ready())
 	{
@@ -238,17 +241,6 @@ void BoostConverter::processTemperatureMeasurements()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+} // namespace fuelcell
 
 

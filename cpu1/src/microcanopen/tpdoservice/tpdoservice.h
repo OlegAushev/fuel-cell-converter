@@ -18,7 +18,7 @@
 
 // APP-SPECIFIC headers
 #include "syslog/syslog.h"
-#include "boostconverter/boostconverter.h"
+#include "fuelcell/converter/fuelcell_converter.h"
 
 
 namespace microcanopen {
@@ -230,7 +230,7 @@ class TpdoService
 	friend class TpdoServiceTest;
 private:
 	// APP-SPECIFIC objects
-	const BoostConverter* converter;
+	const fuelcell::Converter* converter;
 
 private:
 	TpdoService(const TpdoService& other);			// no copy constructor
@@ -240,7 +240,7 @@ public:
 	 * @ingroup mco_app_spec
 	 * @brief Configures service.
 	 */
-	TpdoService(BoostConverter* _converter)
+	TpdoService(fuelcell::Converter* _converter)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 		// APP-SPECIFIC BEGIN

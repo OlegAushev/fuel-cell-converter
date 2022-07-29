@@ -7,7 +7,7 @@
 #include "mcu/support/mcu_support.h"
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "syslog/syslog.h"
-#include "boostconverter/boostconverter.h"
+#include "fuelcell/converter/fuelcell_converter.h"
 
 
 /**

@@ -4,7 +4,7 @@
  */
 
 
-#include "fuelcellcontroller.h"
+#include "fuelcell_controller.h"
 
 
 namespace fuelcell {
@@ -20,7 +20,7 @@ Data Controller::s_data __attribute__((section("SHARED_FUELCELL_DATA"), retain))
 ///
 ///
 ///
-Controller::Controller(const BoostConverter* converter,
+Controller::Controller(const Converter* converter,
 		const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin)
 	: m_converter(converter)
 	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::disable_bit_stuffing()) // TODO disable bit stuffing
@@ -116,7 +116,7 @@ void Controller::runRx()
 
 		if (emb::Range<unsigned int>(0,7).contains(rpdo.status))
 		{
-			s_data.status[cell] = static_cast<Status>(rpdo.status);
+			s_data.status[cell] = static_cast<FuelcellStatus>(rpdo.status);
 		}
 
 		s_data.current[cell] = 0.1f * rpdo.current;

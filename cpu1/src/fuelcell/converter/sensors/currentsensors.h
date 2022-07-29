@@ -1,9 +1,6 @@
 /**
- * @defgroup boost_converter_sensors Sensors
- * @ingroup boost_converter
- *
  * @file
- * @ingroup boost_converter boost_converter_sensors
+ * @ingroup fuel_cell_converter
  */
 
 
@@ -15,7 +12,7 @@
 #include "emb/emb_array.h"
 
 
-/// @addtogroup boost_converter_sensors
+/// @addtogroup fuel_cell_converter
 /// @{
 
 

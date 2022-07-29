@@ -104,7 +104,7 @@ public:
 	 * @ingroup mco_app_spec
 	 * @brief Configures service on server that processes requests.
 	 */
-	SdoService(BoostConverter* converter)
+	SdoService(fuelcell::Converter* converter)
 	{
 		switch (Module)
 		{

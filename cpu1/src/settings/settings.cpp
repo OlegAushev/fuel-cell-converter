@@ -7,6 +7,6 @@
 #include "settings.h"
 
 
-BoostConverter* Settings::m_converter;
+fuelcell::Converter* Settings::m_converter;
 
 

@@ -19,8 +19,8 @@
 
 // APP-SPECIFIC headers
 #include "syslog/syslog.h"
-#include "boostconverter/boostconverter.h"
-#include "fuelcellcontroller/fuelcellcontroller.h"
+#include "fuelcell/converter/fuelcell_converter.h"
+#include "fuelcell/controller/fuelcell_controller.h"
 
 
 namespace microcanopen {
@@ -49,7 +49,7 @@ namespace od {
 
 
 // APP-SPECIFIC objects
-extern BoostConverter* converter;
+extern fuelcell::Converter* converter;
 
 
 /// @}

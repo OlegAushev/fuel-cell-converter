@@ -15,11 +15,11 @@
 
 #include "syslog/syslog.h"
 #include "clocktasks/cpu2clocktasks.h"
-#include "fuelcellcontroller/fuelcellcontroller.h"
+#include "fuelcell/controller/fuelcell_controller.h"
 
 
-unsigned char converterobj_loc[sizeof(BoostConverter)] __attribute__((section("SHARED_CONVERTER")));
-BoostConverter* converter;
+unsigned char converterobj_loc[sizeof(fuelcell::Converter)] __attribute__((section("SHARED_CONVERTER")));
+fuelcell::Converter* converter;
 
 
 /* ========================================================================== */
@@ -72,7 +72,7 @@ void main()
 	/*#####################*/
 	/*# CONVERTER #*/
 	/*#####################*/
-	converter = reinterpret_cast<BoostConverter*>(converterobj_loc);
+	converter = reinterpret_cast<fuelcell::Converter*>(converterobj_loc);
 
 /*####################################################################################################################*/
 	/*###############*/

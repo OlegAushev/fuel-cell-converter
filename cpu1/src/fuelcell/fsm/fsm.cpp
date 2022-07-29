@@ -1,15 +1,15 @@
 /**
  * @file
- * @ingroup boost_converter boost_converter_fsm
+ * @ingroup fuel_cell_fsm
  */
 
 
 #include "fsm.h"
-#include "../boostconverter.h"
-#include "fuelcellcontroller/fuelcellcontroller.h"
+#include "../converter/fuelcell_converter.h"
+#include "../controller/fuelcell_controller.h"
 
 
-namespace boostconverter {
+namespace fuelcell {
 
 
 STANDBY_State STANDBY_State::s_instance;
@@ -29,7 +29,7 @@ POWERDOWN_State POWERDOWN_State::s_instance;
 ///
 ///
 ///
-void IState::changeState(BoostConverter* converter, IState* state)
+void IState::changeState(Converter* converter, IState* state)
 {
 	converter->changeState(state);
 }
@@ -42,7 +42,7 @@ void IState::changeState(BoostConverter* converter, IState* state)
 ///
 ///
 ///
-void STANDBY_State::start(BoostConverter* converter)
+void STANDBY_State::start(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -51,7 +51,7 @@ void STANDBY_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void STANDBY_State::run(BoostConverter* converter)
+void STANDBY_State::run(Converter* converter)
 {
 	static float voltPrev = 0;
 	float voltDiff = fabsf(converter->voltageIn() - voltPrev);
@@ -71,7 +71,7 @@ void STANDBY_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void STANDBY_State::stop(BoostConverter* converter)
+void STANDBY_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -80,7 +80,7 @@ void STANDBY_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void STANDBY_State::emergencyStop(BoostConverter* converter)
+void STANDBY_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -93,7 +93,7 @@ void STANDBY_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void IDLE_State::start(BoostConverter* converter)
+void IDLE_State::start(Converter* converter)
 {
 	fuelcell::Controller::start();
 	changeState(converter, POWERUP_State::instance());
@@ -103,7 +103,7 @@ void IDLE_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void IDLE_State::run(BoostConverter* converter)
+void IDLE_State::run(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -112,7 +112,7 @@ void IDLE_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void IDLE_State::stop(BoostConverter* converter)
+void IDLE_State::stop(Converter* converter)
 {
 	fuelcell::Controller::stop();
 	changeState(converter, STANDBY_State::instance());
@@ -122,7 +122,7 @@ void IDLE_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void IDLE_State::emergencyStop(BoostConverter* converter)
+void IDLE_State::emergencyStop(Converter* converter)
 {
 	fuelcell::Controller::stop();
 	changeState(converter, STANDBY_State::instance());
@@ -136,7 +136,7 @@ void IDLE_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void POWERUP_State::start(BoostConverter* converter)
+void POWERUP_State::start(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -145,7 +145,7 @@ void POWERUP_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void POWERUP_State::run(BoostConverter* converter)
+void POWERUP_State::run(Converter* converter)
 {
 	if (fuelcell::Controller::inOperation())
 	{
@@ -157,7 +157,7 @@ void POWERUP_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void POWERUP_State::stop(BoostConverter* converter)
+void POWERUP_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -166,7 +166,7 @@ void POWERUP_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void POWERUP_State::emergencyStop(BoostConverter* converter)
+void POWERUP_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -179,7 +179,7 @@ void POWERUP_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void READY_State::start(BoostConverter* converter)
+void READY_State::start(Converter* converter)
 {
 	converter->start();
 	changeState(converter, STARTING_State::instance());
@@ -189,7 +189,7 @@ void READY_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void READY_State::run(BoostConverter* converter)
+void READY_State::run(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -198,7 +198,7 @@ void READY_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void READY_State::stop(BoostConverter* converter)
+void READY_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -207,7 +207,7 @@ void READY_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void READY_State::emergencyStop(BoostConverter* converter)
+void READY_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -220,7 +220,7 @@ void READY_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void STARTING_State::start(BoostConverter* converter)
+void STARTING_State::start(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -229,7 +229,7 @@ void STARTING_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void STARTING_State::run(BoostConverter* converter)
+void STARTING_State::run(Converter* converter)
 {
 	if (Syslog::faults() != 0)
 	{
@@ -241,7 +241,7 @@ void STARTING_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void STARTING_State::stop(BoostConverter* converter)
+void STARTING_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -250,7 +250,7 @@ void STARTING_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void STARTING_State::emergencyStop(BoostConverter* converter)
+void STARTING_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -263,7 +263,7 @@ void STARTING_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void IN_OPERATION_State::start(BoostConverter* converter)
+void IN_OPERATION_State::start(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -272,7 +272,7 @@ void IN_OPERATION_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void IN_OPERATION_State::run(BoostConverter* converter)
+void IN_OPERATION_State::run(Converter* converter)
 {
 	if (Syslog::faults() != 0)
 	{
@@ -284,7 +284,7 @@ void IN_OPERATION_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void IN_OPERATION_State::stop(BoostConverter* converter)
+void IN_OPERATION_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -293,7 +293,7 @@ void IN_OPERATION_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void IN_OPERATION_State::emergencyStop(BoostConverter* converter)
+void IN_OPERATION_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -306,7 +306,7 @@ void IN_OPERATION_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void STOPPING_State::start(BoostConverter* converter)
+void STOPPING_State::start(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -315,7 +315,7 @@ void STOPPING_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void STOPPING_State::run(BoostConverter* converter)
+void STOPPING_State::run(Converter* converter)
 {
 	if (Syslog::faults() != 0)
 	{
@@ -327,7 +327,7 @@ void STOPPING_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void STOPPING_State::stop(BoostConverter* converter)
+void STOPPING_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -336,7 +336,7 @@ void STOPPING_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void STOPPING_State::emergencyStop(BoostConverter* converter)
+void STOPPING_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -349,7 +349,7 @@ void STOPPING_State::emergencyStop(BoostConverter* converter)
 ///
 ///
 ///
-void POWERDOWN_State::start(BoostConverter* converter)
+void POWERDOWN_State::start(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -358,7 +358,7 @@ void POWERDOWN_State::start(BoostConverter* converter)
 ///
 ///
 ///
-void POWERDOWN_State::run(BoostConverter* converter)
+void POWERDOWN_State::run(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -367,7 +367,7 @@ void POWERDOWN_State::run(BoostConverter* converter)
 ///
 ///
 ///
-void POWERDOWN_State::stop(BoostConverter* converter)
+void POWERDOWN_State::stop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -376,12 +376,12 @@ void POWERDOWN_State::stop(BoostConverter* converter)
 ///
 ///
 ///
-void POWERDOWN_State::emergencyStop(BoostConverter* converter)
+void POWERDOWN_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
 
 
-} // namespace boostconverter
+} // namespace fuelcell
 
 

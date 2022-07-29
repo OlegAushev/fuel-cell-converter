@@ -9,7 +9,7 @@
 #pragma once
 
 
-#include "boostconverter/boostconverter.h"
+#include "fuelcell/converter/fuelcell_converter.h"
 
 
 /// @addtogroup settings
@@ -26,7 +26,7 @@ public:
 	/// System config
 	struct SystemConfig
 	{
-		BoostConverterConfig CONVERTER_CONFIG;
+		fuelcell::ConverterConfig CONVERTER_CONFIG;
 		mcu::PwmConfig<mcu::PWM_ONE_PHASE> PWM_CONFIG;
 	};
 
@@ -34,7 +34,7 @@ public:
 	static SystemConfig SYSTEM_CONFIG;
 
 private:
-	static BoostConverter* m_converter;
+	static fuelcell::Converter* m_converter;
 
 	Settings(const Settings& other);		// no copy constructor
 	Settings& operator=(const Settings& other);	// no copy assignment operator
@@ -49,7 +49,7 @@ public:
 	{
 		if (initialized()) return;
 
-		m_converter = static_cast<BoostConverter*>(NULL);
+		m_converter = static_cast<fuelcell::Converter*>(NULL);
 
 		setInitialized();
 	}
@@ -65,7 +65,7 @@ public:
 	 * @param converter - pointer to BoostConverter object
 	 * @return (none)
 	 */
-	void registerObjects(BoostConverter* converter)
+	void registerObjects(fuelcell::Converter* converter)
 	{
 		m_converter = converter;
 	}

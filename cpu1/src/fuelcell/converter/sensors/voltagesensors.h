@@ -1,6 +1,6 @@
 /**
  * @file
- * @ingroup boost_converter boost_converter_sensors
+ * @ingroup fuel_cell_converter
  */
 
 
@@ -11,7 +11,7 @@
 #include "emb/emb_common.h"
 
 
-/// @addtogroup boost_converter_sensors
+/// @addtogroup fuel_cell_converter
 /// @{
 
 
