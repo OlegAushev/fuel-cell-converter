@@ -12,7 +12,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "../mcodef.h"
+#include "../mco_def.h"
 #include "emb/emb_math.h"
 #include "mcu/system/mcu_system.h"
 #include "mcu/cputimers/mcu_cputimers.h"

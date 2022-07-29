@@ -34,7 +34,7 @@
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "mcu/adc/mcu_adc.h"
 #include "mcu/can/mcu_can.h"
-#include "mcoserver/mcoserver.h"
+#include "microcanopen/mco_server.h"
 #include "mcu/spi/mcu_spi.h"
 #include "mcu/dac/mcu_dac.h"
 
@@ -328,7 +328,7 @@ void main()
 	microcanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
 	microcanopen::TpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoService(converter);
 	microcanopen::RpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> rpdoService(converter);
-	microcanopen::McoServer<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> mcoServer(
+	microcanopen::Server<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> mcoServer(
 			mcu::GpioConfig(19, GPIO_19_CANTXA),
 			mcu::GpioConfig(18, GPIO_18_CANRXA),
 			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,

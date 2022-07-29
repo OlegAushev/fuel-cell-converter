@@ -10,7 +10,6 @@
 #include "mcu/support/mcu_support.h"
 #include "mcu/ipc/mcu_ipc.h"
 #include "mcu/cputimers/mcu_cputimers.h"
-#include "mcoserver/mcoserver.h"
 #include "mcu/spi/mcu_spi.h"
 #include "mcu/dac/mcu_dac.h"
 

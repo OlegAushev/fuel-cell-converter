@@ -2,7 +2,7 @@
 #pragma once
 
 #include "emb/emb_testrunner/emb_testrunner.h"
-#include "mcoserver/rpdoservice/rpdoservice.h"
+#include "microcanopen/rpdoservice/rpdoservice.h"
 
 
 namespace microcanopen {

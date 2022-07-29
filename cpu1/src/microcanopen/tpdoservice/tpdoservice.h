@@ -13,7 +13,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "../mcodef.h"
+#include "../mco_def.h"
 #include "mcu/can/mcu_can.h"
 
 // APP-SPECIFIC headers

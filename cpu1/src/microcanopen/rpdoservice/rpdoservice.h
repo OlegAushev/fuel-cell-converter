@@ -14,7 +14,7 @@
 #include "device.h"
 
 #include "emb/emb_common.h"
-#include "../mcodef.h"
+#include "../mco_def.h"
 #include "mcu/can/mcu_can.h"
 #include "mcu/ipc/mcu_ipc.h"
 #include "mcu/gpio/mcu_gpio.h"

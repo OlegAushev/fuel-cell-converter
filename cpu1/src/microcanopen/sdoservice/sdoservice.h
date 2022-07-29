@@ -15,7 +15,7 @@
 
 #include <string.h>
 #include <algorithm>
-#include "../mcodef.h"
+#include "../mco_def.h"
 #include "../objectdictionary/objectdictionary.h"
 #include "emb/emb_common.h"
 #include "emb/emb_algorithm.h"

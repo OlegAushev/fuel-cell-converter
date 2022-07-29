@@ -15,7 +15,7 @@
 #include "mcu/can/mcu_can.h"
 #include "mcu/ipc/mcu_ipc.h"
 #include "mcu/cputimers/mcu_cputimers.h"
-#include "mcodef.h"
+#include "mco_def.h"
 #include "tpdoservice/tpdoservice.h"
 #include "rpdoservice/rpdoservice.h"
 #include "sdoservice/sdoservice.h"
@@ -47,7 +47,7 @@ struct IpcFlags
  * @brief MicroCANopen server class.
  */
 template <mcu::CanModule Module, mcu::IpcMode Ipc, emb::MasterSlaveMode Mode>
-class McoServer : public emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >
+class Server : public emb::c28x::Singleton<Server<Module, Ipc, Mode> >
 {
 private:
 	mcu::Can<Module>* m_can;
@@ -78,11 +78,11 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(TpdoService<Module, Ipc, Mode>* tpdoService,
+	Server(TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcFlags& ipcFlags)
-		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
+		: emb::c28x::Singleton<Server<Module, Ipc, Mode> >(this)
 		, m_can(NULL)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
@@ -114,14 +114,14 @@ public:
 	 * @param rpdoService - pointer to RPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	McoServer(mcu::GpioConfig txPin, mcu::GpioConfig rxPin,
+	Server(mcu::GpioConfig txPin, mcu::GpioConfig rxPin,
 			mcu::CanBitrate bitrate, mcu::CanMode mode,
 			NodeId nodeId,
 			TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcFlags& ipcFlags)
-		: emb::c28x::Singleton<McoServer<Module, Ipc, Mode> >(this)
+		: emb::c28x::Singleton<Server<Module, Ipc, Mode> >(this)
 		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
@@ -159,7 +159,7 @@ public:
 	/**
 	 * @brief Server destructor.
 	 */
-	~McoServer()
+	~Server()
 	{
 		if (m_can)
 		{
@@ -388,7 +388,7 @@ protected:
 	 */
 	static __interrupt void onFrameReceived()
 	{
-		McoServer<Module, Ipc, Mode>* server = McoServer<Module, Ipc, Mode>::instance();
+		Server<Module, Ipc, Mode>* server = Server<Module, Ipc, Mode>::instance();
 		mcu::Can<Module>* can = mcu::Can<Module>::instance();
 
 		uint32_t interruptCause = CAN_getInterruptCause(can->base());
