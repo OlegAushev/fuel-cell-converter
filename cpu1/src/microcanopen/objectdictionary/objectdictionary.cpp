@@ -102,14 +102,14 @@ inline ODAccessStatus getConverterTempHeatsink(CobSdoData& dest)
 
 inline ODAccessStatus converterRelayOn(CobSdoData val)
 {
-	converter->relOn();
+	converter->turnRelayOn();
 	return OD_ACCESS_SUCCESS;
 }
 
 
 inline ODAccessStatus converterRelayOff(CobSdoData val)
 {
-	converter->relOff();
+	converter->turnRelayOff();
 	return OD_ACCESS_SUCCESS;
 }
 

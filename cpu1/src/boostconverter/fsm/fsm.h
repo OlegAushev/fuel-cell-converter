@@ -38,6 +38,7 @@ public:
 	virtual void start(BoostConverter* converter) = 0;
 	virtual void run(BoostConverter* converter) = 0;
 	virtual void stop(BoostConverter* converter) = 0;
+	virtual void emergencyStop(BoostConverter* converter) = 0;
 };
 
 
@@ -51,9 +52,27 @@ private:
 	STANDBY_State() : IState(STANDBY) {}
 public:
 	static STANDBY_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
+};
+
+
+/**
+ * @brief
+ */
+class IDLE_State : public IState
+{
+private:
+	static IDLE_State s_instance;
+	IDLE_State() : IState(IDLE) {}
+public:
+	static IDLE_State* instance() { return &s_instance; }
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 
@@ -67,9 +86,10 @@ private:
 	POWERUP_State() : IState(POWERUP) {}
 public:
 	static POWERUP_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 
@@ -83,9 +103,10 @@ private:
 	READY_State() : IState(READY) {}
 public:
 	static READY_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 
@@ -99,9 +120,10 @@ private:
 	STARTING_State() : IState(STARTING) {}
 public:
 	static STARTING_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 
@@ -115,9 +137,10 @@ private:
 	IN_OPERATION_State() : IState(IN_OPERATION) {}
 public:
 	static IN_OPERATION_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 
@@ -131,9 +154,10 @@ private:
 	STOPPING_State() : IState(STOPPING) {}
 public:
 	static STOPPING_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 
@@ -147,9 +171,10 @@ private:
 	POWERDOWN_State() : IState(POWERDOWN) {}
 public:
 	static POWERDOWN_State* instance() { return &s_instance; }
-	virtual void start(BoostConverter* drive);
-	virtual void run(BoostConverter* drive);
-	virtual void stop(BoostConverter* drive);
+	virtual void start(BoostConverter* converter);
+	virtual void run(BoostConverter* converter);
+	virtual void stop(BoostConverter* converter);
+	virtual void emergencyStop(BoostConverter* converter);
 };
 
 

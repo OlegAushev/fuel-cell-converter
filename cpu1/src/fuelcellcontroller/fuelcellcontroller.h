@@ -117,6 +117,11 @@ public:
 		return s_data;
 	}
 
+	static bool inOperation()
+	{
+		return emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_INOP) == FUELCELL_COUNT;
+	}
+
 private:
 	void runTx();
 	void runRx();

@@ -61,13 +61,14 @@ struct BoostConverterConfig
 class BoostConverter : public emb::c28x::Singleton<BoostConverter>
 {
 	friend class boostconverter::IState;
-	/*friend class boostconverter::STANDBY_State;
+	friend class boostconverter::STANDBY_State;
+	friend class boostconverter::IDLE_State;
 	friend class boostconverter::POWERUP_State;
 	friend class boostconverter::READY_State;
 	friend class boostconverter::STARTING_State;
 	friend class boostconverter::IN_OPERATION_State;
 	friend class boostconverter::STOPPING_State;
-	friend class boostconverter::POWERDOWN_State;*/
+	friend class boostconverter::POWERDOWN_State;
 private:
 	boostconverter::IState* m_state;
 	boostconverter::State m_stateId;
@@ -157,13 +158,13 @@ public:
 		}
 	}
 
-	void relOn() const
+	void turnRelayOn() const
 	{
 #ifndef CRD300
 		REL_PIN.set();
 #endif
 	}
-	void relOff() const
+	void turnRelayOff() const
 	{
 #ifndef CRD300
 		REL_PIN.reset();
