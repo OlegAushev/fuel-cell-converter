@@ -96,30 +96,126 @@ public:
 	Controller(const BoostConverter* converter,
 			const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin);
 
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
 	void run()
 	{
 		runTx();
 		runRx();
 	}
 
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
 	static void start()
 	{
 		mcu::setLocalIpcFlag(SIG_START.local);
 	}
 
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
 	static void stop()
 	{
 		mcu::setLocalIpcFlag(SIG_STOP.local);
 	}
 
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
 	static const Data& data()
 	{
 		return s_data;
 	}
 
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
 	static bool inOperation()
 	{
 		return emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_INOP) == FUELCELL_COUNT;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool hasOverheat()
+	{
+		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_OVERHEAT) > 0;
+		if (fault)
+		{
+			Syslog::setFault(Fault::FUELCELL_OVERHEAT);
+		}
+		return fault;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool hasBattLowCharge()
+	{
+		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_BATT_LOWCHARGE) > 0;
+		if (fault)
+		{
+			Syslog::setFault(Fault::FUELCELL_BATT_LOWCHARGE);
+		}
+		return fault;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool hasNoConnection()
+	{
+		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_NOCONNECTION) > 0;
+		if (fault)
+		{
+			Syslog::setFault(Fault::FUELCELL_NOCONNECTION);
+		}
+		return fault;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool hasLowPressure()
+	{
+		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_LOWPRESSURE) > 0;
+		if (fault)
+		{
+			Syslog::setFault(Fault::FUELCELL_LOWPRESSURE);
+		}
+		return fault;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool fault()
+	{
+		return hasOverheat() || hasBattLowCharge()
+				|| hasNoConnection() || hasLowPressure();
 	}
 
 private:
