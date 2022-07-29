@@ -24,6 +24,14 @@ namespace mcu {
 /// @{
 
 
+/// PWM states
+enum PwmState
+{
+	PWM_OFF,
+	PWM_ON
+};
+
+
 /// PWM modules
 enum PwmModule
 {
@@ -173,6 +181,8 @@ private:
 	uint16_t m_period;			// TBPRD register value
 	uint16_t m_phaseShift[PhaseCount];	// TBPHS registers values
 
+	PwmState m_state;
+
 private:
 	Pwm(const Pwm& other);			// no copy constructor
 	Pwm& operator=(const Pwm& other);	// no copy assignment operator
@@ -188,6 +198,7 @@ public:
 		, m_counterMode(cfg.counterMode)
 		, m_switchingFreq(cfg.switchingFreq)
 		, m_deadtimeCycles(cfg.deadtime_ns / TBCLK_CYCLE_NS)
+		, m_state(PWM_OFF)
 	{
 		for (size_t i = 0; i < PhaseCount; ++i)
 		{
@@ -464,10 +475,10 @@ public:
 
 		switch (pin.config().activeState)
 		{
-		case mcu::ACTIVE_LOW:
+		case emb::ACTIVE_LOW:
 			GPIO_setPadConfig(pin.config().no, GPIO_PIN_TYPE_PULLUP);
 			break;
-		case mcu::ACTIVE_HIGH:
+		case emb::ACTIVE_HIGH:
 			GPIO_setPadConfig(pin.config().no, GPIO_PIN_TYPE_INVERT);
 			break;
 		}
@@ -653,8 +664,9 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void start() const
+	void start()
 	{
+		m_state = PWM_ON;
 		for (size_t i = 0; i < PhaseCount; ++i)
 		{
 			EPWM_clearTripZoneFlag(m_module.base[i], EPWM_TZ_INTERRUPT | EPWM_TZ_FLAG_OST);
@@ -666,12 +678,23 @@ public:
 	 * @param (none)
 	 * @return (none)
 	 */
-	void stop() const
+	void stop()
 	{
 		for (size_t i = 0; i < PhaseCount; ++i)
 		{
 			EPWM_forceTripZoneEvent(m_module.base[i], EPWM_TZ_FORCE_EVENT_OST);
 		}
+		m_state = PWM_OFF;
+	}
+
+	/**
+	 * @brief Returns PWM state.
+	 * @param (none)
+	 * @return PWM state.
+	 */
+	PwmState state() const
+	{
+		return m_state;
 	}
 
 /*============================================================================*/

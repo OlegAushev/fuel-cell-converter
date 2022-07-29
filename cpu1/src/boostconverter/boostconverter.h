@@ -1,6 +1,4 @@
 /**
- * @defgroup boost_converter Boost-Converter
- *
  * @file
  * @ingroup boost_converter
  */
@@ -13,6 +11,8 @@
 #include "emb/emb_pair.h"
 #include "emb/emb_picontroller.h"
 #include "mcu/pwm/mcu_pwm.h"
+#include "boostconverterdef.h"
+#include "fsm/fsm.h"
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
 #include "sensors/temperaturesensors.h"
@@ -60,17 +60,12 @@ struct BoostConverterConfig
  */
 class BoostConverter : public emb::c28x::Singleton<BoostConverter>
 {
-public:
-	/// Converter states
-	enum BoostConverterState
-	{
-		CONVERTER_OFF,
-		CONVERTER_ON
-	};
-
 private:
+
+
+
 	BoostConverterConfig m_config;
-	BoostConverterState m_state;
+
 
 	static const float VDC_SMOOTH_FACTOR = 0.001;
 	emb::ExponentialMedianFilter<float, 3> m_voltageInFilter;
@@ -108,13 +103,6 @@ public:
 			const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig);
 
 	/**
-	 * @brief Returns converter state.
-	 * @param (none)
-	 * @return Converter state.
-	 */
-	BoostConverterState state() const { return m_state; }
-
-	/**
 	 * @brief Starts converter.
 	 * @param (none)
 	 * @return (none)
@@ -123,9 +111,8 @@ public:
 	{
 		if ((Syslog::faults() == 0)
 				&& (!Syslog::hasWarning(Warning::BATTERY_CHARGED)
-				&& (m_state == CONVERTER_OFF)))
+				&& (pwm.state() == mcu::PWM_OFF)))
 		{
-			m_state = CONVERTER_ON;
 			pwm.start();
 		}
 	}
@@ -138,7 +125,6 @@ public:
 	void stop()
 	{
 		pwm.stop();
-		m_state = CONVERTER_OFF;
 		m_currentController.reset();
 		m_dutycycleController.reset();
 	}

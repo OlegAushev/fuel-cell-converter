@@ -262,7 +262,7 @@ public:
 		{
 		case MCO_CAN1:
 			//saveDriveState(msg, TPDO_DRIVE(Module, Ipc, Mode)->state());
-			saveRunStatus(msg, converter->state());
+			saveRunStatus(msg, converter->pwm.state());
 			saveFaultStatus(msg, Syslog::faults());
 			saveWarningStatus(msg, Syslog::warnings());
 			// TODO tpdoService.saveOverheatStatus(msg,

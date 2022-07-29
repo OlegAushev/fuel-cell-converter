@@ -25,7 +25,6 @@ BoostConverter::BoostConverter(const BoostConverterConfig& converterConfig,
 		const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
 	: emb::c28x::Singleton<BoostConverter>(this)
 	, m_config(converterConfig)
-	, m_state(CONVERTER_OFF)
 	, m_voltageInFilter(VDC_SMOOTH_FACTOR)
 	, m_voltageOutFilter(VDC_SMOOTH_FACTOR)
 	, m_tempHeatsinkFilter(TEMP_SMOOTH_FACTOR)
@@ -192,7 +191,7 @@ __interrupt void BoostConverter::onAdcCurrentInSecondInterrupt()
 	// calculate average inductor current
 	converter->m_currentInFilter.push((converter->m_currentIn.first + converter->m_currentIn.second) / 2);
 
-	if (converter->m_state == CONVERTER_ON)
+	if (converter->pwm.state() == mcu::PWM_ON)
 	{
 		// run current controller to achieve cvVoltageIn
 		converter->m_currentController.update(
