@@ -133,7 +133,7 @@ public:
 			return 0;
 		}
 
-		m_txBitCount = _generateTxCanFrame(frameId, buf, len, BIT_STUFFING_ENABLED);
+		m_txBitCount = generateTxCanFrame(frameId, buf, len, BIT_STUFFING_ENABLED);
 		m_txIdx = 0;
 		m_txActive = true;
 		return len;
@@ -150,7 +150,7 @@ public:
 		int retval = 0;
 		if (m_rxDataReady)
 		{
-			retval = _parseRxCanFrame(frameId, buf, BIT_STUFFING_ENABLED);
+			retval = parseRxCanFrame(frameId, buf, BIT_STUFFING_ENABLED);
 			m_rxDataReady = false;
 		}
 		return retval;
@@ -159,9 +159,9 @@ public:
 protected:
 	void _init(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
 			const mcu::Gpio& clkPin, uint32_t bitrate);
-	int _generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
-	int _parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);
-	void _terminateRx();
+	int generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
+	int parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);
+	void terminateRx();
 	static __interrupt void onClockInterrupt();
 	static __interrupt void onRxStart();
 

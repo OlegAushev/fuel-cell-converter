@@ -39,7 +39,7 @@ Controller::Controller(const BoostConverter* converter,
 ///
 ///
 ///
-void Controller::_runTx()
+void Controller::runTx()
 {
 	static uint64_t timeTxPrev = 0;
 	TpdoMessage tpdo;
@@ -90,7 +90,7 @@ void Controller::_runTx()
 ///
 ///
 ///
-void Controller::_runRx()
+void Controller::runRx()
 {
 	static uint64_t frameCount = 0;
 	static uint64_t errorCount = 0;

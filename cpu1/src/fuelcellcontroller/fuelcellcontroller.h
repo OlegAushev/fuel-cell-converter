@@ -98,8 +98,8 @@ public:
 
 	void run()
 	{
-		_runTx();
-		_runRx();
+		runTx();
+		runRx();
 	}
 
 	static void start()
@@ -118,8 +118,8 @@ public:
 	}
 
 private:
-	void _runTx();
-	void _runRx();
+	void runTx();
+	void runRx();
 };
 
 

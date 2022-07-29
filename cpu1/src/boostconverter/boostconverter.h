@@ -60,12 +60,19 @@ struct BoostConverterConfig
  */
 class BoostConverter : public emb::c28x::Singleton<BoostConverter>
 {
+	friend class boostconverter::IState;
+	/*friend class boostconverter::STANDBY_State;
+	friend class boostconverter::POWERUP_State;
+	friend class boostconverter::READY_State;
+	friend class boostconverter::STARTING_State;
+	friend class boostconverter::IN_OPERATION_State;
+	friend class boostconverter::STOPPING_State;
+	friend class boostconverter::POWERDOWN_State;*/
 private:
-
-
+	boostconverter::IState* m_state;
+	boostconverter::State m_stateId;
 
 	BoostConverterConfig m_config;
-
 
 	static const float VDC_SMOOTH_FACTOR = 0.001;
 	emb::ExponentialMedianFilter<float, 3> m_voltageInFilter;
@@ -178,6 +185,13 @@ protected:
 	static __interrupt void onAdcCurrentInFirstInterrupt();
 	static __interrupt void onAdcCurrentInSecondInterrupt();
 	static __interrupt void onAdcTempHeatsinkInterrupt();
+
+private:
+	void changeState(boostconverter::IState* state)
+	{
+		m_state = state;
+		m_stateId = state->id();
+	}
 };
 
 

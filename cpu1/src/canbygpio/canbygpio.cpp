@@ -128,14 +128,14 @@ __interrupt void Transceiver::onClockInterrupt()
 			{
 				prevBit = 0;
 				sameBits = 0;
-				transceiver->_terminateRx();
+				transceiver->terminateRx();
 			}
 		}
 		else
 		{
 			prevBit = 0;
 			sameBits = 0;
-			transceiver->_terminateRx();
+			transceiver->terminateRx();
 		}
 	}
 }
@@ -144,7 +144,7 @@ __interrupt void Transceiver::onClockInterrupt()
 ///
 ///
 ///
-void Transceiver::_terminateRx()
+void Transceiver::terminateRx()
 {
 	m_rxActive = false;
 	m_rxBitCount = m_rxIdx;
@@ -173,7 +173,7 @@ __interrupt void Transceiver::onRxStart()
 ///
 ///
 ///
-int Transceiver::_generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled)
+int Transceiver::generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled)
 {
 	assert(len <= 9);
 	assert(frameId <= 0x7FF);
@@ -296,7 +296,7 @@ int Transceiver::_generateTxCanFrame(unsigned int frameId, const uint16_t* buf, 
 ///
 ///
 ///
-int Transceiver::_parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled)
+int Transceiver::parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled)
 {
 	// init bit stream
 	rxBitStream.fill(-1);
