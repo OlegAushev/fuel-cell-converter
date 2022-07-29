@@ -7,10 +7,13 @@
 #include "fsm.h"
 #include "../converter/fuelcell_converter.h"
 #include "../controller/fuelcell_controller.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 
 
 namespace fuelcell {
 
+
+uint64_t IState::s_timestamp = 0;
 
 STANDBY_State STANDBY_State::s_instance;
 IDLE_State IDLE_State::s_instance;
@@ -32,6 +35,7 @@ POWERDOWN_State POWERDOWN_State::s_instance;
 void IState::changeState(Converter* converter, IState* state)
 {
 	converter->changeState(state);
+	s_timestamp = mcu::SystemClock::now();
 }
 
 
@@ -44,7 +48,11 @@ void IState::changeState(Converter* converter, IState* state)
 ///
 void STANDBY_State::start(Converter* converter)
 {
-	// TODO /* DO NOTHING */
+	if ((!Syslog::faults()) && (!Controller::fault()))
+	{
+		Controller::start();
+		changeState(converter, POWERUP_State::instance());
+	}
 }
 
 
@@ -53,18 +61,7 @@ void STANDBY_State::start(Converter* converter)
 ///
 void STANDBY_State::run(Converter* converter)
 {
-	static float voltPrev = 0;
-	float voltDiff = fabsf(converter->voltageIn() - voltPrev);
-
-	if ((converter->voltageIn() > 110) && (voltDiff < 0.25))
-	{
-		converter->turnRelayOn();
-		changeState(converter, IDLE_State::instance());
-	}
-	else if (converter->voltageIn() < 90)
-	{
-		converter->turnRelayOff();
-	}
+	// TODO /* DO NOTHING */
 }
 
 
@@ -84,6 +81,79 @@ void STANDBY_State::emergencyStop(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
+
+
+/* ################################################################################################################## */
+/* ######################### */
+/* ##### POWERUP state ##### */
+/* ######################### */
+///
+///
+///
+void POWERUP_State::start(Converter* converter)
+{
+	// TODO /* DO NOTHING */
+}
+
+
+///
+///
+///
+void POWERUP_State::run(Converter* converter)
+{
+	if (fuelcell::Controller::inOperation()/* && vin */)
+	{
+		changeState(converter, READY_State::instance());
+	}
+	else if (mcu::SystemClock::now() - timestamp() > 15000)
+	{
+		Controller::stop();
+		Syslog::setFault(Fault::FUELCELL_START_FAILED);
+		changeState(converter, STANDBY_State::instance());
+	}
+}
+
+
+///
+///
+///
+void POWERUP_State::stop(Converter* converter)
+{
+	// TODO /* DO NOTHING */
+}
+
+
+///
+///
+///
+void POWERUP_State::emergencyStop(Converter* converter)
+{
+	// TODO /* DO NOTHING */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* ################################################################################################################## */
@@ -129,47 +199,7 @@ void IDLE_State::emergencyStop(Converter* converter)
 }
 
 
-/* ################################################################################################################## */
-/* ######################### */
-/* ##### POWERUP state ##### */
-/* ######################### */
-///
-///
-///
-void POWERUP_State::start(Converter* converter)
-{
-	// TODO /* DO NOTHING */
-}
 
-
-///
-///
-///
-void POWERUP_State::run(Converter* converter)
-{
-	if (fuelcell::Controller::inOperation())
-	{
-		changeState(converter, READY_State::instance());
-	}
-}
-
-
-///
-///
-///
-void POWERUP_State::stop(Converter* converter)
-{
-	// TODO /* DO NOTHING */
-}
-
-
-///
-///
-///
-void POWERUP_State::emergencyStop(Converter* converter)
-{
-	// TODO /* DO NOTHING */
-}
 
 
 /* ################################################################################################################## */

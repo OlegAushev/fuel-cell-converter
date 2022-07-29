@@ -9,6 +9,7 @@
 #pragma once
 
 
+#include "stdint.h"
 #include "../fuelcell_def.h"
 
 
@@ -28,12 +29,14 @@ class IState
 {
 private:
 	const ConverterState STATE_ID;
+	static uint64_t s_timestamp;
 protected:
 	IState(ConverterState stateId) : STATE_ID(stateId) {}
 	void changeState(Converter* converter, IState* state);
 public:
 	virtual ~IState() {}
 	ConverterState id() const { return STATE_ID; }
+	uint64_t timestamp() const { return s_timestamp; }
 	virtual void start(Converter* converter) = 0;
 	virtual void run(Converter* converter) = 0;
 	virtual void stop(Converter* converter) = 0;
