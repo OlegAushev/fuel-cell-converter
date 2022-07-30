@@ -207,7 +207,7 @@ public:
 	 */
 	void processRsdo(uint64_t rawMsg)
 	{
-		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		assert(Mode != emb::MODE_SLAVE);
 
 		if (!mcu::isLocalIpcFlagSet(RSDO_RECEIVED.local))
 		{
@@ -216,7 +216,6 @@ public:
 		}
 		else
 		{
-			Syslog::setWarning(Warning::CAN_BUS_WARNING);
 			Syslog::addMessage(Syslog::SDO_REQUEST_LOST);
 		}
 	}

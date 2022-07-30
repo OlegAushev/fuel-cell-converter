@@ -206,7 +206,7 @@ public:
 	 */
 	void processRpdo1(uint64_t rawMsg)
 	{
-		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		assert(Mode != emb::MODE_SLAVE);
 		CobRpdo1 pdoMsg(rawMsg);
 		// APP-SPECIFIC BEGIN
 		switch (Module)
@@ -231,7 +231,7 @@ public:
 	 */
 	void processRpdo2(uint64_t rawMsg)
 	{
-		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		assert(Mode != emb::MODE_SLAVE);
 		CobRpdo2 pdoMsg(rawMsg);
 		// APP-SPECIFIC BEGIN
 		switch (Module)
@@ -256,7 +256,7 @@ public:
 	 */
 	void processRpdo3(uint64_t rawMsg)
 	{
-		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		assert(Mode != emb::MODE_SLAVE);
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
@@ -279,7 +279,7 @@ public:
 	 */
 	void processRpdo4(uint64_t rawMsg)
 	{
-		EMB_STATIC_ASSERT(Mode != emb::MODE_SLAVE);
+		assert(Mode != emb::MODE_SLAVE);
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{

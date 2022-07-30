@@ -63,6 +63,9 @@ private:
 	uint64_t m_heartbeatPeriod;
 	emb::Array<uint64_t, 4> m_tpdoPeriods;
 
+	// signals from ISR
+	emb::Array<bool, 5> m_hasRawRdo;
+
 	// IPC flags
 	mcu::IpcFlag RPDO1_RECEIVED;
 	mcu::IpcFlag RPDO2_RECEIVED;
@@ -88,12 +91,12 @@ public:
 		, m_rpdoService(rpdoService)
 		, m_sdoService(sdoService)
 		// IPC flags
-		, RSDO_RECEIVED(ipcFlags.RSDO_RECEIVED)
-		, TSDO_READY(ipcFlags.TSDO_READY)
 		, RPDO1_RECEIVED(ipcFlags.RPDO1_RECEIVED)
 		, RPDO2_RECEIVED(ipcFlags.RPDO2_RECEIVED)
 		, RPDO3_RECEIVED(ipcFlags.RPDO3_RECEIVED)
 		, RPDO4_RECEIVED(ipcFlags.RPDO4_RECEIVED)
+		, RSDO_RECEIVED(ipcFlags.RSDO_RECEIVED)
+		, TSDO_READY(ipcFlags.TSDO_READY)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_SLAVE);
 		EMB_STATIC_ASSERT(Ipc != mcu::IPC_MODE_SINGLECORE);
@@ -101,6 +104,8 @@ public:
 		rpdoService->initIpcFlags(RPDO1_RECEIVED, RPDO2_RECEIVED,
 				RPDO3_RECEIVED, RPDO4_RECEIVED);
 		sdoService->initIpcFlags(RSDO_RECEIVED, TSDO_READY);
+
+		m_hasRawRdo.fill(false);
 	}
 
 	/**
@@ -127,12 +132,12 @@ public:
 		, m_sdoService(sdoService)
 		, m_nodeId(nodeId.value)
 		// IPC flags
-		, RSDO_RECEIVED(ipcFlags.RSDO_RECEIVED)
-		, TSDO_READY(ipcFlags.TSDO_READY)
 		, RPDO1_RECEIVED(ipcFlags.RPDO1_RECEIVED)
 		, RPDO2_RECEIVED(ipcFlags.RPDO2_RECEIVED)
 		, RPDO3_RECEIVED(ipcFlags.RPDO3_RECEIVED)
 		, RPDO4_RECEIVED(ipcFlags.RPDO4_RECEIVED)
+		, RSDO_RECEIVED(ipcFlags.RSDO_RECEIVED)
+		, TSDO_READY(ipcFlags.TSDO_READY)
 	{
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 
@@ -151,6 +156,8 @@ public:
 
 		m_heartbeatPeriod = 0;
 		m_tpdoPeriods.fill(0);
+
+		m_hasRawRdo.fill(false);
 
 		m_can->registerInterruptHandler(onFrameReceived);
 		m_state = PRE_OPERATIONAL;
@@ -235,6 +242,7 @@ public:
 		switch (Ipc)
 		{
 		case mcu::IPC_MODE_SINGLECORE:
+			processRawRdo();
 			m_rpdoService->respondToProcessedRpdo();
 			m_sdoService->processRequest();
 			runPeriodicTasks();
@@ -244,6 +252,7 @@ public:
 			switch (Mode)
 			{
 			case emb::MODE_MASTER:
+				processRawRdo();
 				runPeriodicTasks();
 				sendSdoResponse();
 				break;
@@ -311,6 +320,45 @@ public:
 		m_can->send(TSDO, m_msgObjects[TSDO].data, cobDataLen[TSDO]);
 
 		mcu::resetIpcFlag(TSDO_READY, Ipc);
+	}
+
+	/**
+	 * @brief Processes raw RPDO and RSDO received by ISR.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void processRawRdo()
+	{
+		for (size_t i = 0; i < m_hasRawRdo.size(); ++i)
+		{
+			if (m_hasRawRdo[i])
+			{
+				uint64_t rawMsg = 0;
+				uint32_t rdo = 2 * i + static_cast<uint32_t>(RPDO1);
+				emb::c28x::from_bytes8<uint64_t>(rawMsg, m_msgObjects[rdo].data);
+				switch (rdo)
+				{
+				case RPDO1:
+					m_rpdoService->processRpdo1(rawMsg);
+					break;
+				case RPDO2:
+					m_rpdoService->processRpdo2(rawMsg);
+					break;
+				case RPDO3:
+					m_rpdoService->processRpdo3(rawMsg);
+					break;
+				case RPDO4:
+					m_rpdoService->processRpdo4(rawMsg);
+					break;
+				case RSDO:
+					m_sdoService->processRsdo(rawMsg);
+					break;
+				default:
+					break;
+				}
+				m_hasRawRdo[i] = false;
+			}
+		}
 	}
 
 protected:
@@ -413,47 +461,22 @@ protected:
 			break;
 
 		case RPDO1:
-		{
-			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
-			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
-			server->m_rpdoService->processRpdo1(rawPdoMsg);
-			break;
-		}
-
 		case RPDO2:
-		{
-			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
-			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
-			server->m_rpdoService->processRpdo2(rawPdoMsg);
-			break;
-		}
-
 		case RPDO3:
-		{
-			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
-			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
-			server->m_rpdoService->processRpdo3(rawPdoMsg);
-			break;
-		}
-
 		case RPDO4:
-		{
-			can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
-			uint64_t rawPdoMsg = 0;
-			emb::c28x::from_bytes8<uint64_t>(rawPdoMsg, server->m_msgObjects[interruptCause].data);
-			server->m_rpdoService->processRpdo4(rawPdoMsg);
-			break;
-		}
-
 		case RSDO:
 		{
-			can->recv(RSDO, server->m_msgObjects[RSDO].data);
-			uint64_t rawSdoMsg = 0;
-			emb::c28x::from_bytes8<uint64_t>(rawSdoMsg, server->m_msgObjects[RSDO].data);
-			server->m_sdoService->processRsdo(rawSdoMsg);
+			uint32_t rdoIdx = (interruptCause - static_cast<uint32_t>(RPDO1)) / 2;
+			if (!server->m_hasRawRdo[rdoIdx])
+			{
+				// there is no raw unprocessed data of this type
+				can->recv(interruptCause, server->m_msgObjects[interruptCause].data);
+				server->m_hasRawRdo[rdoIdx] = true;
+			}
+			else
+			{
+				Syslog::setWarning(Warning::CAN_BUS_OVERRUN);
+			}
 			break;
 		}
 
