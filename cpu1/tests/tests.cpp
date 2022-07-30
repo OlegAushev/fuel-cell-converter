@@ -4,9 +4,9 @@
 
 #include "mcu_test/mcu_test.h"
 #include "mcu/adc/mcu_adc.h"
-#include "mcoserver_test/tpdoservice_test/tpdoservice_test.h"
-#include "mcoserver_test/rpdoservice_test/rpdoservice_test.h"
-#include "mcoserver_test/sdoservice_test/sdoservice_test.h"
+#include "ucanopen_test/tpdoservice_test/tpdoservice_test.h"
+#include "ucanopen_test/rpdoservice_test/rpdoservice_test.h"
+#include "ucanopen_test/sdoservice_test/sdoservice_test.h"
 
 
 void RUN_TESTS()

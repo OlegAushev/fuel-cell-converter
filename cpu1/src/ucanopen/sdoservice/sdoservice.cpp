@@ -11,28 +11,28 @@ namespace ucanopen {
 
 
 #ifdef DUALCORE
-CobSdo mcoCan1RsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN1_RSDO_DATA"), retain));
-CobSdo mcoCan2RsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN2_RSDO_DATA"), retain));
-CobSdo mcoCan1RsdoDataNonShared;
-CobSdo mcoCan2RsdoDataNonShared;
+CobSdo can1RsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN1_RSDO_DATA"), retain));
+CobSdo can2RsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN2_RSDO_DATA"), retain));
+CobSdo can1RsdoDataNonShared;
+CobSdo can2RsdoDataNonShared;
 #else
-CobSdo mcoCan1RsdoDataShared;
-CobSdo mcoCan2RsdoDataShared;
-CobSdo mcoCan1RsdoDataNonShared;
-CobSdo mcoCan2RsdoDataNonShared;
+CobSdo can1RsdoDataShared;
+CobSdo can2RsdoDataShared;
+CobSdo can1RsdoDataNonShared;
+CobSdo can2RsdoDataNonShared;
 #endif
 
 
 #ifdef DUALCORE
-CobSdo mcoCan1TsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN1_TSDO_DATA"), retain));
-CobSdo mcoCan2TsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN2_TSDO_DATA"), retain));
-CobSdo mcoCan1TsdoDataNonShared;
-CobSdo mcoCan2TsdoDataNonShared;
+CobSdo can1TsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN1_TSDO_DATA"), retain));
+CobSdo can2TsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN2_TSDO_DATA"), retain));
+CobSdo can1TsdoDataNonShared;
+CobSdo can2TsdoDataNonShared;
 #else
-CobSdo mcoCan1TsdoDataShared;
-CobSdo mcoCan2TsdoDataShared;
-CobSdo mcoCan1TsdoDataNonShared;
-CobSdo mcoCan2TsdoDataNonShared;
+CobSdo can1TsdoDataShared;
+CobSdo can2TsdoDataShared;
+CobSdo can1TsdoDataNonShared;
+CobSdo can2TsdoDataNonShared;
 #endif
 
 

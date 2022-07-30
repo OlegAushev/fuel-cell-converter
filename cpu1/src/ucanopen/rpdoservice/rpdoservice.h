@@ -200,7 +200,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Processes RPDO1 message. Used by McoServer's ISR as callback.
+	 * @brief Processes RPDO1 message. Used by Server's ISR as callback.
 	 * @param rawMsg - RPDO1 message raw data.
 	 * @return (none)
 	 */
@@ -225,7 +225,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Processes RPDO2 message. Used by McoServer's ISR as callback.
+	 * @brief Processes RPDO2 message. Used by Server's ISR as callback.
 	 * @param rawMsg - RPDO2 message raw data.
 	 * @return (none)
 	 */
@@ -250,7 +250,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Processes RPDO3 message. Used by McoServer's ISR as callback.
+	 * @brief Processes RPDO3 message. Used by Server's ISR as callback.
 	 * @param rawMsg - RPDO3 message raw data.
 	 * @return (none)
 	 */
@@ -273,7 +273,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Processes RPDO4 message. Used by McoServer's ISR as callback.
+	 * @brief Processes RPDO4 message. Used by Server's ISR as callback.
 	 * @param rawMsg - RPDO4 message raw data.
 	 * @return (none)
 	 */
@@ -297,7 +297,7 @@ public:
 public:
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Checks if there is processed new RPDO data placed in static structure and utilizes it. Used by McoServer's run().
+	 * @brief Checks if there is processed new RPDO data placed in static structure and utilizes it. Used by Server's run().
 	 * @param (none)
 	 * @return (none)
 	 */

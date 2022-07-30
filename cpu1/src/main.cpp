@@ -49,7 +49,7 @@
 #include "support/crd300/controller.h"
 #endif
 
-#ifdef RUNTESTS
+#ifdef TEST_BUILD
 #include "emb/emb_testrunner/emb_testrunner.h"
 #endif
 
@@ -66,7 +66,7 @@ uint16_t dacbInput = 0;
 const char* Syslog::DEVICE_NAME = "FCC";
 const uint32_t Syslog::FIRMWARE_VERSION = FIRMWARE_VERSION_DEF;
 
-#if defined(RUNTESTS)
+#if defined(TEST_BUILD)
 const char* Syslog::BUILD_CONFIGURATION = "TEST";
 #elif defined(DEBUG)
 const char* Syslog::BUILD_CONFIGURATION = "DBG";
@@ -120,7 +120,7 @@ void main()
 #endif
 #endif
 
-#ifdef RUNTESTS
+#ifdef TEST_BUILD
 	RUN_TESTS();
 #endif
 

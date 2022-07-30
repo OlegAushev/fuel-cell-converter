@@ -31,14 +31,14 @@ namespace ucanopen {
 /// @{
 
 
-extern CobSdo mcoCan1RsdoDataShared;
-extern CobSdo mcoCan2RsdoDataShared;
-extern CobSdo mcoCan1RsdoDataNonShared;
-extern CobSdo mcoCan2RsdoDataNonShared;
-extern CobSdo mcoCan1TsdoDataShared;
-extern CobSdo mcoCan2TsdoDataShared;
-extern CobSdo mcoCan1TsdoDataNonShared;
-extern CobSdo mcoCan2TsdoDataNonShared;
+extern CobSdo can1RsdoDataShared;
+extern CobSdo can2RsdoDataShared;
+extern CobSdo can1RsdoDataNonShared;
+extern CobSdo can2RsdoDataNonShared;
+extern CobSdo can1TsdoDataShared;
+extern CobSdo can2TsdoDataShared;
+extern CobSdo can1TsdoDataNonShared;
+extern CobSdo can2TsdoDataNonShared;
 
 
 /**
@@ -75,12 +75,12 @@ public:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
-				s_rsdoData = &mcoCan1RsdoDataNonShared;
-				s_tsdoData = &mcoCan1TsdoDataNonShared;
+				s_rsdoData = &can1RsdoDataNonShared;
+				s_tsdoData = &can1TsdoDataNonShared;
 				break;
 			case mcu::IPC_MODE_DUALCORE:
-				s_rsdoData = &mcoCan1RsdoDataShared;
-				s_tsdoData = &mcoCan1TsdoDataShared;
+				s_rsdoData = &can1RsdoDataShared;
+				s_tsdoData = &can1TsdoDataShared;
 				break;
 			}
 			break;
@@ -88,12 +88,12 @@ public:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
-				s_rsdoData = &mcoCan2RsdoDataNonShared;
-				s_tsdoData = &mcoCan2TsdoDataNonShared;
+				s_rsdoData = &can2RsdoDataNonShared;
+				s_tsdoData = &can2TsdoDataNonShared;
 				break;
 			case mcu::IPC_MODE_DUALCORE:
-				s_rsdoData = &mcoCan2RsdoDataShared;
-				s_tsdoData = &mcoCan2TsdoDataShared;
+				s_rsdoData = &can2RsdoDataShared;
+				s_tsdoData = &can2TsdoDataShared;
 				break;
 			}
 			break;
@@ -112,12 +112,12 @@ public:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
-				s_rsdoData = &mcoCan1RsdoDataNonShared;
-				s_tsdoData = &mcoCan1TsdoDataNonShared;
+				s_rsdoData = &can1RsdoDataNonShared;
+				s_tsdoData = &can1TsdoDataNonShared;
 				break;
 			case mcu::IPC_MODE_DUALCORE:
-				s_rsdoData = &mcoCan1RsdoDataShared;
-				s_tsdoData = &mcoCan1TsdoDataShared;
+				s_rsdoData = &can1RsdoDataShared;
+				s_tsdoData = &can1TsdoDataShared;
 				break;
 			}
 			break;
@@ -125,12 +125,12 @@ public:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
-				s_rsdoData = &mcoCan2RsdoDataNonShared;
-				s_tsdoData = &mcoCan2TsdoDataNonShared;
+				s_rsdoData = &can2RsdoDataNonShared;
+				s_tsdoData = &can2TsdoDataNonShared;
 				break;
 			case mcu::IPC_MODE_DUALCORE:
-				s_rsdoData = &mcoCan2RsdoDataShared;
-				s_tsdoData = &mcoCan2TsdoDataShared;
+				s_rsdoData = &can2RsdoDataShared;
+				s_tsdoData = &can2TsdoDataShared;
 				break;
 			}
 			break;
@@ -201,7 +201,7 @@ public:
 	}
 
 	/**
-	 * @brief Saves RSDO messages and generates IPC signal. Used by McoServer's ISR as callback.
+	 * @brief Saves RSDO messages and generates IPC signal. Used by Server's ISR as callback.
 	 * @param rawMsg - RSDO message raw data
 	 * @return (none)
 	 */
@@ -228,7 +228,7 @@ public:
 	static const CobSdo& tsdoData() { return *s_tsdoData; }
 
 	/**
-	 * @brief Checks if there is new RSDO message and processes it. Used by McoServer's run().
+	 * @brief Checks if there is new RSDO message and processes it. Used by Server's run().
 	 * @param (none)
 	 * @return (none)
 	 */

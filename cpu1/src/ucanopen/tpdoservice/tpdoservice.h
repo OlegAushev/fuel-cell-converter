@@ -250,7 +250,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Creates TPDO1 message data. Used by McoServer as callback.
+	 * @brief Creates TPDO1 message data. Used by Server as callback.
 	 * @param (none)
 	 * @return TPDO1 message raw data.
 	 */
@@ -300,7 +300,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Creates TPDO2 message data. Used by McoServer as callback.
+	 * @brief Creates TPDO2 message data. Used by Server as callback.
 	 * @param (none)
 	 * @return TPDO2 message raw data.
 	 */
@@ -339,7 +339,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Creates TPDO3 message data. Used by McoServer as callback.
+	 * @brief Creates TPDO3 message data. Used by Server as callback.
 	 * @param (none)
 	 * @return TPDO3 message raw data.
 	 */
@@ -368,7 +368,7 @@ public:
 
 	/**
 	 * @ingroup ucanopen_app_spec
-	 * @brief Creates TPDO4 message data. Used by McoServer as callback.
+	 * @brief Creates TPDO4 message data. Used by Server as callback.
 	 * @param (none)
 	 * @return TPDO4 message raw data.
 	 */
