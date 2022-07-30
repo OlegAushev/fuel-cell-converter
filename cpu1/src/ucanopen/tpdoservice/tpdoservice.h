@@ -1,9 +1,9 @@
 /**
- * @defgroup mco_tpdo_service TPDO Service
- * @ingroup microcanopen
+ * @defgroup ucanopen_tpdo_service TPDO Service
+ * @ingroup ucanopen
  *
  * @file
- * @ingroup microcanopen mco_tpdo_service
+ * @ingroup ucanopen ucanopen_tpdo_service
  */
 
 
@@ -13,7 +13,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "../mco_def.h"
+#include "../ucanopen_def.h"
 #include "mcu/can/mcu_can.h"
 
 // APP-SPECIFIC headers
@@ -21,8 +21,8 @@
 #include "fuelcell/converter/fuelcell_converter.h"
 
 
-namespace microcanopen {
-/// @addtogroup mco_tpdo_service
+namespace ucanopen {
+/// @addtogroup ucanopen_tpdo_service
 /// @{
 
 
@@ -31,7 +31,7 @@ namespace microcanopen {
 /* ========================================================================== */
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief TPDO1 message data.
  */
 struct CobTpdo1
@@ -80,7 +80,7 @@ struct CobTpdo1
 
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief TPDO2 message data.
  */
 struct CobTpdo2
@@ -125,7 +125,7 @@ struct CobTpdo2
 
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief TPDO3 message data.
  */
 struct CobTpdo3
@@ -170,7 +170,7 @@ struct CobTpdo3
 
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief TPDO4 message data.
  */
 struct CobTpdo4
@@ -237,7 +237,7 @@ private:
 	TpdoService& operator=(const TpdoService& other);	// no copy assignment operator
 public:
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Configures service.
 	 */
 	TpdoService(fuelcell::Converter* _converter)
@@ -249,7 +249,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Creates TPDO1 message data. Used by McoServer as callback.
 	 * @param (none)
 	 * @return TPDO1 message raw data.
@@ -260,7 +260,7 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			//saveDriveState(msg, TPDO_DRIVE(Module, Ipc, Mode)->state());
 			saveRunStatus(msg, converter->pwm.state());
 			saveFaultStatus(msg, Syslog::faults());
@@ -285,7 +285,7 @@ public:
 					|| syslog.hasWarning(Warning::FIELD_WINDING_OVERHEATING));
 			*/
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// FIXME fuel cell emulation
 			msg.can2.temperature = 10;
 			msg.can2.cellVoltage = 10;
@@ -299,7 +299,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Creates TPDO2 message data. Used by McoServer as callback.
 	 * @param (none)
 	 * @return TPDO2 message raw data.
@@ -310,7 +310,7 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			/* TODO
 			tpdoService.saveMotorTemp(msg, m_drive->motor.temperature(srm::Motor::STATOR));
 			tpdoService.saveOutputVoltagePU(msg, m_drive->model.pwmDutyCycle());
@@ -324,7 +324,7 @@ public:
 			tpdoService.saveCaseAirTemp(msg, m_drive->converter.temperature(srm::Converter::AIR));
 			*/
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// FIXME fuel cell emulation
 			msg.can2.temperature = 20;
 			msg.can2.cellVoltage = 20;
@@ -338,7 +338,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Creates TPDO3 message data. Used by McoServer as callback.
 	 * @param (none)
 	 * @return TPDO3 message raw data.
@@ -349,11 +349,11 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			msg.can1.syslogInfo = static_cast<uint32_t>(Syslog::readMessage());
 			Syslog::popMessage();
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// FIXME fuel cell emulation
 			msg.can2.temperature = 30;
 			msg.can2.cellVoltage = 30;
@@ -367,7 +367,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Creates TPDO4 message data. Used by McoServer as callback.
 	 * @param (none)
 	 * @return TPDO4 message raw data.
@@ -378,11 +378,11 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			saveFaults(msg, Syslog::faults());
 			saveWarnings(msg, Syslog::warnings());
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// FIXME fuel cell emulation
 			msg.can2.temperature = 40;
 			msg.can2.cellVoltage = 40;
@@ -785,6 +785,6 @@ private:
 
 
 /// @}
-} // namespace microcanopen
+} // namespace ucanopen
 
 

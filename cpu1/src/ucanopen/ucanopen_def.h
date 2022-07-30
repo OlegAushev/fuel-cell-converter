@@ -1,32 +1,32 @@
 /**
- * @defgroup microcanopen MicroCANopen
+ * @defgroup ucanopen uCANopen
  *
- * @defgroup mco_app_spec Application-specific
- * @ingroup microcanopen
+ * @defgroup ucanopen_app_spec Application-specific
+ * @ingroup ucanopen
  *
  * @file
- * @ingroup microcanopen
+ * @ingroup ucanopen
  */
 
 
 #pragma once
 
 
-#define MCO_CAN1 mcu::CANA
-#define MCO_CAN2 mcu::CANB
+#define UCANOPEN_CAN1 mcu::CANA
+#define UCANOPEN_CAN2 mcu::CANB
 
 
-namespace microcanopen {
-/// @addtogroup microcanopen
+namespace ucanopen {
+/// @addtogroup ucanopen
 /// @{
 
 
 /**
- * @brief MicroCANopen server config.
+ * @brief uCANopen server config.
  */
-struct McoServerConfig
+struct ServerConfig
 {
-	uint32_t periodHeartbeat;	// uint32_t is used to be accessed via microcanopen
+	uint32_t periodHeartbeat;	// uint32_t is used to be accessed via ucanopen
 	uint32_t periodTpdo1;
 	uint32_t periodTpdo2;
 	uint32_t periodTpdo3;
@@ -312,6 +312,6 @@ enum TaskStatus
 
 
 /// @}
-} // namespace microcanopen
+} // namespace ucanopen
 
 

@@ -2,10 +2,10 @@
 #pragma once
 
 #include "emb/emb_testrunner/emb_testrunner.h"
-#include "microcanopen/sdoservice/sdoservice.h"
+#include "ucanopen/sdoservice/sdoservice.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 class SdoServiceTest
 {
@@ -14,4 +14,4 @@ public:
 };
 
 
-} // namespace microcanopen
+} // namespace ucanopen

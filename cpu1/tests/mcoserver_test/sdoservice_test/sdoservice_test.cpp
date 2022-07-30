@@ -2,7 +2,7 @@
 #include "sdoservice_test.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 void SdoServiceTest::MessageProcessingTest()
 {
@@ -43,6 +43,6 @@ void SdoServiceTest::MessageProcessingTest()
 */
 }
 
-} // namespace microcanopen
+} // namespace ucanopen
 
 

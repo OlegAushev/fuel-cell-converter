@@ -2,7 +2,7 @@
 #include "rpdoservice_test.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 void RpdoServiceTest::MessageProcessingTest()
 {
@@ -10,4 +10,4 @@ void RpdoServiceTest::MessageProcessingTest()
 	EMB_ASSERT_EQUAL(sizeof(CobRpdo2), 4);
 }
 
-} // namespace microcanopen
+} // namespace ucanopen

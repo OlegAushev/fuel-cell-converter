@@ -2,10 +2,10 @@
 #pragma once
 
 #include "emb/emb_testrunner/emb_testrunner.h"
-#include "microcanopen/tpdoservice/tpdoservice.h"
+#include "ucanopen/tpdoservice/tpdoservice.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 class TpdoServiceTest
 {
@@ -14,4 +14,4 @@ public:
 };
 
 
-} // namespace microcanopen
+} // namespace ucanopen

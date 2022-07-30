@@ -1,13 +1,13 @@
 /**
  * @file
- * @ingroup microcanopen mco_od
+ * @ingroup ucanopen ucanopen_od
  */
 
 
 #include "objectdictionary.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 namespace od {
 

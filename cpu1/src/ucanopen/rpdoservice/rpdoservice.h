@@ -1,9 +1,9 @@
 /**
- * @defgroup mco_rpdo_service RPDO Service
- * @ingroup microcanopen
+ * @defgroup ucanopen_rpdo_service RPDO Service
+ * @ingroup ucanopen
  *
  * @file
- * @ingroup microcanopen mco_rpdo_service
+ * @ingroup ucanopen ucanopen_rpdo_service
  */
 
 
@@ -14,7 +14,7 @@
 #include "device.h"
 
 #include "emb/emb_common.h"
-#include "../mco_def.h"
+#include "../ucanopen_def.h"
 #include "mcu/can/mcu_can.h"
 #include "mcu/ipc/mcu_ipc.h"
 #include "mcu/gpio/mcu_gpio.h"
@@ -24,8 +24,8 @@
 #include "fuelcell/converter/fuelcell_converter.h"
 
 
-namespace microcanopen {
-/// @addtogroup mco_rpdo_service
+namespace ucanopen {
+/// @addtogroup ucanopen_rpdo_service
 /// @{
 
 
@@ -34,7 +34,7 @@ namespace microcanopen {
 /* ========================================================================== */
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief RPDO1 message data.
  */
 struct CobRpdo1
@@ -63,7 +63,7 @@ struct CobRpdo1
 
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief RPDO2 message data.
  */
 struct CobRpdo2
@@ -90,7 +90,7 @@ struct CobRpdo2
 
 
 /**
- * @ingroup mco_app_spec
+ * @ingroup ucanopen_app_spec
  * @brief Data storage for IPC.
  */
 struct ProcessedRpdoData
@@ -162,7 +162,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Configures service on server that responds to processed RPDO messages.
 	 */
 	RpdoService(fuelcell::Converter* _converter)
@@ -199,7 +199,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Processes RPDO1 message. Used by McoServer's ISR as callback.
 	 * @param rawMsg - RPDO1 message raw data.
 	 * @return (none)
@@ -211,11 +211,11 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			s_rpdoProcessedData->bitRun = pdoMsg.can1.run;
 			s_rpdoProcessedData->bitEmergencyStop = pdoMsg.can1.emergencyStop;
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED
 			break;
 		}
@@ -224,7 +224,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Processes RPDO2 message. Used by McoServer's ISR as callback.
 	 * @param rawMsg - RPDO2 message raw data.
 	 * @return (none)
@@ -236,11 +236,11 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			s_rpdoProcessedData->speedRef = RpdoService::speedRef(pdoMsg);
 			s_rpdoProcessedData->torquePuRef = RpdoService::torquePuRef(pdoMsg);
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -249,7 +249,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Processes RPDO3 message. Used by McoServer's ISR as callback.
 	 * @param rawMsg - RPDO3 message raw data.
 	 * @return (none)
@@ -260,10 +260,10 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			// RESERVED
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -272,7 +272,7 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Processes RPDO4 message. Used by McoServer's ISR as callback.
 	 * @param rawMsg - RPDO4 message raw data.
 	 * @return (none)
@@ -283,10 +283,10 @@ public:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			// RESERVED
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -296,7 +296,7 @@ public:
 
 public:
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Checks if there is processed new RPDO data placed in static structure and utilizes it. Used by McoServer's run().
 	 * @param (none)
 	 * @return (none)
@@ -319,7 +319,7 @@ private:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
 			if (s_rpdoProcessedData->bitRun == true)
 			{
@@ -330,7 +330,7 @@ private:
 				converter->stop();
 			}
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -347,10 +347,10 @@ private:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			// RESERVED;
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -367,10 +367,10 @@ private:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			// RESERVED
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -387,10 +387,10 @@ private:
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			// RESERVED
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			// RESERVED;
 			break;
 		}
@@ -403,7 +403,7 @@ private:
 /* ========================================================================== */
 private:
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Returns speed reference from COB RPDO2.
 	 * @param - COB RPDO2
 	 * @return Speed reference.
@@ -411,7 +411,7 @@ private:
 	static float speedRef(const CobRpdo2& msg) { return msg.can1.speed; }
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Returns torque per-unit reference from COB RPDO2.
 	 * @param - COB RPDO2
 	 * @return Torque per-unit reference.
@@ -424,6 +424,6 @@ private:
 
 
 /// @}
-} // namespace microcanopen
+} // namespace ucanopen
 
 

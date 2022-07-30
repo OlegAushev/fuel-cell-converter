@@ -1,9 +1,9 @@
 /**
- * @defgroup mco_server Server
- * @ingroup microcanopen
+ * @defgroup ucanopen_server Server
+ * @ingroup ucanopen
  *
  * @file
- * @ingroup microcanopen mco_server
+ * @ingroup ucanopen ucanopen_server
  */
 
 
@@ -15,7 +15,7 @@
 #include "mcu/can/mcu_can.h"
 #include "mcu/ipc/mcu_ipc.h"
 #include "mcu/cputimers/mcu_cputimers.h"
-#include "mco_def.h"
+#include "ucanopen_def.h"
 #include "tpdoservice/tpdoservice.h"
 #include "rpdoservice/rpdoservice.h"
 #include "sdoservice/sdoservice.h"
@@ -24,8 +24,8 @@
 #include "syslog/syslog.h"
 
 
-namespace microcanopen {
-/// @addtogroup mco_server
+namespace ucanopen {
+/// @addtogroup ucanopen_server
 /// @{
 
 
@@ -44,7 +44,7 @@ struct IpcFlags
 
 
 /**
- * @brief MicroCANopen server class.
+ * @brief uCANopen server class.
  */
 template <mcu::CanModule Module, mcu::IpcMode Ipc, emb::MasterSlaveMode Mode>
 class Server : public emb::c28x::Singleton<Server<Module, Ipc, Mode> >
@@ -490,6 +490,6 @@ protected:
 
 
 /// @}
-} // namespace microcanopen
+} // namespace ucanopen
 
 

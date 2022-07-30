@@ -2,10 +2,10 @@
 #pragma once
 
 #include "emb/emb_testrunner/emb_testrunner.h"
-#include "microcanopen/rpdoservice/rpdoservice.h"
+#include "ucanopen/rpdoservice/rpdoservice.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 class RpdoServiceTest
 {
@@ -14,7 +14,7 @@ public:
 };
 
 
-} // namespace microcanopen
+} // namespace ucanopen
 
 
 

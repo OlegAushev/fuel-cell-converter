@@ -1,9 +1,9 @@
 /**
- * @defgroup mco_od Object Dictionary
- * @ingroup microcanopen
+ * @defgroup ucanopen_od Object Dictionary
+ * @ingroup ucanopen
  *
  * @file
- * @ingroup microcanopen mco_od
+ * @ingroup ucanopen ucanopen_od
  */
 
 
@@ -12,7 +12,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "../mco_def.h"
+#include "../ucanopen_def.h"
 #include "emb/emb_math.h"
 #include "mcu/system/mcu_system.h"
 #include "mcu/cputimers/mcu_cputimers.h"
@@ -23,28 +23,28 @@
 #include "fuelcell/controller/fuelcell_controller.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 /**
- * @ingroup mco_od
- * @brief MicroCANopen object dictionary
+ * @ingroup ucanopen_od
+ * @brief uCANopen object dictionary
  */
 extern ODEntry OBJECT_DICTIONARY[];
 
 /**
- * @ingroup mco_od
- * @brief MicroCANopen object dictionary size
+ * @ingroup ucanopen_od
+ * @brief uCANopen object dictionary size
  */
 extern const size_t OD_SIZE;
 
 /**
- * @ingroup mco_od
- * @brief Pointer to MicroCANopen object dictionary end.
+ * @ingroup ucanopen_od
+ * @brief Pointer to uCANopen object dictionary end.
  */
 extern ODEntry* OBJECT_DICTIONARY_END;
 
 namespace od {
-/// @addtogroup mco_od
+/// @addtogroup ucanopen_od
 /// @{
 
 
@@ -54,7 +54,7 @@ extern fuelcell::Converter* converter;
 
 /// @}
 } // namespace od
-} // namespace microcanopen
+} // namespace ucanopen
 
 
 

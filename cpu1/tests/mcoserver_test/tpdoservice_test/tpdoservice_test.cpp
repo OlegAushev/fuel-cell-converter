@@ -2,7 +2,7 @@
 #include "tpdoservice_test.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 void TpdoServiceTest::MessageProcessingTest()
 {
@@ -49,4 +49,4 @@ void TpdoServiceTest::MessageProcessingTest()
 */
 }
 
-} // namespace microcanopen
+} // namespace ucanopen

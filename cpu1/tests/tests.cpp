@@ -47,9 +47,9 @@ void RUN_TESTS()
 	EMB_RUN_TEST(McuTest::GpioTest);
 	EMB_RUN_TEST(McuTest::ClockTest);
 
-	EMB_RUN_TEST(microcanopen::TpdoServiceTest::MessageProcessingTest);
-	EMB_RUN_TEST(microcanopen::RpdoServiceTest::MessageProcessingTest);
-	EMB_RUN_TEST(microcanopen::SdoServiceTest::MessageProcessingTest);
+	EMB_RUN_TEST(ucanopen::TpdoServiceTest::MessageProcessingTest);
+	EMB_RUN_TEST(ucanopen::RpdoServiceTest::MessageProcessingTest);
+	EMB_RUN_TEST(ucanopen::SdoServiceTest::MessageProcessingTest);
 
 
 	emb::TestRunner::printResult();

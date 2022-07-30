@@ -1,9 +1,9 @@
 /**
- * @defgroup mco_sdo_service SDO Service
- * @ingroup microcanopen
+ * @defgroup ucanopen_sdo_service SDO Service
+ * @ingroup ucanopen
  *
  * @file
- * @ingroup microcanopen mco_sdo_service
+ * @ingroup ucanopen ucanopen_sdo_service
  */
 
 
@@ -15,7 +15,7 @@
 
 #include <string.h>
 #include <algorithm>
-#include "../mco_def.h"
+#include "../ucanopen_def.h"
 #include "../objectdictionary/objectdictionary.h"
 #include "emb/emb_common.h"
 #include "emb/emb_algorithm.h"
@@ -26,8 +26,8 @@
 #include "syslog/syslog.h"
 
 
-namespace microcanopen {
-/// @addtogroup mco_sdo_service
+namespace ucanopen {
+/// @addtogroup ucanopen_sdo_service
 /// @{
 
 
@@ -71,7 +71,7 @@ public:
 		EMB_STATIC_ASSERT(Mode == emb::MODE_MASTER);
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
@@ -84,7 +84,7 @@ public:
 				break;
 			}
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
@@ -101,14 +101,14 @@ public:
 	}
 
 	/**
-	 * @ingroup mco_app_spec
+	 * @ingroup ucanopen_app_spec
 	 * @brief Configures service on server that processes requests.
 	 */
 	SdoService(fuelcell::Converter* converter)
 	{
 		switch (Module)
 		{
-		case MCO_CAN1:
+		case UCANOPEN_CAN1:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
@@ -121,7 +121,7 @@ public:
 				break;
 			}
 			break;
-		case MCO_CAN2:
+		case UCANOPEN_CAN2:
 			switch (Ipc)
 			{
 			case mcu::IPC_MODE_SINGLECORE:
@@ -333,6 +333,6 @@ CobSdo* SdoService<Module, Ipc, Mode>::s_tsdoData = static_cast<CobSdo*>(NULL);
 
 
 /// @}
-} // namespace microcanopen
+} // namespace ucanopen
 
 

@@ -1,18 +1,18 @@
 /**
  * @file
- * @ingroup microcanopen mco_sdo_service
+ * @ingroup ucanopen ucanopen_sdo_service
  */
 
 
 #include "sdoservice.h"
 
 
-namespace microcanopen {
+namespace ucanopen {
 
 
 #ifdef DUALCORE
-CobSdo mcoCan1RsdoDataShared __attribute__((section("SHARED_MCO_CAN1_RSDO_DATA"), retain));
-CobSdo mcoCan2RsdoDataShared __attribute__((section("SHARED_MCO_CAN2_RSDO_DATA"), retain));
+CobSdo mcoCan1RsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN1_RSDO_DATA"), retain));
+CobSdo mcoCan2RsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN2_RSDO_DATA"), retain));
 CobSdo mcoCan1RsdoDataNonShared;
 CobSdo mcoCan2RsdoDataNonShared;
 #else
@@ -24,8 +24,8 @@ CobSdo mcoCan2RsdoDataNonShared;
 
 
 #ifdef DUALCORE
-CobSdo mcoCan1TsdoDataShared __attribute__((section("SHARED_MCO_CAN1_TSDO_DATA"), retain));
-CobSdo mcoCan2TsdoDataShared __attribute__((section("SHARED_MCO_CAN2_TSDO_DATA"), retain));
+CobSdo mcoCan1TsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN1_TSDO_DATA"), retain));
+CobSdo mcoCan2TsdoDataShared __attribute__((section("SHARED_UCANOPEN_CAN2_TSDO_DATA"), retain));
 CobSdo mcoCan1TsdoDataNonShared;
 CobSdo mcoCan2TsdoDataNonShared;
 #else
@@ -36,6 +36,6 @@ CobSdo mcoCan2TsdoDataNonShared;
 #endif
 
 
-} // namespace microcanopen
+} // namespace ucanopen
 
 
