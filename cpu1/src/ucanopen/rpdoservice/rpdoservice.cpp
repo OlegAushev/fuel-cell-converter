@@ -10,7 +10,7 @@
 namespace ucanopen {
 
 
-/// Common IPC data storage for all MCO servers.
+/// Common IPC RPDO data storage for all servers
 #ifdef DUALCORE
 ProcessedRpdoData rpdoProcessedDataShared __attribute__((section("SHARED_UCANOPEN_RPDO_DATA"), retain));
 ProcessedRpdoData rpdoProcessedDataNonShared;
