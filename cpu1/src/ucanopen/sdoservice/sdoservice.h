@@ -216,7 +216,7 @@ public:
 		}
 		else
 		{
-			Syslog::addMessage(Syslog::SDO_REQUEST_LOST);
+			Syslog::addMessage(sys::Message::SDO_REQUEST_LOST);
 		}
 	}
 

@@ -8,14 +8,14 @@
 
 
 #ifdef DUALCORE
-emb::Queue<Syslog::Message, 32> Syslog::m_messages __attribute__((section("SHARED_SYSLOG_MESSAGES"), retain));
+emb::Queue<sys::Message::Message, 32> Syslog::m_messages __attribute__((section("SHARED_SYSLOG_MESSAGES"), retain));
 #else
-emb::Queue<Syslog::Message, 32> Syslog::m_messages;
+emb::Queue<sys::Message::Message, 32> Syslog::m_messages;
 #endif
 
 
 #ifdef DUALCORE
-Syslog::Message Syslog::m_cpu2Message __attribute__((section("SHARED_SYSLOG_MESSAGE_CPU2"), retain)) = Syslog::NO_MESSAGE;
+sys::Message::Message Syslog::m_cpu2Message __attribute__((section("SHARED_SYSLOG_MESSAGE_CPU2"), retain)) = sys::Message::NO_MESSAGE;
 #endif
 
 
@@ -34,4 +34,5 @@ Syslog::Data* Syslog::m_thisCpuData;
 mcu::IpcFlag Syslog::RESET_FAULTS_AND_WARNINGS;
 mcu::IpcFlag Syslog::ADD_MESSAGE;
 mcu::IpcFlag Syslog::POP_MESSAGE;
+
 

@@ -453,7 +453,7 @@ protected:
 			case CAN_STATUS_LEC_BIT1:
 			case CAN_STATUS_LEC_BIT0:
 			case CAN_STATUS_LEC_CRC:
-				Syslog::setWarning(Warning::CAN_BUS_WARNING);
+				Syslog::setWarning(sys::Warning::CAN_BUS_WARNING);
 				break;
 			default:
 				break;
@@ -475,7 +475,7 @@ protected:
 			}
 			else
 			{
-				Syslog::setWarning(Warning::CAN_BUS_OVERRUN);
+				Syslog::setWarning(sys::Warning::CAN_BUS_OVERRUN);
 			}
 			break;
 		}

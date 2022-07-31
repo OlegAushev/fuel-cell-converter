@@ -16,61 +16,11 @@
 #include "mcu/system/mcu_system.h"
 #include "mcu/ipc/mcu_ipc.h"
 
+#include "syslogconfig.h"
+
 
 /// @addtogroup syslog
 /// @{
-
-
-namespace Fault {
-
-
-/// System faults
-enum Fault
-{
-	OVP_IN,
-	UVP_IN,
-	OVP_OUT,
-	OCP_IN,
-	DRIVER_FLT,
-	MODULE_OVERTEMP,
-	HEATSINK_OVERTEMP,
-	CONNECTION_LOST,
-	CAN_BUS_ERROR,
-	RUNTIME_ERROR,
-	EMERGENCY_STOP,
-	FUELCELL_START_FAILED,
-	FUELCELL_OVERHEAT,
-	FUELCELL_BATT_LOWCHARGE,
-	FUELCELL_NOCONNECTION,
-	FUELCELL_LOWPRESSURE,
-};
-
-
-const uint32_t CRITICAL_FAULTS = (1UL << DRIVER_FLT)
-				| (1UL << RUNTIME_ERROR);
-
-
-} // namespace Fault
-
-
-namespace Warning {
-
-
-/// System warnings
-enum Warning
-{
-	BATTERY_CHARGED,
-	CAN_BUS_WARNING,
-	CAN_BUS_OVERRUN,
-	MODULE_OVERHEATING,
-	CASE_OVERHEATING,
-};
-
-
-const uint32_t CRITICAL_WARNINGS = 0;
-
-
-} // namespace Warning
 
 
 /**
@@ -79,28 +29,6 @@ const uint32_t CRITICAL_WARNINGS = 0;
 class Syslog : public emb::Monostate<Syslog>
 {
 public:
-	/// System messages
-	enum Message
-	{
-		NO_MESSAGE,
-		DEVICE_BOOT_CPU1,
-		DEVICE_CPU1_BOOT_SUCCESS,
-		DEVICE_BOOT_CPU2,
-		DEVICE_CPU2_BOOT_SUCCESS,
-		DEVICE_CPU1_READY,
-		DEVICE_CPU2_READY,
-		DEVICE_READY,
-		DEVICE_BUSY,
-		DEVICE_SW_RESET,
-		CONFIGS_READ_SUCCESS,
-		CONFIGS_READ_FAIL,
-		CONFIGS_RESET_SUCCESS,
-		CONFIGS_RESET_FAIL,
-		CONFIGS_APPLY_SUCCESS,
-		CONFIGS_APPLY_FAIL,
-		SDO_REQUEST_LOST,
-	};
-
 	struct IpcFlags
 	{
 		mcu::IpcFlag RESET;
@@ -114,9 +42,9 @@ private:
 	Syslog& operator=(const Syslog& other);	// no copy assignment operator
 
 private:
-	static emb::Queue<Syslog::Message, 32> m_messages;
+	static emb::Queue<sys::Message::Message, 32> m_messages;
 #ifdef DUALCORE
-	static Syslog::Message m_cpu2Message;
+	static sys::Message::Message m_cpu2Message;
 #endif
 
 	struct Data
@@ -168,8 +96,8 @@ public:
 		m_thisCpuData->faults = 0;
 		m_thisCpuData->warnings = 0;
 		m_thisCpuData->enabledFaultMask = 0xFFFFFFFF;
-		m_thisCpuData->criticalFaultMask = Fault::CRITICAL_FAULTS;
-		m_thisCpuData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
+		m_thisCpuData->criticalFaultMask = sys::Fault::CRITICAL_FAULTS;
+		m_thisCpuData->criticalWarningMask = sys::Warning::CRITICAL_WARNINGS;
 
 		RESET_FAULTS_AND_WARNINGS = ipcFlags.RESET;
 		ADD_MESSAGE = ipcFlags.ADD_MESSAGE;
@@ -183,7 +111,7 @@ public:
 	 * @param msg - message to be added
 	 * @return (none)
 	 */
-	static void addMessage(Syslog::Message msg)
+	static void addMessage(sys::Message::Message msg)
 	{
 		mcu::CRITICAL_SECTION;
 #ifdef CPU1
@@ -206,11 +134,11 @@ public:
 	 * @param (none)
 	 * @return Front message from Syslog message queue.
 	 */
-	static Syslog::Message readMessage()
+	static sys::Message::Message readMessage()
 	{
 		if (m_messages.empty())
 		{
-			return Syslog::NO_MESSAGE;
+			return sys::Message::NO_MESSAGE;
 		}
 		return m_messages.front();
 	}
@@ -280,7 +208,7 @@ public:
 	 * @param fault - fault to be enabled
 	 * @return (none)
 	 */
-	static void enableFault(Fault::Fault fault)
+	static void enableFault(sys::Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
 		m_thisCpuData->enabledFaultMask = m_thisCpuData->enabledFaultMask | (1UL << fault);
@@ -302,7 +230,7 @@ public:
 	 * @param fault - fault to be disabled
 	 * @return (none)
 	 */
-	static void disableFault(Fault::Fault fault)
+	static void disableFault(sys::Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
 		m_thisCpuData->enabledFaultMask = m_thisCpuData->enabledFaultMask & ((1UL << fault) ^ 0xFFFFFFFF);
@@ -324,7 +252,7 @@ public:
 	 * @param fault  - fault to be set
 	 * @return (none)
 	 */
-	static void setFault(Fault::Fault fault)
+	static void setFault(sys::Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
 		m_thisCpuData->faults = m_thisCpuData->faults | ((1UL << fault) & m_thisCpuData->enabledFaultMask);
@@ -335,7 +263,7 @@ public:
 	 * @param fault - warning to be checked
 	 * @return \c true if fault is set, \c false otherwise.
 	 */
-	static bool hasFault(Fault::Fault fault)
+	static bool hasFault(sys::Fault::Fault fault)
 	{
 #ifdef DUALCORE
 		return (m_cpu1Data.faults | m_cpu2Data.faults) & (1UL << fault);
@@ -349,7 +277,7 @@ public:
 	 * @param fault - fault to be reset
 	 * @return (none)
 	 */
-	static void resetFault(Fault::Fault fault)
+	static void resetFault(sys::Fault::Fault fault)
 	{
 		mcu::CRITICAL_SECTION;
 		m_thisCpuData->faults = m_thisCpuData->faults & ((1UL << fault) ^ 0xFFFFFFFF);
@@ -388,7 +316,7 @@ public:
 	 * @param warning - warning to be set
 	 * @return (none)
 	 */
-	static void setWarning(Warning::Warning warning)
+	static void setWarning(sys::Warning::Warning warning)
 	{
 		mcu::CRITICAL_SECTION;
 		m_thisCpuData->warnings = m_thisCpuData->warnings | (1UL << warning);
@@ -399,7 +327,7 @@ public:
 	 * @param warning - warning to be checked
 	 * @return \c true if warning is set, \c false otherwise.
 	 */
-	static bool hasWarning(Warning::Warning warning)
+	static bool hasWarning(sys::Warning::Warning warning)
 	{
 #ifdef DUALCORE
 		return (m_cpu1Data.warnings | m_cpu2Data.warnings) & (1UL << warning);
@@ -413,7 +341,7 @@ public:
 	 * @param warning - warning to be reset
 	 * @return (none)
 	 */
-	static void resetWarning(Warning::Warning warning)
+	static void resetWarning(sys::Warning::Warning warning)
 	{
 		mcu::CRITICAL_SECTION;
 		m_thisCpuData->warnings = m_thisCpuData->warnings & ((1UL << warning) ^ 0xFFFFFFFF);
@@ -468,8 +396,8 @@ public:
 	static void enableCriticalMasks()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->criticalFaultMask = Fault::CRITICAL_FAULTS;
-		m_thisCpuData->criticalWarningMask = Warning::CRITICAL_WARNINGS;
+		m_thisCpuData->criticalFaultMask = sys::Fault::CRITICAL_FAULTS;
+		m_thisCpuData->criticalWarningMask = sys::Warning::CRITICAL_WARNINGS;
 	}
 };
 

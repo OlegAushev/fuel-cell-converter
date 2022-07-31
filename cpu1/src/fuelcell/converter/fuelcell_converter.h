@@ -119,7 +119,7 @@ public:
 	void start()
 	{
 		if ((Syslog::faults() == 0)
-				&& (!Syslog::hasWarning(Warning::BATTERY_CHARGED)
+				&& (!Syslog::hasWarning(sys::Warning::BATTERY_CHARGED)
 				&& (pwm.state() == mcu::PWM_OFF)))
 		{
 			pwm.start();

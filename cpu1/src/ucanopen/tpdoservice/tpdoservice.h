@@ -279,10 +279,10 @@ public:
 			tpdoService.saveFaultStatus(msg, syslog.faults());
 			tpdoService.saveWarningStatus(msg, syslog.warnings());
 			tpdoService.saveOverheatStatus(msg,
-					syslog.hasWarning(Warning::JUNCTION_OVERHEATING)
-					|| syslog.hasWarning(Warning::CASE_AIR_OVERHEATING)
-					|| syslog.hasWarning(Warning::STATOR_OVERHEATING)
-					|| syslog.hasWarning(Warning::FIELD_WINDING_OVERHEATING));
+					syslog.hasWarning(sys::Warning::JUNCTION_OVERHEATING)
+					|| syslog.hasWarning(sys::Warning::CASE_AIR_OVERHEATING)
+					|| syslog.hasWarning(sys::Warning::STATOR_OVERHEATING)
+					|| syslog.hasWarning(sys::Warning::FIELD_WINDING_OVERHEATING));
 			*/
 			break;
 		case UCANOPEN_CAN2:

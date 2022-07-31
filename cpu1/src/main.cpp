@@ -144,7 +144,7 @@ void main()
 		.POP_MESSAGE = mcu::IpcFlag(12)
 	};
 	Syslog::init(syslogIpcFlags);
-	Syslog::addMessage(Syslog::DEVICE_CPU1_BOOT_SUCCESS);
+	Syslog::addMessage(sys::Message::DEVICE_CPU1_BOOT_SUCCESS);
 
 // BEGIN of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
@@ -261,9 +261,9 @@ void main()
 	/*#############*/
 #ifdef DUALCORE
 	mcu::bootCpu2();
-	Syslog::addMessage(Syslog::DEVICE_BOOT_CPU2);
+	Syslog::addMessage(sys::Message::DEVICE_BOOT_CPU2);
 	mcu::waitForRemoteIpcFlag(CPU2_BOOTED);
-	Syslog::addMessage(Syslog::DEVICE_CPU2_BOOT_SUCCESS);
+	Syslog::addMessage(sys::Message::DEVICE_CPU2_BOOT_SUCCESS);
 #endif
 
 /*####################################################################################################################*/
@@ -353,7 +353,7 @@ void main()
 
 #ifdef DUALCORE
 	mcu::waitForRemoteIpcFlag(CPU2_PERIPHERY_CONFIGURED);
-	Syslog::addMessage(Syslog::DEVICE_CPU2_READY);
+	Syslog::addMessage(sys::Message::DEVICE_CPU2_READY);
 #endif
 
 	mcu::enableMaskableInterrupts();
@@ -381,14 +381,14 @@ void main()
 	// CPU1 has finished all preparations, CPU2 can enable all interrupts
 	mcu::setLocalIpcFlag(CPU1_PERIPHERY_CONFIGURED);
 #endif
-	Syslog::addMessage(Syslog::DEVICE_CPU1_READY);
+	Syslog::addMessage(sys::Message::DEVICE_CPU1_READY);
 	ucanopenServer.enable();
 
 #warning "Watchdog disabled"
 	//mcu::SystemClock::enableWatchdog();
 
 /*####################################################################################################################*/
-	Syslog::addMessage(Syslog::DEVICE_READY);
+	Syslog::addMessage(sys::Message::DEVICE_READY);
 
 	while (true)
 	{

@@ -108,7 +108,7 @@ void POWERUP_State::run(Converter* converter)
 	else if (mcu::SystemClock::now() - timestamp() > 15000)
 	{
 		Controller::stop();
-		Syslog::setFault(Fault::FUELCELL_START_FAILED);
+		Syslog::setFault(sys::Fault::FUELCELL_START_FAILED);
 		changeState(converter, STANDBY_State::instance());
 	}
 }
