@@ -23,7 +23,7 @@
 #include "mcu/ipc/mcu_ipc.h"
 
 // APP-SPECIFIC headers
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 
 
 namespace ucanopen {

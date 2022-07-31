@@ -69,10 +69,6 @@ private:
 	static mcu::IpcFlag POP_MESSAGE;
 
 public:
-	static const char* DEVICE_NAME;
-	static const uint32_t FIRMWARE_VERSION;
-	static const char* BUILD_CONFIGURATION;
-
 	/**
 	 * @brief Initializes Syslog.
 	 * @param (none)

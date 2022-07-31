@@ -16,7 +16,7 @@
 #include "sensors/currentsensors.h"
 #include "sensors/voltagesensors.h"
 #include "sensors/temperaturesensors.h"
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 
 #include "profiler/profiler.h"
 

@@ -16,7 +16,7 @@
 #include "canbygpio/canbygpio.h"
 #include "../fuelcell_def.h"
 #include "../converter/fuelcell_converter.h"
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 
 
 namespace fuelcell {

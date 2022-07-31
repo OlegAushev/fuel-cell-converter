@@ -21,7 +21,7 @@
 #include "sdoservice/sdoservice.h"
 
 // APP-SPECIFIC headers
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 
 
 namespace ucanopen {

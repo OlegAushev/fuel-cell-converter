@@ -17,7 +17,7 @@
 #include "mcu/can/mcu_can.h"
 
 // APP-SPECIFIC headers
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 #include "fuelcell/converter/fuelcell_converter.h"
 
 

@@ -51,9 +51,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/mcu</locationURI>
 		</link>
 		<link>
-			<name>src/syslog</name>
+			<name>src/sys</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/syslog</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/sys</locationURI>
 		</link>
 		<link>
 			<name>src/ucanopen</name>

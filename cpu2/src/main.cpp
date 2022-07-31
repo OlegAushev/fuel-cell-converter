@@ -13,7 +13,7 @@
 #include "mcu/spi/mcu_spi.h"
 #include "mcu/dac/mcu_dac.h"
 
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 #include "clocktasks/cpu2clocktasks.h"
 #include "fuelcell/controller/fuelcell_controller.h"
 

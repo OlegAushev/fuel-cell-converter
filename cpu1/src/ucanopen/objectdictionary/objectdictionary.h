@@ -18,7 +18,8 @@
 #include "mcu/cputimers/mcu_cputimers.h"
 
 // APP-SPECIFIC headers
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
+#include "sys/sysinfo/sysinfo.h"
 #include "fuelcell/converter/fuelcell_converter.h"
 #include "fuelcell/controller/fuelcell_controller.h"
 

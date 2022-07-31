@@ -1,5 +1,6 @@
 ///
-#define FIRMWARE_VERSION_DEF 2206
+#define FIRMWARE_VERSION_STRDEF "v22.07"
+#define FIRMWARE_VERSION_NUMDEF 2207
 
 
 //#define TEST_CAN_BY_GPIO
@@ -38,7 +39,7 @@
 #include "mcu/spi/mcu_spi.h"
 #include "mcu/dac/mcu_dac.h"
 
-#include "syslog/syslog.h"
+#include "sys/syslog/syslog.h"
 #include "clocktasks/cpu1clocktasks.h"
 #include "fuelcell/converter/fuelcell_converter.h"
 #include "settings/settings.h"
@@ -60,19 +61,23 @@ fuelcell::Converter* converter;
 uint16_t dacaInput = 0;
 uint16_t dacbInput = 0;
 
+
 /* ========================================================================== */
 /* ============================ SYSTEM INFO ================================= */
 /* ========================================================================== */
-const char* Syslog::DEVICE_NAME = "FCC";
-const uint32_t Syslog::FIRMWARE_VERSION = FIRMWARE_VERSION_DEF;
+const char* sys::DEVICE_NAME = "Fuel cell converter";
+const char* sys::DEVICE_NAME_SHORT = "FCC";
+const char* sys::FIRMWARE_VERSION = FIRMWARE_VERSION_STRDEF;
+const uint32_t sys::FIRMWARE_VERSION_NUM = FIRMWARE_VERSION_NUMDEF;
 
 #if defined(TEST_BUILD)
-const char* Syslog::BUILD_CONFIGURATION = "TEST";
+const char* sys::BUILD_CONFIGURATION = "TEST";
 #elif defined(DEBUG)
-const char* Syslog::BUILD_CONFIGURATION = "DBG";
+const char* sys::BUILD_CONFIGURATION = "DBG";
 #else
-const char* Syslog::BUILD_CONFIGURATION = "RLS";
+const char* sys::BUILD_CONFIGURATION = "RLS";
 #endif
+const char* sys::BUILD_CONFIGURATION_SHORT = sys::BUILD_CONFIGURATION;
 
 
 /* ========================================================================== */

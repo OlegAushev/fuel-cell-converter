@@ -22,7 +22,7 @@ fuelcell::Converter* converter = static_cast<fuelcell::Converter*>(NULL);
 inline ODAccessStatus getDeviceName(CobSdoData& dest)
 {
 	uint16_t name[4] = {0};
-	memcpy(name, Syslog::DEVICE_NAME, sizeof(name)/sizeof(*name));
+	memcpy(name, sys::DEVICE_NAME_SHORT, sizeof(name)/sizeof(*name));
 	uint32_t nameRaw = 0;
 	emb::c28x::from_bytes8<uint32_t>(nameRaw, name);
 	memcpy(&dest, &nameRaw, sizeof(uint32_t));
@@ -31,14 +31,14 @@ inline ODAccessStatus getDeviceName(CobSdoData& dest)
 
 inline ODAccessStatus getSoftwareVersion(CobSdoData& dest)
 {
-	memcpy(&dest, &Syslog::FIRMWARE_VERSION, sizeof(uint32_t));
+	memcpy(&dest, &sys::FIRMWARE_VERSION_NUM, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }
 
 inline ODAccessStatus getBuildConfiguration(CobSdoData& dest)
 {
 	uint16_t name[4];
-	memcpy(name, Syslog::BUILD_CONFIGURATION, sizeof(name)/sizeof(*name));
+	memcpy(name, sys::BUILD_CONFIGURATION_SHORT, sizeof(name)/sizeof(*name));
 	uint32_t nameRaw;
 	emb::c28x::from_bytes8<uint32_t>(nameRaw, name);
 	memcpy(&dest, &nameRaw, sizeof(uint32_t));
