@@ -131,27 +131,25 @@ inline ODAccessStatus fuelcellStop(CobSdoData val)
 } // namespace od
 
 extern ODEntry OBJECT_DICTIONARY[] = {
-{{0x1008, 0x00}, {"SYSTEM", "INFO", "DEVICE_NAME", "", OD_STRING, true, false, OD_NO_DIRECT_ACCESS, od::getDeviceName, OD_NO_WRITE_ACCESS}},
-{{0x5FFF, 0x00}, {"SYSTEM", "INFO", "FIRMWARE_VERSION", "", OD_UINT32, true, false, OD_NO_DIRECT_ACCESS, od::getSoftwareVersion, OD_NO_WRITE_ACCESS}},
-{{0x5FFF, 0x01}, {"SYSTEM", "INFO", "BUILD_CONFIGURATION", "", OD_STRING, true, false, OD_NO_DIRECT_ACCESS, od::getBuildConfiguration, OD_NO_WRITE_ACCESS}},
+{{0x1008, 0x00}, {"SYSTEM", "INFO", "DEVICE_NAME", "", OD_STRING, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getDeviceName, OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x5FFF, 0x00}, {"SYSTEM", "INFO", "FIRMWARE_VERSION", "", OD_UINT32, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getSoftwareVersion, OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x5FFF, 0x01}, {"SYSTEM", "INFO", "BUILD_CONFIGURATION", "", OD_STRING, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getBuildConfiguration, OD_NO_INDIRECT_WRITE_ACCESS}},
 
 
-{{0x2000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	true,	false,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_WRITE_ACCESS}},
-{{0x2000, 0x03}, {"WATCH", "WATCH", "VOLTAGE_IN",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_WRITE_ACCESS}},
-{{0x2000, 0x04}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_WRITE_ACCESS}},
-{{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	true,	true,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
-{{0x2000, 0x0C}, {"WATCH", "WATCH", "PHA_TEMP",		"°C",	OD_FLOAT32, 	true,	false,	OD_NO_DIRECT_ACCESS,	od::getConverterTempHeatsink,	OD_NO_WRITE_ACCESS}},
+{{0x2000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2000, 0x03}, {"WATCH", "WATCH", "VOLTAGE_IN",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2000, 0x04}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	OD_ACCESS_RW,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
+{{0x2000, 0x0C}, {"WATCH", "WATCH", "PHA_TEMP",		"°C",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterTempHeatsink,	OD_NO_INDIRECT_WRITE_ACCESS}},
 
 
-{{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterRelayOn}},
-{{0x2001, 0x01}, {"CONVERTER",	"CONVERTER", "RELAY OFF",	"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::converterRelayOff}},
+{{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::converterRelayOn}},
+{{0x2001, 0x01}, {"CONVERTER",	"CONVERTER", "RELAY OFF",	"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::converterRelayOff}},
 
 
-{{0x2002, 0x03}, {"FUELCELL", 	"FUELCELL", "START",		"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::fuelcellStart}},
-{{0x2002, 0x04}, {"FUELCELL", 	"FUELCELL", "STOP",		"",	OD_TASK, false, true,	OD_NO_DIRECT_ACCESS,	OD_NO_READ_ACCESS,	od::fuelcellStop}},
-
-
-{{0xFFFF, 0xFF}, {"NULL", "NULL", "END_OF_OD", "", OD_TASK, false, false, OD_NO_DIRECT_ACCESS, OD_NO_READ_ACCESS, OD_NO_WRITE_ACCESS}}};
+{{0x2002, 0x03}, {"FUELCELL", 	"FUELCELL", "START",		"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStart}},
+{{0x2002, 0x04}, {"FUELCELL", 	"FUELCELL", "STOP",		"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStop}},
+};
 
 extern const size_t OD_SIZE = sizeof(OBJECT_DICTIONARY) / sizeof(OBJECT_DICTIONARY[0]);
 extern ODEntry* OBJECT_DICTIONARY_END = OBJECT_DICTIONARY + OD_SIZE;

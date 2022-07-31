@@ -80,6 +80,7 @@ enum CobType
 const size_t COB_TYPE_COUNT = 16;
 
 
+/// COB function codes used for COB ID calculation
 const uint32_t cobFunctionCode[COB_TYPE_COUNT] = {
 	0x000,	// DUMMY_COB_TYPE
 	0x000,	// NMT
@@ -100,6 +101,12 @@ const uint32_t cobFunctionCode[COB_TYPE_COUNT] = {
 };
 
 
+/**
+ * @brief Calculates COB ID.
+ * @param cobType - COB type
+ * @param nodeId - node ID
+ * @return COB ID.
+ */
 inline uint32_t cobId(CobType cobType, unsigned int nodeId)
 {
 	if ((cobType == NMT) || (cobType == SYNC) || (cobType == TIME))
@@ -110,6 +117,7 @@ inline uint32_t cobId(CobType cobType, unsigned int nodeId)
 }
 
 
+/// COB data length
 const unsigned int cobDataLen[COB_TYPE_COUNT] = {
 	0,	// DUMMY_COB_TYPE
 	2,	// NMT
@@ -175,6 +183,7 @@ struct CobSdo
 };
 
 
+/// SDO CS-codes
 const uint32_t SDO_CCS_WRITE = 1;
 const uint32_t SDO_SCS_WRITE = 3;
 const uint32_t SDO_CCS_READ = 2;
@@ -205,6 +214,15 @@ enum ODEntryDataType
 };
 
 
+/// OD entry access right types
+enum ODEntryAccessRight
+{
+	OD_ACCESS_RW,
+	OD_ACCESS_RO,
+	OD_ACCESS_WO,
+};
+
+
 /// OD entry data types sizes
 const size_t ODEntryDataSizes[9] = {sizeof(bool), sizeof(int16_t), sizeof(int32_t),
 		sizeof(uint16_t), sizeof(uint32_t), sizeof(float), sizeof(uint16_t), 0, 0};
@@ -230,8 +248,7 @@ struct ODEntryValue
 	const char* name;
 	const char* unit;
 	ODEntryDataType dataType;
-	bool readAccess;
-	bool writeAccess;
+	ODEntryAccessRight accessRight;
 	uint32_t* dataPtr;
 	ODAccessStatus (*readAccessFunc)(CobSdoData& dest);
 	ODAccessStatus (*writeAccessFunc)(CobSdoData val);
@@ -245,6 +262,27 @@ struct ODEntry
 {
 	ODEntryKey key;
 	ODEntryValue value;
+
+	/**
+	 * @brief Checks OD-entry read access.
+	 * @param (none)
+	 * @return \c true if entry has read access, \c false otherwise.
+	 */
+	bool hasReadAccess() const
+	{
+		return (value.accessRight == OD_ACCESS_RW) || (value.accessRight == OD_ACCESS_RO);
+	}
+
+
+	/**
+	 * @brief Checks OD-entry write access.
+	 * @param (none)
+	 * @return \c true if entry has write access, \c false otherwise.
+	 */
+	bool hasWriteAccess() const
+	{
+		return (value.accessRight == OD_ACCESS_RW) || (value.accessRight == OD_ACCESS_WO);
+	}
 };
 
 
@@ -294,11 +332,11 @@ inline bool operator==(const ODEntry& lhs, const ODEntryKeyAux& rhs)
 
 
 /// Used in OD-entries which don't have read access to data through function.
-inline ODAccessStatus OD_NO_READ_ACCESS(CobSdoData& dest) { return OD_ACCESS_NO_ACCESS; }
+inline ODAccessStatus OD_NO_INDIRECT_READ_ACCESS(CobSdoData& dest) { return OD_ACCESS_NO_ACCESS; }
 
 
 /// Used in OD-entries which don't have write access to data through function.
-inline ODAccessStatus OD_NO_WRITE_ACCESS(CobSdoData val) { return OD_ACCESS_NO_ACCESS; }
+inline ODAccessStatus OD_NO_INDIRECT_WRITE_ACCESS(CobSdoData val) { return OD_ACCESS_NO_ACCESS; }
 
 
 /// OD_TASK execution status

@@ -164,25 +164,25 @@ public:
 				assert(!categoryEqual || !subcategoryEqual || !nameEqual);
 			}
 
-			if (OBJECT_DICTIONARY[i].value.readAccess == true)
+			if (OBJECT_DICTIONARY[i].hasReadAccess())
 			{
-				assert((OBJECT_DICTIONARY[i].value.readAccessFunc != OD_NO_READ_ACCESS)
+				assert((OBJECT_DICTIONARY[i].value.readAccessFunc != OD_NO_INDIRECT_READ_ACCESS)
 						|| (OBJECT_DICTIONARY[i].value.dataPtr != OD_NO_DIRECT_ACCESS));
 			}
 			else
 			{
-				assert(OBJECT_DICTIONARY[i].value.readAccessFunc == OD_NO_READ_ACCESS
+				assert(OBJECT_DICTIONARY[i].value.readAccessFunc == OD_NO_INDIRECT_READ_ACCESS
 						&& (OBJECT_DICTIONARY[i].value.dataPtr == OD_NO_DIRECT_ACCESS));
 			}
 
-			if (OBJECT_DICTIONARY[i].value.writeAccess == true)
+			if (OBJECT_DICTIONARY[i].hasWriteAccess())
 			{
-				assert(OBJECT_DICTIONARY[i].value.writeAccessFunc != OD_NO_WRITE_ACCESS
+				assert(OBJECT_DICTIONARY[i].value.writeAccessFunc != OD_NO_INDIRECT_WRITE_ACCESS
 						|| (OBJECT_DICTIONARY[i].value.dataPtr != OD_NO_DIRECT_ACCESS));
 			}
 			else
 			{
-				assert(OBJECT_DICTIONARY[i].value.writeAccessFunc == OD_NO_WRITE_ACCESS
+				assert(OBJECT_DICTIONARY[i].value.writeAccessFunc == OD_NO_INDIRECT_WRITE_ACCESS
 						&& (OBJECT_DICTIONARY[i].value.dataPtr == OD_NO_DIRECT_ACCESS));
 			}
 		}
@@ -262,7 +262,8 @@ private:
 
 		if (rsdo.cs == SDO_CCS_READ)
 		{
-			if (odEntry->value.dataPtr != OD_NO_DIRECT_ACCESS)
+			if ((odEntry->value.dataPtr != OD_NO_DIRECT_ACCESS)
+					&& odEntry->hasReadAccess())
 			{
 				tsdo.data.u32 = 0;
 				memcpy(&tsdo.data.u32, odEntry->value.dataPtr, ODEntryDataSizes[odEntry->value.dataType]);
@@ -275,7 +276,8 @@ private:
 		}
 		else if (rsdo.cs == SDO_CCS_WRITE)
 		{
-			if (odEntry->value.dataPtr != OD_NO_DIRECT_ACCESS)
+			if ((odEntry->value.dataPtr != OD_NO_DIRECT_ACCESS)
+					&& odEntry->hasWriteAccess())
 			{
 				memcpy(odEntry->value.dataPtr, &rsdo.data.u32, ODEntryDataSizes[odEntry->value.dataType]);
 				status = OD_ACCESS_SUCCESS;
@@ -297,7 +299,7 @@ private:
 			tsdo.subindex = rsdo.subindex;
 			if (rsdo.cs == SDO_CCS_READ)
 			{
-				tsdo.cs = SDO_SCS_READ;	// read/upload response
+				tsdo.cs = SDO_SCS_READ;		// read/upload response
 				tsdo.expeditedTransfer = 1;
 				tsdo.dataSizeIndicated = 1;
 				tsdo.dataEmptyBytes = 0;
