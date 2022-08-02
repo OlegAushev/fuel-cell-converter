@@ -113,6 +113,12 @@ inline ODAccessStatus converterRelayOff(CobSdoData val)
 	return OD_ACCESS_SUCCESS;
 }
 
+inline ODAccessStatus resetDevice(CobSdoData val)
+{
+	Syslog::addMessage(sys::Message::DEVICE_SW_RESET);
+	mcu::SystemClock::registerDelayedTask(mcu::resetDevice, 2000);
+	return OD_ACCESS_SUCCESS;
+}
 
 inline ODAccessStatus fuelcellStart(CobSdoData val)
 {
@@ -120,15 +126,22 @@ inline ODAccessStatus fuelcellStart(CobSdoData val)
 	return OD_ACCESS_SUCCESS;
 }
 
-
 inline ODAccessStatus fuelcellStop(CobSdoData val)
 {
 	fuelcell::Controller::stop();
 	return OD_ACCESS_SUCCESS;
 }
 
+inline ODAccessStatus resetAllFaults(CobSdoData val)
+{
+	mcu::SystemClock::resetWatchdog();
+	Syslog::resetFaultsAndWarnings();
+	return OD_ACCESS_SUCCESS;
+}
+
 
 } // namespace od
+
 
 extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x1008, 0x00}, {"SYSTEM", "INFO", "DEVICE_NAME", "", OD_STRING, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getDeviceName, OD_NO_INDIRECT_WRITE_ACCESS}},
@@ -146,9 +159,10 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::converterRelayOn}},
 {{0x2001, 0x01}, {"CONVERTER",	"CONVERTER", "RELAY OFF",	"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::converterRelayOff}},
 
-
-{{0x2002, 0x03}, {"FUELCELL", 	"FUELCELL", "START",		"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStart}},
-{{0x2002, 0x04}, {"FUELCELL", 	"FUELCELL", "STOP",		"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStop}},
+{{0x2002, 0x00}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"RESET DEVICE",	"",	OD_TASK, 	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::resetDevice}},
+{{0x2002, 0x03}, {"FUELCELL",		"FUELCELL",		"START",	"",	OD_TASK,	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStart}},
+{{0x2002, 0x04}, {"FUELCELL",		"FUELCELL",		"STOP",		"",	OD_TASK,	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStop}},
+{{0x2002, 0x05}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"RESET FAULTS",	"",	OD_TASK, 	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::resetAllFaults}},
 };
 
 extern const size_t OD_SIZE = sizeof(OBJECT_DICTIONARY) / sizeof(OBJECT_DICTIONARY[0]);

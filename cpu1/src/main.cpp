@@ -346,9 +346,9 @@ void main()
 	ucanopenServer.setTpdoPeriod(ucanopen::TPDO_NUM3, 1000);
 	ucanopenServer.setTpdoPeriod(ucanopen::TPDO_NUM4, 1000);
 
-	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM1, 0x194);
-	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM2, 0x294);
-
+	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM1, 0x1A0);
+	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM2, 0x2A0);
+	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM3, 0x194);
 
 /*####################################################################################################################*/
 	/*##################*/
@@ -389,8 +389,7 @@ void main()
 	Syslog::addMessage(sys::Message::DEVICE_CPU1_READY);
 	ucanopenServer.enable();
 
-#warning "Watchdog disabled"
-	//mcu::SystemClock::enableWatchdog();
+	mcu::SystemClock::enableWatchdog();
 
 /*####################################################################################################################*/
 	Syslog::addMessage(sys::Message::DEVICE_READY);

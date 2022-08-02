@@ -43,10 +43,8 @@ struct CobRpdo1
 	{
 		struct
 		{
-			uint16_t run : 1;
-			uint32_t reserved1 : 31;
-			uint16_t emergencyStop : 1;
-			uint32_t reserved2 : 31;
+			uint32_t reserved1 : 32;
+			uint32_t reserved2 : 32;
 		} can1;
 		struct
 		{
@@ -72,8 +70,10 @@ struct CobRpdo2
 	{
 		struct
 		{
-			float32 speed;
-			float32 torque;
+			uint32_t reserved1 : 3;
+			uint32_t chargeEn : 1;
+			uint32_t reserved2 : 28;
+			uint32_t reserved3 : 32;
 		} can1;
 		struct
 		{
@@ -91,14 +91,42 @@ struct CobRpdo2
 
 /**
  * @ingroup ucanopen_app_spec
+ * @brief RPDO3 message data.
+ */
+struct CobRpdo3
+{
+	union
+	{
+		struct
+		{
+			uint32_t chargeEn : 1;
+			uint32_t reserved1 : 31;
+			uint32_t reserved2 : 1;
+			uint32_t reserved3 : 31;
+		} can1;
+		struct
+		{
+			uint64_t reserved;
+		} can2;
+	};
+	CobRpdo3()
+	{
+		uint64_t rawMsg = 0;
+		memcpy(this, &rawMsg, sizeof(CobRpdo1));
+	}
+	CobRpdo3(uint64_t rawMsg) { memcpy(this, &rawMsg, sizeof(CobRpdo1)); }
+};
+
+
+
+/**
+ * @ingroup ucanopen_app_spec
  * @brief Data storage for IPC.
  */
 struct ProcessedRpdoData
 {
-	bool bitRun;
-	bool bitEmergencyStop;
-	float speedRef;
-	float torquePuRef;
+	bool bitChargeEn;
+	bool bitChargeEnDebug;
 };
 extern ProcessedRpdoData rpdoProcessedDataShared;
 extern ProcessedRpdoData rpdoProcessedDataNonShared;
@@ -212,8 +240,7 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			s_rpdoProcessedData->bitRun = pdoMsg.can1.run;
-			s_rpdoProcessedData->bitEmergencyStop = pdoMsg.can1.emergencyStop;
+			// RESERVED;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED
@@ -237,8 +264,7 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			s_rpdoProcessedData->speedRef = RpdoService::speedRef(pdoMsg);
-			s_rpdoProcessedData->torquePuRef = RpdoService::torquePuRef(pdoMsg);
+			s_rpdoProcessedData->bitChargeEn = pdoMsg.can1.chargeEn;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -257,11 +283,12 @@ public:
 	void processRpdo3(uint64_t rawMsg)
 	{
 		assert(Mode != emb::MODE_SLAVE);
+		CobRpdo3 pdoMsg(rawMsg);
 		// APP-SPECIFIC BEGIN
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			// RESERVED
+			s_rpdoProcessedData->bitChargeEnDebug = pdoMsg.can1.chargeEn;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -320,15 +347,7 @@ private:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
-			if (s_rpdoProcessedData->bitRun == true)
-			{
-				converter->start();
-			}
-			else
-			{
-				converter->stop();
-			}
+			// RESERVED;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -348,7 +367,15 @@ private:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			// RESERVED;
+			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
+			if (s_rpdoProcessedData->bitChargeEn == true)
+			{
+				converter->startCharging();
+			}
+			else
+			{
+				converter->stopCharging();
+			}
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -368,7 +395,15 @@ private:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			// RESERVED
+			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
+			if (s_rpdoProcessedData->bitChargeEnDebug == true)
+			{
+				converter->startCharging();
+			}
+			else
+			{
+				converter->stopCharging();
+			}
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -408,7 +443,7 @@ private:
 	 * @param - COB RPDO2
 	 * @return Speed reference.
 	 */
-	static float speedRef(const CobRpdo2& msg) { return msg.can1.speed; }
+	//static float speedRef(const CobRpdo2& msg) { return msg.can1.speed; }
 
 	/**
 	 * @ingroup ucanopen_app_spec
@@ -416,7 +451,7 @@ private:
 	 * @param - COB RPDO2
 	 * @return Torque per-unit reference.
 	 */
-	static float torquePuRef(const CobRpdo2& msg) { return msg.can1.torque; }
+	//static float torquePuRef(const CobRpdo2& msg) { return msg.can1.torque; }
 /* ========================================================================== */
 /* ======================== APPLICATION-SPECIFIC END ======================== */
 /* ========================================================================== */

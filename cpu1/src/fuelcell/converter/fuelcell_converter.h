@@ -111,6 +111,14 @@ public:
 	Converter(const ConverterConfig& converterConfig,
 			const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig);
 
+	// FSM methods
+	void startup() { return m_state->startup(this); }
+	void shutdown() { return m_state->shutdown(this); }
+	void startCharging() { return m_state->startCharging(this); }
+	void run() { return m_state->run(this); }
+	void stopCharging() { return m_state->stopCharging(this); }
+	void emergencyShutdown() { return m_state->emergencyShutdown(this); }
+private:
 	/**
 	 * @brief Starts converter.
 	 * @param (none)
@@ -145,6 +153,7 @@ public:
 	 */
 	void reset();
 
+public:
 	float voltageIn() const { return m_voltageInFilter.output(); }
 	float voltageOut() const { return m_voltageOutFilter.output(); }
 	float currentIn() const { return m_currentInFilter.output(); }
@@ -159,6 +168,15 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Checks if temperature measurements are completed and processes them.
+	 * @param (none)
+	 * @return (none)
+	 */
+	void processTemperatureMeasurements();
+
+	const ConverterConfig& congig() const { return m_config; }
+
 	void turnRelayOn() const
 	{
 #ifndef CRD300
@@ -172,14 +190,6 @@ public:
 #endif
 	}
 
-	/**
-	 * @brief Checks if temperature measurements are completed and processes them.
-	 * @param (none)
-	 * @return (none)
-	 */
-	void processTemperatureMeasurements();
-
-	const ConverterConfig& congig() const { return m_config; }
 protected:
 	static __interrupt void onPwmEventInterrupt();
 	static __interrupt void onPwmTripInterrupt();
