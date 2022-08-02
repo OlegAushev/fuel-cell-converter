@@ -11,6 +11,7 @@
 
 #include "stdint.h"
 #include "../fuelcell_def.h"
+#include "emb/emb_algorithm.h"
 
 
 namespace fuelcell {
@@ -37,10 +38,12 @@ public:
 	virtual ~IState() {}
 	ConverterState id() const { return STATE_ID; }
 	uint64_t timestamp() const { return s_timestamp; }
-	virtual void start(Converter* converter) = 0;
+	virtual void startup(Converter* converter) = 0;
+	virtual void shutdown(Converter* converter) = 0;
+	virtual void startCharging(Converter* converter) = 0;
 	virtual void run(Converter* converter) = 0;
-	virtual void stop(Converter* converter) = 0;
-	virtual void emergencyStop(Converter* converter) = 0;
+	virtual void stopCharging(Converter* converter) = 0;
+	virtual void emergencyShutdown(Converter* converter) = 0;
 };
 
 
@@ -54,44 +57,31 @@ private:
 	STANDBY_State() : IState(CONVERTER_STANDBY) {}
 public:
 	static STANDBY_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
 };
 
 
 /**
  * @brief
  */
-class IDLE_State : public IState
+class STARTUP_State : public IState
 {
 private:
-	static IDLE_State s_instance;
-	IDLE_State() : IState(CONVERTER_IDLE) {}
+	static STARTUP_State s_instance;
+	STARTUP_State() : IState(CONVERTER_STARTUP) {}
 public:
-	static IDLE_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	static STARTUP_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
-};
-
-
-/**
- * @brief
- */
-class POWERUP_State : public IState
-{
-private:
-	static POWERUP_State s_instance;
-	POWERUP_State() : IState(CONVERTER_POWERUP) {}
-public:
-	static POWERUP_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
-	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
 };
 
 
@@ -105,78 +95,116 @@ private:
 	READY_State() : IState(CONVERTER_READY) {}
 public:
 	static READY_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
 };
 
 
 /**
  * @brief
  */
-class STARTING_State : public IState
+class STARTCHARGING_State : public IState
 {
 private:
-	static STARTING_State s_instance;
-	STARTING_State() : IState(CONVERTER_STARTING) {}
+	static STARTCHARGING_State s_instance;
+	STARTCHARGING_State() : IState(CONVERTER_START_CHARGING)
+	{
+		resetState();
+	}
 public:
-	static STARTING_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	static STARTCHARGING_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
+private:
+	void resetState()
+	{
+		m_currentInRef = 0;
+	}
+	float m_currentInRef;
 };
 
 
 /**
  * @brief
  */
-class IN_OPERATION_State : public IState
+class INOPERATION_State : public IState
 {
 private:
-	static IN_OPERATION_State s_instance;
-	IN_OPERATION_State() : IState(CONVERTER_IN_OPERATION) {}
+	static INOPERATION_State s_instance;
+	INOPERATION_State() : IState(CONVERTER_IN_OPERATION) {}
 public:
-	static IN_OPERATION_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	static INOPERATION_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
 };
 
 
 /**
  * @brief
  */
-class STOPPING_State : public IState
+class STOPCHARGING_State : public IState
 {
 private:
-	static STOPPING_State s_instance;
-	STOPPING_State() : IState(CONVERTER_STOPPING) {}
+	static STOPCHARGING_State s_instance;
+	STOPCHARGING_State() : IState(CONVERTER_STOP_CHARGING) {}
 public:
-	static STOPPING_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	static STOPCHARGING_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
 };
 
 
 /**
  * @brief
  */
-class POWERDOWN_State : public IState
+class SHUTDOWN_State : public IState
 {
 private:
-	static POWERDOWN_State s_instance;
-	POWERDOWN_State() : IState(CONVERTER_POWERDOWN) {}
+	static SHUTDOWN_State s_instance;
+	SHUTDOWN_State() : IState(CONVERTER_SHUTDOWN) {}
 public:
-	static POWERDOWN_State* instance() { return &s_instance; }
-	virtual void start(Converter* converter);
+	static SHUTDOWN_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
-	virtual void stop(Converter* converter);
-	virtual void emergencyStop(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
+};
+
+
+/**
+ * @brief
+ */
+class IDLE_State : public IState
+{
+private:
+	static IDLE_State s_instance;
+	IDLE_State() : IState(CONVERTER_IDLE) {}
+public:
+	static IDLE_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
+	virtual void run(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
 };
 
 

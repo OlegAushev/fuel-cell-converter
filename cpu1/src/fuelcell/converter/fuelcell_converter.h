@@ -64,12 +64,12 @@ class Converter : public emb::c28x::Singleton<Converter>
 	friend class IState;
 	friend class STANDBY_State;
 	friend class IDLE_State;
-	friend class POWERUP_State;
+	friend class STARTUP_State;
 	friend class READY_State;
-	friend class STARTING_State;
-	friend class IN_OPERATION_State;
-	friend class STOPPING_State;
-	friend class POWERDOWN_State;
+	friend class STARTCHARGING_State;
+	friend class INOPERATION_State;
+	friend class STOPCHARGING_State;
+	friend class SHUTDOWN_State;
 private:
 	IState* m_state;
 	ConverterState m_stateId;
@@ -179,6 +179,7 @@ public:
 	 */
 	void processTemperatureMeasurements();
 
+	const ConverterConfig& congig() const { return m_config; }
 protected:
 	static __interrupt void onPwmEventInterrupt();
 	static __interrupt void onPwmTripInterrupt();

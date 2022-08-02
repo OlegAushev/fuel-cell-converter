@@ -138,6 +138,16 @@ public:
 	 * @param (none)
 	 * @return
 	 */
+	static bool standby()
+	{
+		return emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_STANDBY) == FUELCELL_COUNT;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
 	static bool hasOverheat()
 	{
 		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_OVERHEAT) > 0;
