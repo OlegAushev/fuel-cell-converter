@@ -16,13 +16,13 @@ namespace fuelcell {
 uint64_t IState::s_timestamp = 0;
 
 STANDBY_State STANDBY_State::s_instance;
-IDLE_State IDLE_State::s_instance;
 STARTUP_State STARTUP_State::s_instance;
 READY_State READY_State::s_instance;
 STARTCHARGING_State STARTCHARGING_State::s_instance;
 INOPERATION_State INOPERATION_State::s_instance;
 STOPCHARGING_State STOPCHARGING_State::s_instance;
 SHUTDOWN_State SHUTDOWN_State::s_instance;
+WAIT_State WAIT_State::s_instance;
 
 
 /* ################################################################################################################## */
@@ -36,6 +36,18 @@ void IState::changeState(Converter* converter, IState* state)
 {
 	converter->changeState(state);
 	s_timestamp = mcu::SystemClock::now();
+}
+
+
+///
+///
+///
+void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState)
+{
+	WAIT_State::instance()->m_waitTime = delay;
+	WAIT_State::instance()->m_nextState = nextState;
+	WAIT_State::instance()->m_waitStart = mcu::SystemClock::now();
+	IState::changeState(converter, WAIT_State::instance());
 }
 
 
@@ -143,7 +155,8 @@ void STARTUP_State::run(Converter* converter)
 
 	if ((fuelcell::Controller::inOperation()) && (voltDiff < 0.05))
 	{
-		changeState(converter, READY_State::instance());
+		converter->turnRelayOn();
+		waitNgoToState(converter, 5000, READY_State::instance());
 	}
 	else if (mcu::SystemClock::now() - timestamp() > 15000)
 	{
@@ -472,10 +485,12 @@ void SHUTDOWN_State::run(Converter* converter)
 {
 	if (Controller::standby())
 	{
+		converter->turnRelayOff();
 		changeState(converter, STANDBY_State::instance());
 	}
 	else if (mcu::SystemClock::now() - timestamp() > 30000)
 	{
+		converter->turnRelayOff();
 		Syslog::setFault(sys::Fault::FUELCELL_SHUTDOWN_FAILED);
 		changeState(converter, STANDBY_State::instance());
 	}
@@ -507,7 +522,7 @@ void SHUTDOWN_State::emergencyShutdown(Converter* converter)
 ///
 ///
 ///
-void IDLE_State::startup(Converter* converter)
+void WAIT_State::startup(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -516,7 +531,18 @@ void IDLE_State::startup(Converter* converter)
 ///
 ///
 ///
-void IDLE_State::shutdown(Converter* converter)
+void WAIT_State::shutdown(Converter* converter)
+{
+	converter->stop();
+	Controller::stop();
+	changeState(converter, SHUTDOWN_State::instance());
+}
+
+
+///
+///
+///
+void WAIT_State::startCharging(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -525,7 +551,28 @@ void IDLE_State::shutdown(Converter* converter)
 ///
 ///
 ///
-void IDLE_State::startCharging(Converter* converter)
+void WAIT_State::run(Converter* converter)
+{
+	if (mcu::SystemClock::now() - m_waitStart > m_waitTime)
+	{
+		if (m_nextState != static_cast<IState*>(NULL))
+		{
+			changeState(converter, m_nextState);
+		}
+		else
+		{
+			converter->stop();
+			Controller::stop();
+			changeState(converter, SHUTDOWN_State::instance());
+		}
+	}
+}
+
+
+///
+///
+///
+void WAIT_State::stopCharging(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -534,27 +581,9 @@ void IDLE_State::startCharging(Converter* converter)
 ///
 ///
 ///
-void IDLE_State::run(Converter* converter)
+void WAIT_State::emergencyShutdown(Converter* converter)
 {
-	/* DO NOTHING */
-}
-
-
-///
-///
-///
-void IDLE_State::stopCharging(Converter* converter)
-{
-	/* DO NOTHING */
-}
-
-
-///
-///
-///
-void IDLE_State::emergencyShutdown(Converter* converter)
-{
-	/* DO NOTHING */
+	shutdown(converter);
 }
 
 

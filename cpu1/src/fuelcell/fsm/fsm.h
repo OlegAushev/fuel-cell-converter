@@ -33,7 +33,7 @@ private:
 	static uint64_t s_timestamp;
 protected:
 	IState(ConverterState stateId) : STATE_ID(stateId) {}
-	void changeState(Converter* converter, IState* state);
+	static void changeState(Converter* converter, IState* state);
 public:
 	virtual ~IState() {}
 	ConverterState id() const { return STATE_ID; }
@@ -192,19 +192,24 @@ public:
 /**
  * @brief
  */
-class IDLE_State : public IState
+class WAIT_State : public IState
 {
+	friend void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState);
 private:
-	static IDLE_State s_instance;
-	IDLE_State() : IState(CONVERTER_IDLE) {}
+	static WAIT_State s_instance;
+	WAIT_State() : IState(CONVERTER_WAIT) {}
+	static WAIT_State* instance() { return &s_instance; }	// waitNgoToState() must be used for going to this state
 public:
-	static IDLE_State* instance() { return &s_instance; }
 	virtual void startup(Converter* converter);
 	virtual void shutdown(Converter* converter);
 	virtual void startCharging(Converter* converter);
 	virtual void run(Converter* converter);
 	virtual void stopCharging(Converter* converter);
 	virtual void emergencyShutdown(Converter* converter);
+private:
+	uint64_t m_waitStart;
+	uint64_t m_waitTime;
+	IState* m_nextState;
 };
 
 
