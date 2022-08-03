@@ -70,6 +70,7 @@ class Converter : public emb::c28x::Singleton<Converter>
 	friend class INOPERATION_State;
 	friend class STOPCHARGING_State;
 	friend class SHUTDOWN_State;
+	friend class WAIT_State;
 private:
 	IState* m_state;
 	ConverterState m_stateId;
@@ -112,12 +113,20 @@ public:
 			const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig);
 
 	// FSM methods
-	void startup() { return m_state->startup(this); }
-	void shutdown() { return m_state->shutdown(this); }
-	void startCharging() { return m_state->startCharging(this); }
-	void run() { return m_state->run(this); }
-	void stopCharging() { return m_state->stopCharging(this); }
-	void emergencyShutdown() { return m_state->emergencyShutdown(this); }
+	void startup() { m_state->startup(this); }
+	void shutdown() { m_state->shutdown(this); }
+	void startCharging() { m_state->startCharging(this); }
+	void run() { m_state->run(this); }
+	void stopCharging() { m_state->stopCharging(this); }
+	void emergencyShutdown() { m_state->emergencyShutdown(this); }
+
+	/**
+	 * @brief Returns converter state.
+	 * @param (none)
+	 * @return Converter state.
+	 */
+	ConverterState state() const { return m_stateId; }
+
 private:
 	/**
 	 * @brief Starts converter.

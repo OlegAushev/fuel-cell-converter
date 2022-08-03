@@ -65,6 +65,8 @@ void initAdcIrqs(emb::Array<detail::AdcIrqImpl, ADC_IRQ_COUNT>& irqs)
 	irqs[ADC_IRQ_CURRENT_IN_SECOND] = detail::AdcIrqImpl(
 			ADCA_BASE, ADC_INT_NUMBER2, ADC_SOC_NUMBER1, INT_ADCA2);
 #endif
+	irqs[ADC_IRQ_TEMP_HEATSINK] = detail::AdcIrqImpl(
+			ADCC_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0, INT_ADCC1);
 }
 
 

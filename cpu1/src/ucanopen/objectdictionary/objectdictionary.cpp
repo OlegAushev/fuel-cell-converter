@@ -63,6 +63,14 @@ inline ODAccessStatus getUptime(CobSdoData& dest)
 	return OD_ACCESS_SUCCESS;
 }
 
+
+inline ODAccessStatus getConverterState(CobSdoData& dest)
+{
+	uint32_t state = static_cast<uint32_t>(converter->state());
+	memcpy(&dest, &state, sizeof(uint32_t));
+	return OD_ACCESS_SUCCESS;
+}
+
 inline ODAccessStatus getConverterVoltageIn(CobSdoData& dest)
 {
 	float value = converter->voltageIn();
@@ -100,53 +108,61 @@ inline ODAccessStatus getConverterTempHeatsink(CobSdoData& dest)
 //////////////
 
 
-inline ODAccessStatus converterRelayOn(CobSdoData val)
+inline ODAccessStatus converterRelayOn(CobSdoData& dest)
 {
 	converter->turnRelayOn();
+	dest.u32 = TASK_SUCCESS;
 	return OD_ACCESS_SUCCESS;
 }
 
-inline ODAccessStatus converterRelayOff(CobSdoData val)
+inline ODAccessStatus converterRelayOff(CobSdoData& dest)
 {
 	converter->turnRelayOff();
+	dest.u32 = TASK_SUCCESS;
 	return OD_ACCESS_SUCCESS;
 }
 
-inline ODAccessStatus resetDevice(CobSdoData val)
+inline ODAccessStatus resetDevice(CobSdoData& dest)
 {
 	Syslog::addMessage(sys::Message::DEVICE_SW_RESET);
 	mcu::SystemClock::registerDelayedTask(mcu::resetDevice, 2000);
+	dest.u32 = TASK_SUCCESS;
 	return OD_ACCESS_SUCCESS;
 }
 
-inline ODAccessStatus startup(CobSdoData val)
-{
-	converter->startup();
-	return OD_ACCESS_SUCCESS;
-}
-
-inline ODAccessStatus shutdown(CobSdoData val)
-{
-	converter->shutdown();
-	return OD_ACCESS_SUCCESS;
-}
-
-inline ODAccessStatus fuelcellStart(CobSdoData val)
-{
-	fuelcell::Controller::start();
-	return OD_ACCESS_SUCCESS;
-}
-
-inline ODAccessStatus fuelcellStop(CobSdoData val)
-{
-	fuelcell::Controller::stop();
-	return OD_ACCESS_SUCCESS;
-}
-
-inline ODAccessStatus resetAllFaults(CobSdoData val)
+inline ODAccessStatus resetAllFaults(CobSdoData& dest)
 {
 	mcu::SystemClock::resetWatchdog();
 	Syslog::resetFaultsAndWarnings();
+	dest.u32 = TASK_SUCCESS;
+	return OD_ACCESS_SUCCESS;
+}
+
+inline ODAccessStatus startup(CobSdoData& dest)
+{
+	converter->startup();
+	dest.u32 = TASK_SUCCESS;
+	return OD_ACCESS_SUCCESS;
+}
+
+inline ODAccessStatus shutdown(CobSdoData& dest)
+{
+	converter->shutdown();
+	dest.u32 = TASK_SUCCESS;
+	return OD_ACCESS_SUCCESS;
+}
+
+inline ODAccessStatus fuelcellStart(CobSdoData& dest)
+{
+	fuelcell::Controller::start();
+	dest.u32 = TASK_SUCCESS;
+	return OD_ACCESS_SUCCESS;
+}
+
+inline ODAccessStatus fuelcellStop(CobSdoData& dest)
+{
+	fuelcell::Controller::stop();
+	dest.u32 = TASK_SUCCESS;
 	return OD_ACCESS_SUCCESS;
 }
 
@@ -159,23 +175,25 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x5FFF, 0x00}, {"SYSTEM", "INFO", "FIRMWARE_VERSION", "", OD_UINT32, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getSoftwareVersion, OD_NO_INDIRECT_WRITE_ACCESS}},
 {{0x5FFF, 0x01}, {"SYSTEM", "INFO", "BUILD_CONFIGURATION", "", OD_STRING, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getBuildConfiguration, OD_NO_INDIRECT_WRITE_ACCESS}},
 
-
-{{0x2000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_INDIRECT_WRITE_ACCESS}},
-{{0x2000, 0x03}, {"WATCH", "WATCH", "VOLTAGE_IN",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_INDIRECT_WRITE_ACCESS}},
-{{0x2000, 0x04}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_INDIRECT_WRITE_ACCESS}},
-{{0x2000, 0x05}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	OD_ACCESS_RW,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
-{{0x2000, 0x0C}, {"WATCH", "WATCH", "PHA_TEMP",		"°C",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterTempHeatsink,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2000, 0x00}, {"SYSTEM", "SYSLOG", "SYSLOG_MSG", "", OD_UINT32, OD_ACCESS_RO, OD_NO_DIRECT_ACCESS, od::getSyslogMessage, OD_NO_INDIRECT_WRITE_ACCESS}},
 
 
-{{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::converterRelayOn}},
-{{0x2001, 0x01}, {"CONVERTER",	"CONVERTER", "RELAY OFF",	"",	OD_TASK, OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::converterRelayOff}},
+{{0x5000, 0x00}, {"WATCH", "WATCH", "UPTIME",		"s",	OD_FLOAT32,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getUptime,			OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x5000, 0x01}, {"WATCH", "WATCH", "DRIVE_STATE",	"",	OD_ENUM16,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterState,		OD_NO_INDIRECT_WRITE_ACCESS}},
 
-{{0x2002, 0x00}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"RESET DEVICE",	"",	OD_TASK, 	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::resetDevice}},
-{{0x2002, 0x01}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"STARTUP", 	"",	OD_TASK, 	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::startup}},
-{{0x2002, 0x02}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL", 	"SHUTDOWN", 	"",	OD_TASK, 	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::shutdown}},
-{{0x2002, 0x03}, {"FUELCELL",		"FUELCELL",		"START",	"",	OD_TASK,	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStart}},
-{{0x2002, 0x04}, {"FUELCELL",		"FUELCELL",		"STOP",		"",	OD_TASK,	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::fuelcellStop}},
-{{0x2002, 0x05}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"RESET FAULTS",	"",	OD_TASK, 	OD_ACCESS_WO,	OD_NO_DIRECT_ACCESS,	OD_NO_INDIRECT_READ_ACCESS,	od::resetAllFaults}},
+{{0x5000, 0x02}, {"WATCH", "WATCH", "VOLTAGE_IN",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageIn,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x5000, 0x03}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x5000, 0x04}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	OD_ACCESS_RW,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
+{{0x5000, 0x09}, {"WATCH", "WATCH", "PHA_TEMP",		"°C",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterTempHeatsink,	OD_NO_INDIRECT_WRITE_ACCESS}},
+
+
+{{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER", "RELAY ON",	"",	OD_TASK, OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::converterRelayOn,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2001, 0x01}, {"CONVERTER",	"CONVERTER", "RELAY OFF",	"",	OD_TASK, OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::converterRelayOff,	OD_NO_INDIRECT_WRITE_ACCESS}},
+
+{{0x2002, 0x00}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"RESET DEVICE",	"",	OD_TASK, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::resetDevice,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2002, 0x01}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL",	"RESET FAULTS",	"",	OD_TASK, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::resetAllFaults,	OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2002, 0x02}, {"SYSTEM CONTROL", 	"SYSTEM CONTROL", 	"SHUTDOWN", 	"",	OD_TASK, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::startup,		OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x2002, 0x03}, {"FUELCELL",		"FUELCELL",		"START",	"",	OD_TASK,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::shutdown,		OD_NO_INDIRECT_WRITE_ACCESS}},
 };
 
 extern const size_t OD_SIZE = sizeof(OBJECT_DICTIONARY) / sizeof(OBJECT_DICTIONARY[0]);
