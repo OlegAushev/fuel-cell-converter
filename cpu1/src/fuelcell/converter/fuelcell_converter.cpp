@@ -80,10 +80,7 @@ void Converter::reset()
 __interrupt void Converter::onPwmEventInterrupt()
 {
 	LOG_DURATION_VIA_PIN_ONOFF(22);
-	if (Syslog::faults() != 0)
-	{
-		Converter::instance()->stop();
-	}
+	Converter::instance()->run();
 	Converter::instance()->pwm.acknowledgeEventInterrupt();
 }
 

@@ -47,7 +47,7 @@ struct CobTpdo1
 			uint16_t referenceType : 1;		// bit 4
 			uint16_t controlLoopType : 1;		// bit 5
 			uint16_t statusReserved : 2;		// bit 6..7
-			uint8_t driveState : 8;
+			uint8_t state : 8;
 			int16_t speed : 16;
 			int8_t currentS : 8;
 			int8_t power : 8;
@@ -261,7 +261,7 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			//saveDriveState(msg, TPDO_DRIVE(Module, Ipc, Mode)->state());
+			saveState(msg, converter->state());
 			saveRunStatus(msg, converter->pwm.state());
 			saveFaultStatus(msg, Syslog::faults());
 			saveWarningStatus(msg, Syslog::warnings());
@@ -418,10 +418,10 @@ private:
 	 * @param msg
 	 * @param state
 	 */
-	/*static void saveDriveState(CobTpdo1& msg, acim::DriveState state)
+	static void saveState(CobTpdo1& msg, fuelcell::ConverterState state)
 	{
-		msg.can1.driveState = static_cast<uint8_t>(state);
-	}*/
+		msg.can1.state = static_cast<uint8_t>(state);
+	}
 
 	/**
 	 *
