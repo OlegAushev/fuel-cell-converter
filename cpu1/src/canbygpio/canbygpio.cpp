@@ -79,6 +79,8 @@ void Transceiver::reset()
 	m_rxDataReady = false;
 
 	m_clkFlag = 0;
+
+	GPIO_writePin(m_txPin.no(), TX_PIN_IDLE_STATE);
 }
 
 
@@ -95,10 +97,11 @@ __interrupt void Transceiver::onClockInterrupt()
 		if (transceiver->m_txIdx < transceiver->m_txBitCount)
 		{
 			uint32_t out = (txCanBitStream[transceiver->m_txIdx++] == 0) ? 0 : 1;
-			GPIO_writePin(transceiver->m_txPin.config().no, out);
+			GPIO_writePin(transceiver->m_txPin.no(), out);
 		}
 		else
 		{
+			GPIO_writePin(transceiver->m_txPin.no(), TX_PIN_IDLE_STATE);
 			transceiver->m_txActive = false;
 		}
 	}
@@ -110,7 +113,7 @@ __interrupt void Transceiver::onClockInterrupt()
 
 		if (transceiver->m_rxIdx < STREAM_SIZE)
 		{
-			int bit = GPIO_readPin(transceiver->m_rxPin.config().no);
+			int bit = GPIO_readPin(transceiver->m_rxPin.no());
 			rxCanBitStream[transceiver->m_rxIdx++] = bit;
 			if (bit == prevBit)
 			{
@@ -150,7 +153,7 @@ void Transceiver::terminateRx()
 	m_rxBitCount = m_rxIdx;
 	m_rxPin.enableInterrupts();	// ready for new frame;
 	m_rxDataReady = true;		// RX data can be read by recv()
-	GPIO_togglePin(m_clkPin.config().no);
+	GPIO_togglePin(m_clkPin.no());
 }
 
 
@@ -166,7 +169,7 @@ __interrupt void Transceiver::onRxStart()
 	transceiver->m_rxPin.disableInterrupts();		// no interrupts until this frame will be received
 
 	transceiver->m_rxPin.acknowledgeInterrupt();
-	GPIO_togglePin(transceiver->m_clkPin.config().no);
+	GPIO_togglePin(transceiver->m_clkPin.no());
 }
 
 

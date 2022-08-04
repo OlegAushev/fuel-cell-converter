@@ -244,7 +244,20 @@ public:
 	 * @param (none)
 	 * @return Reference to pin config.
 	 */
-	const GpioConfig& config() const { return m_cfg; }
+	/*const GpioConfig& config() const
+	{
+		return m_cfg;
+	}*/
+
+	/**
+	 * @brief Returns pin number.
+	 * @param (none)
+	 * @return Pin number.
+	 */
+	uint32_t no() const
+	{
+		return m_cfg.no;
+	}
 
 private:
 	/**

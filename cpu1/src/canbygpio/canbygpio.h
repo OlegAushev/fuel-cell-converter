@@ -67,6 +67,8 @@ struct disable_bit_stuffing {};
 class Transceiver : emb::c28x::Singleton<Transceiver>
 {
 private:
+	static const uint32_t TX_PIN_IDLE_STATE = 1;
+
 	const bool BIT_STUFFING_ENABLED;
 
 	mcu::Gpio m_rxPin;
