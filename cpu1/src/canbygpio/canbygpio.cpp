@@ -10,11 +10,12 @@
 namespace canbygpio {
 
 
-const size_t STREAM_SIZE = 200;
-static emb::Array<int, STREAM_SIZE> txBitStream;
-static emb::Array<int, STREAM_SIZE> txCanBitStream;
-static emb::Array<int, STREAM_SIZE> rxBitStream;
-static emb::Array<int, STREAM_SIZE> rxCanBitStream;
+const size_t STREAM_SIZE_W_BIT_STUFFING = 200;
+const size_t STREAM_SIZE_WO_BIT_STUFFING = 112;
+static emb::Array<int, STREAM_SIZE_W_BIT_STUFFING> txBitStream;
+static emb::Array<int, STREAM_SIZE_W_BIT_STUFFING> txCanBitStream;
+static emb::Array<int, STREAM_SIZE_W_BIT_STUFFING> rxBitStream;
+static emb::Array<int, STREAM_SIZE_W_BIT_STUFFING> rxCanBitStream;
 
 
 ///
@@ -24,6 +25,7 @@ Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 		const mcu::Gpio& clkPin, uint32_t bitrate, tag::enable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, BIT_STUFFING_ENABLED(true)
+	, RX_STREAM_SIZE(STREAM_SIZE_W_BIT_STUFFING)
 {
 	_init(rxPin, txPin, clkPin, bitrate);
 }
@@ -36,6 +38,7 @@ Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 		const mcu::Gpio& clkPin, uint32_t bitrate, tag::disable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, BIT_STUFFING_ENABLED(false)
+	, RX_STREAM_SIZE(STREAM_SIZE_WO_BIT_STUFFING)
 {
 	_init(rxPin, txPin, clkPin, bitrate);
 }
@@ -111,27 +114,31 @@ __interrupt void Transceiver::onClockInterrupt()
 		static int prevBit = 0;
 		static int sameBits = 0;
 
-		if (transceiver->m_rxIdx < STREAM_SIZE)
+		if (transceiver->m_rxIdx < transceiver->RX_STREAM_SIZE)
 		{
 			int bit = GPIO_readPin(transceiver->m_rxPin.no());
 			rxCanBitStream[transceiver->m_rxIdx++] = bit;
-			if (bit == prevBit)
+
+			if (transceiver->BIT_STUFFING_ENABLED)
 			{
-				if(!sameBits)
-					sameBits = 2;
+				if (bit == prevBit)
+				{
+					if(!sameBits)
+						sameBits = 2;
+					else
+						++sameBits;
+				}
 				else
-					++sameBits;
-			}
-			else
-			{
-				sameBits = 0;
-			}
-			prevBit = bit;
-			if (sameBits == 10)
-			{
-				prevBit = 0;
-				sameBits = 0;
-				transceiver->terminateRx();
+				{
+					sameBits = 0;
+				}
+				prevBit = bit;
+				if (sameBits == 10)
+				{
+					prevBit = 0;
+					sameBits = 0;
+					transceiver->terminateRx();
+				}
 			}
 		}
 		else

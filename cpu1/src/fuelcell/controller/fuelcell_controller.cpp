@@ -93,16 +93,24 @@ void Controller::runTx()
 void Controller::runRx()
 {
 	static uint64_t frameCount = 0;
-	static uint64_t errorCount = 0;
+	static uint64_t errInvalidId = 0;
+	static uint64_t errSOF = 0;
+	static uint64_t errRTR = 0;
+	static uint64_t errIDE = 0;
+	static uint64_t errR0 = 0;
+	static uint64_t errCRC = 0;
 	unsigned int rpdoId;
 	uint16_t rpdoBytes[8] = {0};
 	RpdoMessage rpdo;
 
-	if (m_transceiver.recv(rpdoId, rpdoBytes) == 8)
+	int recvRetval = m_transceiver.recv(rpdoId, rpdoBytes);
+	switch (recvRetval)
+	{
+	case 8:
 	{
 		if ((rpdoId < 0x180) || (rpdoId > 0x184))
 		{
-			++errorCount;
+			++errInvalidId;
 			return;
 		}
 
@@ -120,6 +128,23 @@ void Controller::runRx()
 		}
 
 		s_data.current[cell] = 0.1f * rpdo.current;
+		break;
+	}
+	case -1:
+		++errSOF;
+		break;
+	case -2:
+		++errRTR;
+		break;
+	case -3:
+		++errIDE;
+		break;
+	case -4:
+		++errR0;
+		break;
+	case -5:
+		++errCRC;
+		break;
 	}
 }
 
