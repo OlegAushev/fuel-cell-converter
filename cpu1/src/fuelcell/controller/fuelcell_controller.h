@@ -33,6 +33,12 @@ struct TpdoMessage
 	uint64_t voltage : 16;
 	uint64_t current : 16;
 	uint64_t reserved : 24;
+
+	TpdoMessage()
+	{
+		uint64_t rawMsg = 0;
+		memcpy(this, &rawMsg, sizeof(TpdoMessage));
+	}
 };
 
 
