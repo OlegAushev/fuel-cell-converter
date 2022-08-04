@@ -80,7 +80,7 @@ private:
 
 public:
 	Controller(const Converter* converter,
-			const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin);
+			const mcu::Gpio& rxPin, const mcu::Gpio& txPin, mcu::Gpio& clkPin);
 
 	/**
 	 * @brief

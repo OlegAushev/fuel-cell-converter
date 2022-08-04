@@ -21,9 +21,9 @@ Data Controller::s_data __attribute__((section("SHARED_FUELCELL_DATA"), retain))
 ///
 ///
 Controller::Controller(const Converter* converter,
-		const mcu::Gpio& txPin, const mcu::Gpio& rxPin, mcu::Gpio& clkPin)
+		const mcu::Gpio& rxPin, const mcu::Gpio& txPin, mcu::Gpio& clkPin)
 	: m_converter(converter)
-	, m_transceiver(txPin, rxPin, clkPin, 125000, canbygpio::tag::disable_bit_stuffing()) // TODO disable bit stuffing
+	, m_transceiver(rxPin, txPin, clkPin, 125000, canbygpio::tag::disable_bit_stuffing()) // TODO disable bit stuffing
 {
 	EMB_STATIC_ASSERT(sizeof(TpdoMessage) == 4);
 	EMB_STATIC_ASSERT(sizeof(RpdoMessage) == 4);

@@ -69,8 +69,8 @@ class Transceiver : emb::c28x::Singleton<Transceiver>
 private:
 	const bool BIT_STUFFING_ENABLED;
 
-	mcu::Gpio m_txPin;
 	mcu::Gpio m_rxPin;
+	mcu::Gpio m_txPin;
 	mcu::Gpio m_clkPin;
 
 	bool m_txActive;
@@ -98,7 +98,7 @@ public:
 	 * @param clkPin - aux CLK pin
 	 * @param bitrate - bitrate
 	 */
-	Transceiver(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
+	Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 			const mcu::Gpio& clkPin, uint32_t bitrate, tag::enable_bit_stuffing);
 
 	/**
@@ -108,7 +108,7 @@ public:
 	 * @param clkPin - aux CLK pin
 	 * @param bitrate - bitrate
 	 */
-	Transceiver(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
+	Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 			const mcu::Gpio& clkPin, uint32_t bitrate, tag::disable_bit_stuffing);
 
 	/**
@@ -157,7 +157,7 @@ public:
 	}
 
 protected:
-	void _init(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
+	void _init(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 			const mcu::Gpio& clkPin, uint32_t bitrate);
 	int generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
 	int parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);

@@ -20,35 +20,35 @@ static emb::Array<int, STREAM_SIZE> rxCanBitStream;
 ///
 ///
 ///
-Transceiver::Transceiver(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
+Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 		const mcu::Gpio& clkPin, uint32_t bitrate, tag::enable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, BIT_STUFFING_ENABLED(true)
 {
-	_init(txPin, rxPin, clkPin, bitrate);
+	_init(rxPin, txPin, clkPin, bitrate);
 }
 
 
 ///
 ///
 ///
-Transceiver::Transceiver(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
+Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 		const mcu::Gpio& clkPin, uint32_t bitrate, tag::disable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, BIT_STUFFING_ENABLED(false)
 {
-	_init(txPin, rxPin, clkPin, bitrate);
+	_init(rxPin, txPin, clkPin, bitrate);
 }
 
 
 ///
 ///
 ///
-void Transceiver::_init(const mcu::Gpio& txPin, const mcu::Gpio& rxPin,
+void Transceiver::_init(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 		const mcu::Gpio& clkPin, uint32_t bitrate)
 {
-	m_txPin = txPin;
 	m_rxPin = rxPin;
+	m_txPin = txPin;
 	m_clkPin = clkPin;
 	m_rxPin.registerInterruptHandler(GPIO_INT_XINT5, GPIO_INT_TYPE_FALLING_EDGE, onRxStart);
 
