@@ -93,8 +93,8 @@ private:
 public:
 	/**
 	 * @brief Configures CAN-BY-GPIO transceiver with enabled bit stuffing.
-	 * @param txPin - TX pin
 	 * @param rxPin - RX pin
+	 * @param txPin - TX pin
 	 * @param clkPin - aux CLK pin
 	 * @param bitrate - bitrate
 	 */
@@ -103,8 +103,8 @@ public:
 
 	/**
 	 * @brief Configures CAN-BY-GPIO transceiver with disabled bit stuffing.
-	 * @param txPin - TX pin
 	 * @param rxPin - RX pin
+	 * @param txPin - TX pin
 	 * @param clkPin - aux CLK pin
 	 * @param bitrate - bitrate
 	 */

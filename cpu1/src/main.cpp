@@ -330,9 +330,9 @@ void main()
 		.TSDO_READY = mcu::IpcFlag(9),
 	};
 
-	ucanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
-	ucanopen::TpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoService(converter);
 	ucanopen::RpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> rpdoService(converter);
+	ucanopen::TpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoService(converter);
+	ucanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
 	ucanopen::Server<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> ucanopenServer(
 			mcu::GpioConfig(19, GPIO_19_CANTXA),
 			mcu::GpioConfig(18, GPIO_18_CANRXA),
