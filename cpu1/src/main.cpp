@@ -334,11 +334,11 @@ void main()
 	ucanopen::TpdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoService(converter);
 	ucanopen::SdoService<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoService(converter);
 	ucanopen::Server<mcu::CANA, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> ucanopenServer(
-			mcu::GpioConfig(19, GPIO_19_CANTXA),
 			mcu::GpioConfig(18, GPIO_18_CANRXA),
+			mcu::GpioConfig(19, GPIO_19_CANTXA),
 			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
 			ucanopen::NodeId(0x01),
-			&tpdoService, &rpdoService, &sdoService, canIpcFlags);
+			&rpdoService, &tpdoService, &sdoService, canIpcFlags);
 
 	ucanopenServer.setHeartbeatPeriod(1000);
 	ucanopenServer.setTpdoPeriod(ucanopen::TPDO_NUM1, 1000);

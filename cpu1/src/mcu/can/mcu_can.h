@@ -103,17 +103,18 @@ private:
 public:
 	/**
 	 * @brief Initializes MCU CAN unit.
-	 * @param txPin - MCU CAN-TX pin config
 	 * @param rxPin	- MCU CAN-RX pin config
+	 * @param txPin - MCU CAN-TX pin config
 	 * @param bitrate - CAN bus bitrate
+	 * @param mode - CAN mode
 	 */
-	Can(const GpioConfig& txPin, const GpioConfig& rxPin,
+	Can(const GpioConfig& rxPin, const GpioConfig& txPin,
 			CanBitrate bitrate, CanMode mode)
 		: emb::c28x::Singleton<Can<Module> >(this)
 		, m_module(detail::canBases[Module], detail::canPieIntNums[Module])
 	{
 #ifdef CPU1
-		_initPins(txPin, rxPin);
+		_initPins(rxPin, txPin);
 #endif
 
 		CAN_initModule(m_module.base);
@@ -144,15 +145,15 @@ public:
 #ifdef CPU1
 	/**
 	 * @brief Transfers control over CAN unit to CPU2.
-	 * @param txPin - MCU CAN-TX pin config
 	 * @param rxPin - MCU CAN-RX pin config
+	 * @param txPin - MCU CAN-TX pin config
 	 * @return (none)
 	 */
-	static void transferControlToCpu2(const GpioConfig& txPin, const GpioConfig& rxPin)
+	static void transferControlToCpu2(const GpioConfig& rxPin, const GpioConfig& txPin)
 	{
-		_initPins(txPin, rxPin);
-		GPIO_setMasterCore(txPin.no, GPIO_CORE_CPU2);
+		_initPins(rxPin, txPin);
 		GPIO_setMasterCore(rxPin.no, GPIO_CORE_CPU2);
+		GPIO_setMasterCore(txPin.no, GPIO_CORE_CPU2);
 
 		SysCtl_selectCPUForPeripheral(SYSCTL_CPUSEL8_CAN,
 				static_cast<uint16_t>(Module)+1, SYSCTL_CPUSEL_CPU2);
@@ -240,10 +241,10 @@ public:
 
 protected:
 #ifdef CPU1
-	static void _initPins(const GpioConfig& txPin, const GpioConfig& rxPin)
+	static void _initPins(const GpioConfig& rxPin, const GpioConfig& txPin)
 	{
-		GPIO_setPinConfig(txPin.mux);
 		GPIO_setPinConfig(rxPin.mux);
+		GPIO_setPinConfig(txPin.mux);
 	}
 #endif
 };

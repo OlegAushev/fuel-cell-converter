@@ -16,8 +16,8 @@
 #include "mcu/ipc/mcu_ipc.h"
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "ucanopen_def.h"
-#include "tpdoservice/tpdoservice.h"
 #include "rpdoservice/rpdoservice.h"
+#include "tpdoservice/tpdoservice.h"
 #include "sdoservice/sdoservice.h"
 
 // APP-SPECIFIC headers
@@ -51,8 +51,8 @@ class Server : public emb::c28x::Singleton<Server<Module, Ipc, Mode> >
 {
 private:
 	mcu::Can<Module>* m_can;
-	TpdoService<Module, Ipc, Mode>* m_tpdoService;
 	RpdoService<Module, Ipc, Mode>* m_rpdoService;
+	TpdoService<Module, Ipc, Mode>* m_tpdoService;
 	SdoService<Module, Ipc, Mode>* m_sdoService;
 
 	volatile NmtState m_state;
@@ -77,18 +77,18 @@ private:
 public:
 	/**
 	 * @brief Configures server on CPU that is not CAN master.
-	 * @param tpdoService - pointer to TPDO service
 	 * @param rpdoService - pointer to RPDO service
+	 * @param tpdoService - pointer to TPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	Server(TpdoService<Module, Ipc, Mode>* tpdoService,
-			RpdoService<Module, Ipc, Mode>* rpdoService,
+	Server(RpdoService<Module, Ipc, Mode>* rpdoService,
+			TpdoService<Module, Ipc, Mode>* tpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcFlags& ipcFlags)
 		: emb::c28x::Singleton<Server<Module, Ipc, Mode> >(this)
 		, m_can(NULL)
-		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
+		, m_tpdoService(tpdoService)
 		, m_sdoService(sdoService)
 		// IPC flags
 		, RPDO1_RECEIVED(ipcFlags.RPDO1_RECEIVED)
@@ -110,25 +110,26 @@ public:
 
 	/**
 	 * @brief Configures server on CPU that is CAN master.
-	 * @param txPin - MCU CAN-TX pin
 	 * @param rxPin - MCU CAN-RX pin
+	 * @param txPin - MCU CAN-TX pin
 	 * @param bitrate - CAN bus bitrate
+	 * @param mode - CAN mode
 	 * @param nodeId - node ID
 	 * @param clock - pointer to system clock (ms)
-	 * @param tpdoService - pointer to TPDO service
 	 * @param rpdoService - pointer to RPDO service
+	 * @param tpdoService - pointer to TPDO service
 	 * @param sdoService - pointer to SDO service
 	 */
-	Server(mcu::GpioConfig txPin, mcu::GpioConfig rxPin,
+	Server(mcu::GpioConfig rxPin, mcu::GpioConfig txPin,
 			mcu::CanBitrate bitrate, mcu::CanMode mode,
 			NodeId nodeId,
-			TpdoService<Module, Ipc, Mode>* tpdoService,
 			RpdoService<Module, Ipc, Mode>* rpdoService,
+			TpdoService<Module, Ipc, Mode>* tpdoService,
 			SdoService<Module, Ipc, Mode>* sdoService,
 			const IpcFlags& ipcFlags)
 		: emb::c28x::Singleton<Server<Module, Ipc, Mode> >(this)
-		, m_tpdoService(tpdoService)
 		, m_rpdoService(rpdoService)
+		, m_tpdoService(tpdoService)
 		, m_sdoService(sdoService)
 		, m_nodeId(nodeId.value)
 		// IPC flags
@@ -146,7 +147,7 @@ public:
 		sdoService->initIpcFlags(RSDO_RECEIVED, TSDO_READY);
 
 		m_state = INITIALIZING;
-		m_can = new mcu::Can<Module>(txPin, rxPin, bitrate, mode);
+		m_can = new mcu::Can<Module>(rxPin, txPin, bitrate, mode);
 
 		initMsgObjects();
 		for (size_t i = 1; i < COB_TYPE_COUNT; ++i)
