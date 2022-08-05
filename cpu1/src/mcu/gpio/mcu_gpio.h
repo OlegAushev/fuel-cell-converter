@@ -244,10 +244,10 @@ public:
 	 * @param (none)
 	 * @return Reference to pin config.
 	 */
-	/*const GpioConfig& config() const
+	const GpioConfig& config() const
 	{
 		return m_cfg;
-	}*/
+	}
 
 	/**
 	 * @brief Returns pin number.
