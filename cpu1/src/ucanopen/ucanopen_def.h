@@ -317,12 +317,6 @@ inline bool operator==(const ODEntryKeyAux& lhs, const ODEntry& rhs)
 }
 
 
-inline bool operator==(const ODEntry& lhs, const ODEntryKeyAux& rhs)
-{
-	return (lhs.key.index == rhs.index) && (lhs.key.subindex == rhs.subindex);
-}
-
-
 /// Used in OD-entries which doesn't have direct access to data through pointer.
 #define OD_NO_DIRECT_ACCESS static_cast<uint32_t*>(NULL)
 

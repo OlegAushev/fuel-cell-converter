@@ -40,7 +40,7 @@ inline It binary_find(It first, It last, const T& value)
 	{
 		It mid = first + (last - first) / 2;
 
-		if (*mid == value)
+		if (value == *mid)
 		{
 			return mid;
 		}
