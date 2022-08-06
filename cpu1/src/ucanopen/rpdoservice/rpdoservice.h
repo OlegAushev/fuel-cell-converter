@@ -103,7 +103,7 @@ struct CobRpdo3
 		{
 			uint32_t chargeEn : 1;
 			uint32_t reserved1 : 31;
-			uint32_t reserved2 : 1;
+			uint32_t fatalError : 1;
 			uint32_t reserved3 : 31;
 		} can1;
 		struct
@@ -127,8 +127,10 @@ struct CobRpdo3
  */
 struct ProcessedRpdoData
 {
-	bool bitChargeEn;
-	bool bitChargeEnDebug;
+	bool bitBmsChargeEn;
+	bool bitBmsChargeEnDebug;
+	bool bitBmsFatalError;
+	bool bitBmsFatalErrorDebug;
 };
 extern ProcessedRpdoData rpdoProcessedDataShared;
 extern ProcessedRpdoData rpdoProcessedDataNonShared;
@@ -229,6 +231,16 @@ public:
 	}
 
 	/**
+	 * @brief Returns reference to processed RPDO data structure.
+	 * @param (none)
+	 * @return Reference to processed RPDO data structure.
+	 */
+	ProcessedRpdoData& data()
+	{
+		return *s_rpdoProcessedData;
+	}
+
+	/**
 	 * @ingroup ucanopen_app_spec
 	 * @brief Processes RPDO1 message. Used by Server's ISR as callback.
 	 * @param rawMsg - RPDO1 message raw data.
@@ -266,7 +278,8 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			s_rpdoProcessedData->bitChargeEn = pdoMsg.can1.chargeEn;
+			data().bitBmsChargeEn = pdoMsg.can1.chargeEn;
+			data().bitBmsFatalError = pdoMsg.can1.fatalError;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -290,7 +303,8 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			s_rpdoProcessedData->bitChargeEnDebug = pdoMsg.can1.chargeEn;
+			data().bitBmsChargeEnDebug = pdoMsg.can1.chargeEn;
+			data().bitBmsFatalErrorDebug = pdoMsg.can1.fatalError;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;
@@ -370,13 +384,20 @@ private:
 		{
 		case UCANOPEN_CAN1:
 			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
-			if (s_rpdoProcessedData->bitChargeEn == true)
+			if (data().bitBmsFatalError == true)
 			{
-				converter->startCharging();
+				converter->emergencyShutdown();
 			}
 			else
 			{
-				converter->stopCharging();
+				if (data().bitBmsChargeEn == true)
+				{
+					converter->startCharging();
+				}
+				else
+				{
+					converter->stopCharging();
+				}
 			}
 			break;
 		case UCANOPEN_CAN2:
@@ -398,13 +419,20 @@ private:
 		{
 		case UCANOPEN_CAN1:
 			mcu::SystemClock::resetWatchdogTimer();	// phew! CAN bus is OK
-			if (s_rpdoProcessedData->bitChargeEnDebug == true)
+			if (data().bitBmsFatalErrorDebug == true)
 			{
-				converter->startCharging();
+				converter->emergencyShutdown();
 			}
 			else
 			{
-				converter->stopCharging();
+				if (data().bitBmsChargeEnDebug == true)
+				{
+					converter->startCharging();
+				}
+				else
+				{
+					converter->stopCharging();
+				}
 			}
 			break;
 		case UCANOPEN_CAN2:
