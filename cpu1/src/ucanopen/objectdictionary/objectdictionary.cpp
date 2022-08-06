@@ -126,7 +126,7 @@ inline ODAccessStatus resetDevice(CobSdoData& dest)
 inline ODAccessStatus resetAllFaults(CobSdoData& dest)
 {
 	mcu::SystemClock::resetWatchdog();
-	Syslog::resetFaultsAndWarnings();
+	Syslog::resetErrorsWarnings();
 	dest.u32 = TASK_SUCCESS;
 	return OD_ACCESS_SUCCESS;
 }

@@ -107,7 +107,7 @@ __interrupt void Converter::onAdcVoltageInInterrupt()
 
 	if (converter->m_voltageInFilter.output() > converter->m_config.ovpVoltageIn)
 	{
-		Syslog::setFault(sys::Fault::OVP_IN);
+		Syslog::setError(sys::Error::OVP_IN);
 	}
 	else if (converter->m_voltageInFilter.output() < converter->m_config.uvpVoltageIn)
 	{
@@ -131,7 +131,7 @@ __interrupt void Converter::onAdcVoltageOutInterrupt()
 
 	if (converter->m_voltageOutFilter.output() > converter->m_config.ovpVoltageOut)
 	{
-		Syslog::setFault(sys::Fault::OVP_OUT);
+		Syslog::setError(sys::Error::OVP_OUT);
 	}
 
 	if (converter->m_voltageOutFilter.output() > converter->m_config.batteryChargedVoltage)
@@ -164,7 +164,7 @@ __interrupt void Converter::onAdcCurrentInFirstInterrupt()
 
 	if (converter->m_currentIn.first > converter->m_config.ocpCurrentIn)
 	{
-		Syslog::setFault(sys::Fault::OCP_IN);
+		Syslog::setError(sys::Error::OCP_IN);
 	}
 
 	mcu::Adc::instance()->acknowledgeInterrupt(mcu::ADC_IRQ_CURRENT_IN_FIRST);
@@ -187,7 +187,7 @@ __interrupt void Converter::onAdcCurrentInSecondInterrupt()
 
 	if (converter->m_currentIn.second > converter->m_config.ocpCurrentIn)
 	{
-		Syslog::setFault(sys::Fault::OCP_IN);
+		Syslog::setError(sys::Error::OCP_IN);
 	}
 
 	// calculate average inductor current
@@ -234,7 +234,7 @@ void Converter::processTemperatureMeasurements()
 
 		if (m_tempHeatsinkFilter.output() > m_config.otpTempHeatsink)
 		{
-			Syslog::setFault(sys::Fault::HEATSINK_OVERTEMP);
+			Syslog::setError(sys::Error::HEATSINK_OVERTEMP);
 		}
 	}
 }

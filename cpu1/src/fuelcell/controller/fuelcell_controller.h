@@ -159,7 +159,7 @@ public:
 		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_OVERHEAT) > 0;
 		if (fault)
 		{
-			Syslog::setFault(sys::Fault::FUELCELL_OVERHEAT);
+			Syslog::setError(sys::Error::FUELCELL_OVERHEAT);
 		}
 		return fault;
 	}
@@ -174,7 +174,7 @@ public:
 		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_BATT_LOWCHARGE) > 0;
 		if (fault)
 		{
-			Syslog::setFault(sys::Fault::FUELCELL_BATT_LOWCHARGE);
+			Syslog::setError(sys::Error::FUELCELL_BATT_LOWCHARGE);
 		}
 		return fault;
 	}
@@ -189,7 +189,7 @@ public:
 		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_NOCONNECTION) > 0;
 		if (fault)
 		{
-			Syslog::setFault(sys::Fault::FUELCELL_NOCONNECTION);
+			Syslog::setError(sys::Error::FUELCELL_NOCONNECTION);
 		}
 		return fault;
 	}
@@ -204,7 +204,7 @@ public:
 		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_LOWPRESSURE) > 0;
 		if (fault)
 		{
-			Syslog::setFault(sys::Fault::FUELCELL_LOWPRESSURE);
+			Syslog::setError(sys::Error::FUELCELL_LOWPRESSURE);
 		}
 		return fault;
 	}

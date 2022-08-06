@@ -30,8 +30,8 @@ Syslog::Data Syslog::m_cpu1Data;
 Syslog::Data* Syslog::m_thisCpuData;
 
 
-// IPC signals
-mcu::IpcFlag Syslog::RESET_FAULTS_AND_WARNINGS;
+// IPC flags
+mcu::IpcFlag Syslog::RESET_ERRORS_WARNINGS;
 mcu::IpcFlag Syslog::ADD_MESSAGE;
 mcu::IpcFlag Syslog::POP_MESSAGE;
 

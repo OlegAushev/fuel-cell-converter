@@ -7,7 +7,7 @@
 ///
 mcu::ClockTaskStatus taskWatchdogTimeout()
 {
-	Syslog::setFault(sys::Fault::CONNECTION_LOST);
+	Syslog::setError(sys::Error::CONNECTION_LOST);
 	return mcu::CLOCK_TASK_SUCCESS;
 }
 

@@ -263,7 +263,7 @@ public:
 		case UCANOPEN_CAN1:
 			saveState(msg, converter->state());
 			saveRunStatus(msg, converter->pwm.state());
-			saveFaultStatus(msg, Syslog::faults());
+			saveErrorStatus(msg, Syslog::errors());
 			saveWarningStatus(msg, Syslog::warnings());
 			// TODO tpdoService.saveOverheatStatus(msg,
 			//saveReferenceType(msg, TPDO_DRIVE(Module, Ipc, Mode)->model.reference());
@@ -379,7 +379,7 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			saveFaults(msg, Syslog::faults());
+			saveFaults(msg, Syslog::errors());
 			saveWarnings(msg, Syslog::warnings());
 			break;
 		case UCANOPEN_CAN2:
@@ -530,7 +530,7 @@ private:
 	 * @param msg
 	 * @param fault
 	 */
-	static void saveFaultStatus(CobTpdo1& msg, uint32_t fault) { msg.can1.statusFault = ((fault == 0) ? 0 : 1); }
+	static void saveErrorStatus(CobTpdo1& msg, uint32_t fault) { msg.can1.statusFault = ((fault == 0) ? 0 : 1); }
 
 	/**
 	 *

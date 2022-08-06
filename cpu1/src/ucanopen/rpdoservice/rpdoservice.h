@@ -73,7 +73,9 @@ struct CobRpdo2
 			uint32_t reserved1 : 3;
 			uint32_t chargeEn : 1;
 			uint32_t reserved2 : 28;
-			uint32_t reserved3 : 32;
+			uint32_t reserved3 : 10;
+			uint32_t fatalError : 1;
+			uint32_t reserved4 : 21;
 		} can1;
 		struct
 		{

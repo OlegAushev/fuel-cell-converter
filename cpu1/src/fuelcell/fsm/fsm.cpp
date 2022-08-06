@@ -60,7 +60,7 @@ void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState)
 ///
 void STANDBY_State::startup(Converter* converter)
 {
-	if ((!Syslog::faults()) && (!Controller::fault()))
+	if ((!Syslog::errors()) && (!Controller::fault()))
 	{
 		Controller::start();
 		changeState(converter, STARTUP_State::instance());
@@ -161,7 +161,7 @@ void STARTUP_State::run(Converter* converter)
 	else if (mcu::SystemClock::now() - timestamp() > 15000)
 	{
 		Controller::stop();
-		Syslog::setFault(sys::Fault::FUELCELL_STARTUP_FAILED);
+		Syslog::setError(sys::Error::FUELCELL_STARTUP_FAILED);
 		changeState(converter, STANDBY_State::instance());
 	}
 }
@@ -213,7 +213,7 @@ void READY_State::shutdown(Converter* converter)
 ///
 void READY_State::startCharging(Converter* converter)
 {
-	if ((Syslog::faults() == 0) && (!Syslog::hasWarning(sys::Warning::BATTERY_CHARGED)))
+	if ((Syslog::errors() == 0) && (!Syslog::hasWarning(sys::Warning::BATTERY_CHARGED)))
 	{
 		converter->start();
 		changeState(converter, STARTCHARGING_State::instance());
@@ -286,7 +286,7 @@ void STARTCHARGING_State::startCharging(Converter* converter)
 ///
 void STARTCHARGING_State::run(Converter* converter)
 {
-	if (Syslog::faults() != 0)
+	if (Syslog::errors() != 0)
 	{
 		stopCharging(converter);
 	}
@@ -363,7 +363,7 @@ void INOPERATION_State::startCharging(Converter* converter)
 ///
 void INOPERATION_State::run(Converter* converter)
 {
-	if (Syslog::faults() != 0)
+	if (Syslog::errors() != 0)
 	{
 		stopCharging(converter);
 	}
@@ -491,7 +491,7 @@ void SHUTDOWN_State::run(Converter* converter)
 	else if (mcu::SystemClock::now() - timestamp() > 30000)
 	{
 		converter->turnRelayOff();
-		Syslog::setFault(sys::Fault::FUELCELL_SHUTDOWN_FAILED);
+		Syslog::setError(sys::Error::FUELCELL_SHUTDOWN_FAILED);
 		changeState(converter, STANDBY_State::instance());
 	}
 }

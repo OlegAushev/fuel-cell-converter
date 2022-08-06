@@ -135,7 +135,7 @@ private:
 	 */
 	void start()
 	{
-		if ((Syslog::faults() == 0)
+		if ((Syslog::errors() == 0)
 				&& (!Syslog::hasWarning(sys::Warning::BATTERY_CHARGED)
 				&& (pwm.state() == mcu::PWM_OFF)))
 		{

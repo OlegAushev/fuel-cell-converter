@@ -31,9 +31,18 @@ class Syslog : public emb::Monostate<Syslog>
 public:
 	struct IpcFlags
 	{
-		mcu::IpcFlag RESET;
+		mcu::IpcFlag RESET_ERRORS_WARNINGS;
 		mcu::IpcFlag ADD_MESSAGE;
 		mcu::IpcFlag POP_MESSAGE;
+	};
+
+	struct Data
+	{
+		uint32_t errors;
+		uint32_t warnings;
+		uint32_t enabledErrorMask;	// enabled errors
+		uint32_t fatalErrorMask;	// errors that cannot be reseted by reset()
+		uint32_t fatalWarningMask;	// warnings that cannot be reseted by reset()
 	};
 
 private:
@@ -47,15 +56,6 @@ private:
 	static sys::Message::Message m_cpu2Message;
 #endif
 
-	struct Data
-	{
-		uint32_t faults;
-		uint32_t warnings;
-		uint32_t enabledFaultMask;	// enabled faults
-		uint32_t criticalFaultMask;	// faults that cannot be reseted by reset()
-		uint32_t criticalWarningMask;	// warnings that cannot be reseted by reset()
-	};
-
 	static Data m_cpu1Data;
 #ifdef DUALCORE
 	static Data m_cpu2Data;
@@ -64,7 +64,7 @@ private:
 	static Data* m_thisCpuData;
 
 	// IPC flags
-	static mcu::IpcFlag RESET_FAULTS_AND_WARNINGS;
+	static mcu::IpcFlag RESET_ERRORS_WARNINGS;
 	static mcu::IpcFlag ADD_MESSAGE;
 	static mcu::IpcFlag POP_MESSAGE;
 
@@ -89,13 +89,13 @@ public:
 		m_thisCpuData = &m_cpu2Data;
 #endif
 
-		m_thisCpuData->faults = 0;
+		m_thisCpuData->errors = 0;
 		m_thisCpuData->warnings = 0;
-		m_thisCpuData->enabledFaultMask = 0xFFFFFFFF;
-		m_thisCpuData->criticalFaultMask = sys::Fault::CRITICAL_FAULTS;
-		m_thisCpuData->criticalWarningMask = sys::Warning::CRITICAL_WARNINGS;
+		m_thisCpuData->enabledErrorMask = 0xFFFFFFFF;
+		m_thisCpuData->fatalErrorMask = sys::Error::FATAL_ERRORS;
+		m_thisCpuData->fatalWarningMask = sys::Warning::FATAL_WARNINGS;
 
-		RESET_FAULTS_AND_WARNINGS = ipcFlags.RESET;
+		RESET_ERRORS_WARNINGS = ipcFlags.RESET_ERRORS_WARNINGS;
 		ADD_MESSAGE = ipcFlags.ADD_MESSAGE;
 		POP_MESSAGE = ipcFlags.POP_MESSAGE;
 
@@ -190,125 +190,125 @@ public:
 		}
 #endif
 #ifdef CPU2
-		if (mcu::isRemoteIpcFlagSet(RESET_FAULTS_AND_WARNINGS.remote))
+		if (mcu::isRemoteIpcFlagSet(RESET_ERRORS_WARNINGS.remote))
 		{
-			resetFaultsAndWarnings();
-			mcu::acknowledgeRemoteIpcFlag(RESET_FAULTS_AND_WARNINGS.remote);
+			resetErrorsWarnings();
+			mcu::acknowledgeRemoteIpcFlag(RESET_ERRORS_WARNINGS.remote);
 		}
 #endif
 #endif
 	}
 
 	/**
-	 * @brief Enables specified fault.
-	 * @param fault - fault to be enabled
+	 * @brief Enables specified error.
+	 * @param error - error to be enabled
 	 * @return (none)
 	 */
-	static void enableFault(sys::Fault::Fault fault)
+	static void enableError(sys::Error::Error error)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->enabledFaultMask = m_thisCpuData->enabledFaultMask | (1UL << fault);
+		m_thisCpuData->enabledErrorMask = m_thisCpuData->enabledErrorMask | (1UL << error);
 	}
 
 	/**
-	 * @brief Enables all faults.
+	 * @brief Enables all errors.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void enableAllFaults()
+	static void enableAllErrors()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->enabledFaultMask = 0xFFFFFFFF;
+		m_thisCpuData->enabledErrorMask = 0xFFFFFFFF;
 	}
 
 	/**
-	 * @brief Disables specified fault.
-	 * @param fault - fault to be disabled
+	 * @brief Disables specified error.
+	 * @param error - error to be disabled
 	 * @return (none)
 	 */
-	static void disableFault(sys::Fault::Fault fault)
+	static void disableError(sys::Error::Error error)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->enabledFaultMask = m_thisCpuData->enabledFaultMask & ((1UL << fault) ^ 0xFFFFFFFF);
+		m_thisCpuData->enabledErrorMask = m_thisCpuData->enabledErrorMask & ((1UL << error) ^ 0xFFFFFFFF);
 	}
 
 	/**
-	 * @brief Disables all faults.
+	 * @brief Disables all errors.
 	 * @param (none)
 	 * @return (none)
 	 */
-	static void disableAllFaults()
+	static void disableAllErrors()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->enabledFaultMask = 0;
+		m_thisCpuData->enabledErrorMask = 0;
 	}
 
 	/**
-	 * @brief Sets specified fault in FaultData structure.
-	 * @param fault  - fault to be set
+	 * @brief Sets specified error.
+	 * @param error  - error to be set
 	 * @return (none)
 	 */
-	static void setFault(sys::Fault::Fault fault)
+	static void setError(sys::Error::Error error)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->faults = m_thisCpuData->faults | ((1UL << fault) & m_thisCpuData->enabledFaultMask);
+		m_thisCpuData->errors = m_thisCpuData->errors | ((1UL << error) & m_thisCpuData->enabledErrorMask);
 	}
 
 	/**
-	 * @brief Checks specified fault in FaultData structure.
-	 * @param fault - warning to be checked
-	 * @return \c true if fault is set, \c false otherwise.
+	 * @brief Checks specified error.
+	 * @param error - warning to be checked
+	 * @return \c true if error is set, \c false otherwise.
 	 */
-	static bool hasFault(sys::Fault::Fault fault)
+	static bool hasError(sys::Error::Error error)
 	{
 #ifdef DUALCORE
-		return (m_cpu1Data.faults | m_cpu2Data.faults) & (1UL << fault);
+		return (m_cpu1Data.errors | m_cpu2Data.errors) & (1UL << error);
 #else
-		return m_thisCpuData->faults & (1UL << fault);
+		return m_thisCpuData->errors & (1UL << error);
 #endif
 	}
 
 	/**
-	 * @brief Resets specified fault in FaultData structure.
-	 * @param fault - fault to be reset
+	 * @brief Resets specified error.
+	 * @param error - error to be reset
 	 * @return (none)
 	 */
-	static void resetFault(sys::Fault::Fault fault)
+	static void resetError(sys::Error::Error error)
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->faults = m_thisCpuData->faults & ((1UL << fault) ^ 0xFFFFFFFF);
+		m_thisCpuData->errors = m_thisCpuData->errors & ((1UL << error) ^ 0xFFFFFFFF);
 	}
 
 	/**
-	 * @brief Returns current system fault code.
+	 * @brief Returns current system error code.
 	 * @param (none)
-	 * @return Current system fault code.
+	 * @return Current system error code.
 	 */
-	static uint32_t faults()
+	static uint32_t errors()
 	{
 #ifdef DUALCORE
-		return m_cpu1Data.faults | m_cpu2Data.faults;
+		return m_cpu1Data.errors | m_cpu2Data.errors;
 #else
-		return m_thisCpuData->faults;
+		return m_thisCpuData->errors;
 #endif
 	}
 
 	/**
-	 * @brief Checks if system has critical faults.
+	 * @brief Checks if system has fatal errors.
 	 * @param (none)
-	 * @return True if system has critical faults.
+	 * @return True if system has fatal errors.
 	 */
-	static bool criticalFaultDetected()
+	static bool hasFatalErrors()
 	{
 #ifdef DUALCORE
-		return (m_cpu1Data.faults & m_cpu1Data.criticalFaultMask) || (m_cpu2Data.faults & m_cpu2Data.criticalFaultMask);
+		return (m_cpu1Data.errors & m_cpu1Data.fatalErrorMask) || (m_cpu2Data.errors & m_cpu2Data.fatalErrorMask);
 #else
-		return m_thisCpuData->faults & m_thisCpuData->criticalFaultMask;
+		return m_thisCpuData->errors & m_thisCpuData->fatalErrorMask;
 #endif
 	}
 
 	/**
-	 * @brief Sets specified warning in FaultData structure.
+	 * @brief Sets specified warning.
 	 * @param warning - warning to be set
 	 * @return (none)
 	 */
@@ -319,7 +319,7 @@ public:
 	}
 
 	/**
-	 * @brief Checks specified warning in FaultData structure.
+	 * @brief Checks specified warning.
 	 * @param warning - warning to be checked
 	 * @return \c true if warning is set, \c false otherwise.
 	 */
@@ -333,7 +333,7 @@ public:
 	}
 
 	/**
-	 * @brief Resets specified warning in FaultData structure.
+	 * @brief Resets specified warning.
 	 * @param warning - warning to be reset
 	 * @return (none)
 	 */
@@ -358,42 +358,42 @@ public:
 	}
 
 	/**
-	 * @brief Resets non-critical faults and warnings.
+	 * @brief Resets non-fatal errors and warnings.
 	 * @param tag - soft reset tag
 	 * @return (none)
 	 */
-	static void resetFaultsAndWarnings()
+	static void resetErrorsWarnings()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->faults = m_thisCpuData->faults & m_thisCpuData->criticalFaultMask;
-		m_thisCpuData->warnings = m_thisCpuData->warnings & m_thisCpuData->criticalWarningMask;
+		m_thisCpuData->errors = m_thisCpuData->errors & m_thisCpuData->fatalErrorMask;
+		m_thisCpuData->warnings = m_thisCpuData->warnings & m_thisCpuData->fatalWarningMask;
 #if (defined(CPU1) && defined(DUALCORE))
-		mcu::setLocalIpcFlag(RESET_FAULTS_AND_WARNINGS.local);
+		mcu::setLocalIpcFlag(RESET_ERRORS_WARNINGS.local);
 #endif
 	}
 
 	/**
-	 * @brief Disables critical faults and  warnings masks.
+	 * @brief Disables fatal errors and warnings masks.
 	 * @param (none)
 	 * @return (none)
 	 */
 	static void clearCriticalMasks()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->criticalFaultMask = 0;
-		m_thisCpuData->criticalWarningMask = 0;
+		m_thisCpuData->fatalErrorMask = 0;
+		m_thisCpuData->fatalWarningMask = 0;
 	}
 
 	/**
-	 * @brief Enables critical faults and  warnings masks.
+	 * @brief Enables fatal errors and  warnings masks.
 	 * @param (none)
 	 * @return (none)
 	 */
 	static void enableCriticalMasks()
 	{
 		mcu::CRITICAL_SECTION;
-		m_thisCpuData->criticalFaultMask = sys::Fault::CRITICAL_FAULTS;
-		m_thisCpuData->criticalWarningMask = sys::Warning::CRITICAL_WARNINGS;
+		m_thisCpuData->fatalErrorMask = sys::Error::FATAL_ERRORS;
+		m_thisCpuData->fatalWarningMask = sys::Warning::FATAL_WARNINGS;
 	}
 };
 

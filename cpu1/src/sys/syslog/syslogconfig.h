@@ -12,11 +12,11 @@ namespace sys {
 /// @{
 
 
-namespace Fault {
+namespace Error {
 
 
 /// System faults
-enum Fault
+enum Error
 {
 	OVP_IN,
 	UVP_IN,
@@ -38,7 +38,7 @@ enum Fault
 };
 
 
-const uint32_t CRITICAL_FAULTS = 0;	//(1UL << DRIVER_FLT)
+const uint32_t FATAL_ERRORS = 0;	//(1UL << DRIVER_FLT)
 					//| (1UL << RUNTIME_ERROR);
 
 
@@ -59,7 +59,7 @@ enum Warning
 };
 
 
-const uint32_t CRITICAL_WARNINGS = 0;
+const uint32_t FATAL_WARNINGS = 0;
 
 
 } // namespace Warning

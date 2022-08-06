@@ -144,7 +144,7 @@ void main()
 	/*##########*/
 	Syslog::IpcFlags syslogIpcFlags =
 	{
-		.RESET = mcu::IpcFlag(10),
+		.RESET_ERRORS_WARNINGS = mcu::IpcFlag(10),
 		.ADD_MESSAGE = mcu::IpcFlag(11),
 		.POP_MESSAGE = mcu::IpcFlag(12)
 	};
