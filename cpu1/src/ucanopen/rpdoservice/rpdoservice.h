@@ -387,6 +387,7 @@ private:
 			if (data().bitBmsFatalError == true)
 			{
 				converter->emergencyShutdown();
+				Syslog::setError(sys::Error::BMS_FATAL_ERROR);
 			}
 			else
 			{
@@ -422,6 +423,7 @@ private:
 			if (data().bitBmsFatalErrorDebug == true)
 			{
 				converter->emergencyShutdown();
+				Syslog::setError(sys::Error::BMS_FATAL_ERROR);
 			}
 			else
 			{

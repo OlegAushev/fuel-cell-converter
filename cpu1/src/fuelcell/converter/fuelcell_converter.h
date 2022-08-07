@@ -184,7 +184,7 @@ public:
 	 */
 	void processTemperatureMeasurements();
 
-	const ConverterConfig& congig() const { return m_config; }
+	const ConverterConfig& config() const { return m_config; }
 
 	void turnRelayOn() const
 	{

@@ -291,12 +291,12 @@ void STARTCHARGING_State::run(Converter* converter)
 		stopCharging(converter);
 	}
 
-	float currRefDiff = (converter->congig().currentInMax - converter->congig().currentInMin) /
+	float currRefDiff = (converter->config().currentInMax - converter->config().currentInMin) /
 			(30 * converter->pwm.freq());
 	m_currentInRef = emb::clamp(m_currentInRef + currRefDiff,
-			converter->congig().currentInMin, converter->congig().currentInMax);
+			converter->config().currentInMin, converter->config().currentInMax);
 
-	if (m_currentInRef >= converter->congig().currentInMax)
+	if (m_currentInRef >= converter->config().currentInMax)
 	{
 		resetState();
 		changeState(converter, INOPERATION_State::instance());
