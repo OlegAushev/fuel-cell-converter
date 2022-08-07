@@ -220,6 +220,22 @@ public:
 				|| hasNoConnection() || hasLowPressure();
 	}
 
+	/**
+	 * @brief Returns state code of fuel cells.
+	 * @param (none)
+	 * @return State code of fuel cells.
+	 */
+	static uint32_t state()
+	{
+		uint32_t ret = 0;
+		ret += 10000 * s_data.status[0];
+		ret += 1000 * s_data.status[1];
+		ret += 100 * s_data.status[2];
+		ret += 10 * s_data.status[3];
+		ret += 1 * s_data.status[4];
+		return ret;
+	}
+
 private:
 	void runTx();
 	void runRx();

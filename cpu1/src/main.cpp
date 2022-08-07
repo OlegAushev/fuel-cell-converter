@@ -400,7 +400,11 @@ void main()
 		ucanopenServer.run();
 		mcu::SystemClock::runTasks();
 		converter->processTemperatureMeasurements();
-		// TODO check fuel cells status
+
+		if (fuelcell::Controller::fault())
+		{
+			converter->emergencyShutdown();
+		}
 
 #ifdef TEST_CAN_BY_GPIO
 		ucanopenServerTest.run();
