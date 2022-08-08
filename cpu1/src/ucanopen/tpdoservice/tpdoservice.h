@@ -350,8 +350,7 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			msg.can1.syslogInfo = static_cast<uint32_t>(Syslog::readMessage());
-			Syslog::popMessage();
+			// RESERVED
 			break;
 		case UCANOPEN_CAN2:
 			// FIXME fuel cell emulation
