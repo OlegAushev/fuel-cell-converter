@@ -313,7 +313,7 @@ private:
 /**
  * @brief Timeout watchdog class.
  */
-class TimeoutWatchdog
+class Timeout
 {
 private:
 	const uint64_t m_timeout;
@@ -324,7 +324,7 @@ public:
 	 * @param timeout - timeout in milliseconds
 	 * @return (none)
 	 */
-	TimeoutWatchdog(uint64_t timeout = 0)
+	Timeout(uint64_t timeout = 0)
 		: m_timeout(timeout)
 		, m_start(SystemClock::now())
 	{}
