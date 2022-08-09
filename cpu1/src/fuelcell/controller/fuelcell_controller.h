@@ -102,6 +102,17 @@ private:
 	static const uint64_t TPDO_PERIOD = 200;
 	static const unsigned int TPDO_FRAME_ID = 0x200;
 
+	static uint64_t m_errorRegTimestamp;
+	static bool m_isErrorRegistered;
+	static const uint64_t m_errorDelay = 5000;
+
+public:
+	static const float MIN_OPERATING_VOLTAGE = 35;
+	static const float MAX_OPERATING_VOLTAGE = 42;
+
+	static const float ABSOLUTE_MIN_VOLTAGE = 32;
+	static const float ABSOLUTE_MAX_VOLTAGE = 45;
+
 public:
 	Controller(const Converter* converter,
 			const mcu::Gpio& rxPin, const mcu::Gpio& txPin, mcu::Gpio& clkPin);
@@ -155,10 +166,6 @@ public:
 	 */
 	static bool hasError()
 	{
-		if (s_data.statusError)
-		{
-			Syslog::setError(sys::Error::FUELCELL_ERROR);
-		}
 		return s_data.statusError;
 	}
 
@@ -189,12 +196,7 @@ public:
 	 */
 	static bool hasOverheat()
 	{
-		bool fault = emb::count(s_data.statusOverheat.begin(), s_data.statusOverheat.end(), true) > 0;
-		if (fault)
-		{
-			Syslog::setError(sys::Error::FUELCELL_OVERHEAT);
-		}
-		return fault;
+		return emb::count(s_data.statusOverheat.begin(), s_data.statusOverheat.end(), true) > 0;
 	}
 
 	/**
@@ -204,12 +206,7 @@ public:
 	 */
 	static bool hasLowCharge()
 	{
-		bool fault = emb::count(s_data.statusLowCharge.begin(), s_data.statusLowCharge.end(), true) > 0;
-		if (fault)
-		{
-			Syslog::setError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		}
-		return fault;
+		return emb::count(s_data.statusLowCharge.begin(), s_data.statusLowCharge.end(), true) > 0;
 	}
 
 	/**
@@ -219,10 +216,6 @@ public:
 	 */
 	static bool hasNoConnection()
 	{
-		if (s_data.statusNoConnection)
-		{
-			Syslog::setError(sys::Error::FUELCELL_NOCONNECTION);
-		}
 		return s_data.statusNoConnection;
 	}
 
@@ -233,10 +226,6 @@ public:
 	 */
 	static bool hasLowPressure()
 	{
-		if (s_data.statusLowPressure)
-		{
-			Syslog::setError(sys::Error::FUELCELL_LOWPRESSURE);
-		}
 		return s_data.statusLowPressure;
 	}
 
@@ -247,10 +236,6 @@ public:
 	 */
 	static bool hasHydroError()
 	{
-		if (s_data.statusHydroError)
-		{
-			Syslog::setError(sys::Error::FUELCELL_HYDROERROR);
-		}
 		return s_data.statusHydroError;
 	}
 
@@ -261,8 +246,97 @@ public:
 	 */
 	static bool checkErrors()
 	{
-		return hasError() || hasOverheat() || hasLowCharge()
-				|| hasNoConnection() || hasLowPressure() || hasHydroError();
+		static bool errorPrev = false;
+		bool errorDelayExpired = m_isErrorRegistered
+				&& (mcu::SystemClock::now() - m_errorRegTimestamp > m_errorDelay);
+		bool error = false;
+
+		if (hasError())
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_ERROR);
+			}
+		}
+
+		if (hasOverheat())
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_OVERHEAT);
+			}
+		}
+
+		if (hasLowCharge())
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+			}
+		}
+
+		if (hasNoConnection())
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_NOCONNECTION);
+			}
+		}
+
+		if (hasLowPressure())
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_LOWPRESSURE);
+			}
+		}
+
+		if (hasHydroError())
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_HYDROERROR);
+			}
+		}
+
+		for (size_t i = 0; i < s_data.cellVoltage.size(); ++i)
+		{
+			if (s_data.cellVoltage[i] < ABSOLUTE_MIN_VOLTAGE)
+			{
+				error = true;
+				if (errorDelayExpired)
+				{
+					Syslog::setError(sys::Error::FUELCELL_UV);
+				}
+			}
+			else if (s_data.cellVoltage[i] > ABSOLUTE_MAX_VOLTAGE)
+			{
+				error = true;
+				if (errorDelayExpired)
+				{
+					Syslog::setError(sys::Error::FUELCELL_OV);
+				}
+			}
+		}
+
+		if (error && !errorPrev)
+		{
+			m_isErrorRegistered = true;
+			m_errorRegTimestamp = mcu::SystemClock::now();
+		}
+		else if (!error)
+		{
+			m_isErrorRegistered = false;
+		}
+
+		errorPrev = error;
+		return error;
 	}
 
 	/**
@@ -272,18 +346,18 @@ public:
 	 */
 	static uint32_t state()
 	{
-		uint32_t bitError = hasError() ? 1 : 0;
-		uint32_t bitReady = isStarting() ? 1 : 0;
-		uint32_t bitInop = isRunning() ? 1 : 0;
-		uint32_t bitOverheat = hasOverheat() ? 1 : 0;
-		uint32_t bitLowvo = hasLowCharge() ? 1 : 0;
-		uint32_t bitNoconn = hasNoConnection() ? 1 : 0;
-		uint32_t bitLowpr = hasLowPressure() ? 1 : 0;
+//		uint32_t bitError = hasError() ? 1 : 0;
+//		uint32_t bitReady = isStarting() ? 1 : 0;
+//		uint32_t bitInop = isRunning() ? 1 : 0;
+//		uint32_t bitOverheat = hasOverheat() ? 1 : 0;
+//		uint32_t bitLowvo = hasLowCharge() ? 1 : 0;
+//		uint32_t bitNoconn = hasNoConnection() ? 1 : 0;
+//		uint32_t bitLowpr = hasLowPressure() ? 1 : 0;
 
 		uint32_t ret = 0;
 
-		ret = bitError | (bitReady << 1) | (bitInop << 2) | (bitOverheat << 3)
-				| (bitLowvo << 4) | (bitNoconn << 5) | (bitLowpr << 6);
+		//ret = bitError | (bitReady << 1) | (bitInop << 2) | (bitOverheat << 3)
+		//		| (bitLowvo << 4) | (bitNoconn << 5) | (bitLowpr << 6);
 		return ret;
 	}
 
@@ -300,6 +374,8 @@ public:
 		Syslog::disableError(sys::Error::FUELCELL_NOCONNECTION);
 		Syslog::disableError(sys::Error::FUELCELL_LOWPRESSURE);
 		Syslog::disableError(sys::Error::FUELCELL_HYDROERROR);
+		Syslog::disableError(sys::Error::FUELCELL_UV);
+		Syslog::disableError(sys::Error::FUELCELL_OV);
 	}
 
 	/**
@@ -315,6 +391,8 @@ public:
 		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
 		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
 		Syslog::enableError(sys::Error::FUELCELL_HYDROERROR);
+		Syslog::enableError(sys::Error::FUELCELL_UV);
+		Syslog::enableError(sys::Error::FUELCELL_OV);
 	}
 
 private:

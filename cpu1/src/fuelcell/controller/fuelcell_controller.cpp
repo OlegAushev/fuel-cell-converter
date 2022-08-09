@@ -13,6 +13,9 @@ namespace fuelcell {
 const mcu::IpcFlag Controller::SIG_START(21);
 const mcu::IpcFlag Controller::SIG_STOP(22);
 
+uint64_t Controller::m_errorRegTimestamp = 0;
+bool Controller::m_isErrorRegistered = false;
+
 
 Data Controller::s_data __attribute__((section("SHARED_FUELCELL_DATA"), retain));
 

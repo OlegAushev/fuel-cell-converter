@@ -334,7 +334,7 @@ public:
 	 * @param (none)
 	 * @return \c true if timeout is expired, \c false otherwise.
 	 */
-	bool triggered() volatile
+	bool expired() volatile
 	{
 		if (m_timeout == 0)
 		{
