@@ -5,6 +5,7 @@
 
 
 #include "fuelcell_converter.h"
+#include "../controller/fuelcell_controller.h"
 
 
 namespace fuelcell {
@@ -199,6 +200,11 @@ __interrupt void Converter::onAdcCurrentInSecondInterrupt()
 		converter->m_currentController.update(
 				converter->m_config.cvVoltageIn,
 				converter->m_voltageInFilter.output());
+
+		// OR TODO
+		//converter->m_currentController.update(
+		//		Controller::minCellVoltage(),
+		//		Controller::MIN_OPERATING_VOLTAGE);
 
 		// run duty cycle controller to achieve needed current
 		converter->m_dutycycleController.update(

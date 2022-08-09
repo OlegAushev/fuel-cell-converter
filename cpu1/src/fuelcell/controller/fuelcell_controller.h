@@ -340,6 +340,16 @@ public:
 	}
 
 	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static float minCellVoltage()
+	{
+		return *emb::min_element(s_data.cellVoltage.begin(), s_data.cellVoltage.end());
+	}
+
+	/**
 	 * @brief Returns state code of fuel cells.
 	 * @param (none)
 	 * @return State code of fuel cells.
