@@ -60,19 +60,7 @@ void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState)
 ///
 void STANDBY_State::startup(Converter* converter)
 {
-	Syslog::disableError(sys::Error::FUELCELL_ERROR);
-	Syslog::disableError(sys::Error::FUELCELL_OVERHEAT);
-	Syslog::disableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-	Syslog::disableError(sys::Error::FUELCELL_NOCONNECTION);
-	Syslog::disableError(sys::Error::FUELCELL_LOWPRESSURE);
-
-	Syslog::resetError(sys::Error::FUELCELL_ERROR);
-	Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
-	Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-	Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
-	Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
-
-	if (!Syslog::errors())
+	if (!Syslog::errors() && !Syslog::hasWarning(sys::Warning::BATTERY_CHARGED))
 	{
 		Controller::start();
 		changeState(converter, STARTUP_State::instance());
@@ -166,52 +154,21 @@ void STARTUP_State::run(Converter* converter)
 	float voltDiff = fabsf(converter->voltageIn() - voltPrev);
 	voltPrev = converter->voltageIn();
 
+	// TODO Controller::start(); // may be needed here to reset errors at fuel cells (multiple start signal sending)
+
 	if (mcu::SystemClock::now() - timestamp() > 10000)
 	{
-		Syslog::resetError(sys::Error::FUELCELL_ERROR);
-		Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
-		Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
-		Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
-
-		Syslog::enableError(sys::Error::FUELCELL_ERROR);
-		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
-		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
-		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
+		Controller::enableErrors();
 	}
 
-	if ((fuelcell::Controller::inOperation()) && (voltDiff < 0.1))
+	if ((fuelcell::Controller::isRunning()) && (voltDiff < 0.1))
 	{
-		Syslog::resetError(sys::Error::FUELCELL_ERROR);
-		Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
-		Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
-		Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
-
-		Syslog::enableError(sys::Error::FUELCELL_ERROR);
-		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
-		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
-		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
-
+		Controller::enableErrors();
 		converter->turnRelayOn();
 		waitNgoToState(converter, 5000, READY_State::instance());
 	}
 	else if (mcu::SystemClock::now() - timestamp() > 45000)
 	{
-		Syslog::resetError(sys::Error::FUELCELL_ERROR);
-		Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
-		Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
-		Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
-
-		Syslog::enableError(sys::Error::FUELCELL_ERROR);
-		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
-		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
-		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
-		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
-
 		Controller::stop();
 		Syslog::setError(sys::Error::FUELCELL_STARTUP_FAILED);
 		changeState(converter, STANDBY_State::instance());
@@ -538,17 +495,8 @@ void SHUTDOWN_State::startCharging(Converter* converter)
 ///
 void SHUTDOWN_State::run(Converter* converter)
 {
-	//if (Controller::ready())
-	//{
-		converter->turnRelayOff();
-		changeState(converter, STANDBY_State::instance());
-	//}
-	//else if (mcu::SystemClock::now() - timestamp() > 30000)
-	//{
-	//	converter->turnRelayOff();
-	//	Syslog::setError(sys::Error::FUELCELL_SHUTDOWN_FAILED);
-	//	changeState(converter, STANDBY_State::instance());
-	//}
+	converter->turnRelayOff();
+	changeState(converter, STANDBY_State::instance());
 }
 
 
@@ -623,7 +571,7 @@ void WAIT_State::run(Converter* converter)
 
 	if (Syslog::errors() != 0)
 	{
-		shutdown(converter);
+		converter->stop();
 	}
 }
 

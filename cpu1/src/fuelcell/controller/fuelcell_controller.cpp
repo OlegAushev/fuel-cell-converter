@@ -33,14 +33,14 @@ Controller::Controller(const Converter* converter,
 	s_data.battVoltage.fill(0);
 	s_data.current.fill(0);
 
-	s_data.statusError.fill(false);
-	s_data.statusReady.fill(false);
-	s_data.statusInoperation.fill(false);
+	s_data.statusError =  false;
+	s_data.statusStart.fill(false);
+	s_data.statusRun.fill(false);
 	s_data.statusOverheat.fill(false);
-	s_data.statusLowvoltage.fill(false);
-	s_data.statusNoconnection.fill(false);
-	s_data.statusLowpressure.fill(false);
-	s_data.statusHydroerr.fill(false);
+	s_data.statusLowCharge.fill(false);
+	s_data.statusNoConnection = false;
+	s_data.statusLowPressure = false;
+	s_data.statusHydroError = false;
 }
 
 
@@ -130,14 +130,18 @@ void Controller::runRx()
 		s_data.cellVoltage[cell] = 0.1f * rpdo.cellVoltage;
 		s_data.battVoltage[cell] = 0.1f * rpdo.battVoltage;
 
-		s_data.statusError[cell] = rpdo.statusError;
-		s_data.statusReady[cell] = rpdo.statusReady;
-		s_data.statusInoperation[cell] = rpdo.statusInoperation;
+		if (cell == 0)
+		{
+			s_data.statusError = rpdo.statusError;
+			s_data.statusNoConnection = rpdo.statusNoConnection;
+			s_data.statusLowPressure = rpdo.statusLowPressure;
+			s_data.statusHydroError = rpdo.statusHydroError;
+		}
+
+		s_data.statusStart[cell] = rpdo.statusStart;
+		s_data.statusRun[cell] = rpdo.statusRun;
 		s_data.statusOverheat[cell] = rpdo.statusOverheat;
-		s_data.statusLowvoltage[cell] = rpdo.statusLowvoltage;
-		s_data.statusNoconnection[cell] = rpdo.statusNoconnection;
-		s_data.statusLowpressure[cell] = rpdo.statusLowpressure;
-		s_data.statusHydroerr[cell] = rpdo.statusHydroerr;
+		s_data.statusLowCharge[cell] = rpdo.statusLowCharge;
 
 		s_data.current[cell] = 0.1f * float(rpdo.current);
 		break;

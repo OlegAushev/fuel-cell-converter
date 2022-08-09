@@ -150,6 +150,7 @@ void main()
 	};
 	Syslog::init(syslogIpcFlags);
 	Syslog::addMessage(sys::Message::DEVICE_CPU1_BOOT_SUCCESS);
+	fuelcell::Controller::disableErrors();	// no fuel cell errors registering at startup
 
 // BEGIN of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/
@@ -185,37 +186,6 @@ void main()
 	mcu::Gpio canbygpioTx(canbygpioTxCfg);
 	mcu::Gpio canbygpioClk(canbygpioClkCfg);
 	canbygpioRx.setInterrupt(GPIO_INT_XINT5);
-
-#ifdef TEST_CAN_BY_GPIO
-	ucanopen::IpcFlags canIpcSignalsTest =
-	{
-		.RPDO1_RECEIVED = mcu::IpcFlag(14),
-		.RPDO2_RECEIVED = mcu::IpcFlag(15),
-		.RPDO3_RECEIVED = mcu::IpcFlag(16),
-		.RPDO4_RECEIVED = mcu::IpcFlag(17),
-		.RSDO_RECEIVED = mcu::IpcFlag(18),
-		.TSDO_READY = mcu::IpcFlag(19),
-	};
-
-	ucanopen::SdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> sdoServiceTest(NULL);
-	ucanopen::TpdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> tpdoServiceTest(NULL);
-	ucanopen::RpdoService<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> rpdoServiceTest(NULL);
-	ucanopen::ucanopenServer<mcu::CANB, mcu::IPC_MODE_SINGLECORE, emb::MODE_MASTER> ucanopenServerTest(
-			mcu::GpioPinConfig(6, GPIO_6_CANTXB),
-			mcu::GpioPinConfig(7, GPIO_7_CANRXB),
-			mcu::CAN_BITRATE_125K, mcu::CAN_LOOPBACK_MODE,
-			ucanopen::NodeId(0x01),
-			&tpdoServiceTest, &rpdoServiceTest, &sdoServiceTest, canIpcSignalsTest);
-
-	ucanopenServerTest.setHeartbeatPeriod(0);
-	ucanopenServerTest.setTpdoPeriod(ucanopen::TPDO_NUM1, 200);
-	ucanopenServerTest.setTpdoPeriod(ucanopen::TPDO_NUM2, 200);
-	ucanopenServerTest.setTpdoPeriod(ucanopen::TPDO_NUM3, 200);
-	ucanopenServerTest.setTpdoPeriod(ucanopen::TPDO_NUM4, 200);
-
-	ucanopenServerTest.setRpdoId(ucanopen::RPDO_NUM1, 0x200);
-	ucanopenServerTest.enable();
-#endif
 
 /*####################################################################################################################*/
 #ifdef CRD300
@@ -401,31 +371,10 @@ void main()
 		mcu::SystemClock::runTasks();
 		converter->processTemperatureMeasurements();
 
-		if (fuelcell::Controller::fault())
+		if (fuelcell::Controller::checkErrors())
 		{
 			//converter->emergencyShutdown();
 		}
-
-#ifdef TEST_CAN_BY_GPIO
-		ucanopenServerTest.run();
-		static uint64_t sigPrev = 0;
-		static bool hasStarted = false;
-		if (mcu::SystemClock::now() > (sigPrev + 1000))
-		{
-			if (!hasStarted)
-			{
-				fuelcell::Controller::start();
-				hasStarted = true;
-			}
-			else
-			{
-				fuelcell::Controller::stop();
-				hasStarted = false;
-			}
-
-			sigPrev = mcu::SystemClock::now();
-		}
-#endif
 
 		daca.convert(mcu::DacInput(dacaInput));
 		dacb.convert(mcu::DacInput(dacbInput));

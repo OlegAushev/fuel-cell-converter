@@ -52,13 +52,13 @@ struct RpdoMessage
 	uint64_t battVoltage : 16;
 
 	uint64_t statusError : 1;
-	uint64_t statusReady : 1;
-	uint64_t statusInoperation : 1;
+	uint64_t statusStart : 1;
+	uint64_t statusRun : 1;
 	uint64_t statusOverheat : 1;
-	uint64_t statusLowvoltage : 1;
-	uint64_t statusNoconnection : 1;
-	uint64_t statusLowpressure : 1;
-	uint64_t statusHydroerr : 1;
+	uint64_t statusLowCharge : 1;
+	uint64_t statusNoConnection : 1;
+	uint64_t statusLowPressure : 1;
+	uint64_t statusHydroError : 1;
 
 	int16_t current : 16;
 };
@@ -75,17 +75,17 @@ struct Data
 	emb::Array<float, FUELCELL_COUNT> temperature;
 	emb::Array<float, FUELCELL_COUNT> cellVoltage;
 	emb::Array<float, FUELCELL_COUNT> battVoltage;
-
-	emb::Array<bool, FUELCELL_COUNT> statusError;
-	emb::Array<bool, FUELCELL_COUNT> statusReady;
-	emb::Array<bool, FUELCELL_COUNT> statusInoperation;
-	emb::Array<bool, FUELCELL_COUNT> statusOverheat;
-	emb::Array<bool, FUELCELL_COUNT> statusLowvoltage;
-	emb::Array<bool, FUELCELL_COUNT> statusNoconnection;
-	emb::Array<bool, FUELCELL_COUNT> statusLowpressure;
-	emb::Array<bool, FUELCELL_COUNT> statusHydroerr;
-
 	emb::Array<float, FUELCELL_COUNT> current;
+
+	bool statusError;
+	emb::Array<bool, FUELCELL_COUNT> statusStart;
+	emb::Array<bool, FUELCELL_COUNT> statusRun;
+	emb::Array<bool, FUELCELL_COUNT> statusOverheat;
+	emb::Array<bool, FUELCELL_COUNT> statusLowCharge;
+	bool statusNoConnection;
+	bool statusLowPressure;
+	bool statusHydroError;
+
 };
 
 
@@ -134,6 +134,7 @@ public:
 	 */
 	static void stop()
 	{
+		disableErrors();	// errors after stop must not be registered
 		mcu::setLocalIpcFlag(SIG_STOP.local);
 	}
 
@@ -149,27 +150,16 @@ public:
 
 	/**
 	 * @brief
-	 * @param (none)
-	 * @return
-	 */
-	static bool inOperation()
-	{
-		return emb::count(s_data.statusInoperation.begin(), s_data.statusInoperation.end(), true) == FUELCELL_COUNT;
-	}
-
-	/**
-	 * @brief
 	 * @param
 	 * @return
 	 */
 	static bool hasError()
 	{
-		bool fault = emb::count(s_data.statusError.begin(), s_data.statusError.end(), true) > 0;
-		if (fault)
+		if (s_data.statusError)
 		{
 			Syslog::setError(sys::Error::FUELCELL_ERROR);
 		}
-		return fault;
+		return s_data.statusError;
 	}
 
 	/**
@@ -177,9 +167,19 @@ public:
 	 * @param (none)
 	 * @return
 	 */
-	static bool ready()
+	static bool isStarting()
 	{
-		return emb::count(s_data.statusReady.begin(), s_data.statusReady.end(), true) == FUELCELL_COUNT;
+		return emb::count(s_data.statusStart.begin(), s_data.statusStart.end(), true) == FUELCELL_COUNT;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool isRunning()
+	{
+		return emb::count(s_data.statusRun.begin(), s_data.statusRun.end(), true) == FUELCELL_COUNT;
 	}
 
 	/**
@@ -202,9 +202,9 @@ public:
 	 * @param (none)
 	 * @return
 	 */
-	static bool hasBattLowCharge()
+	static bool hasLowCharge()
 	{
-		bool fault = emb::count(s_data.statusLowvoltage.begin(), s_data.statusLowvoltage.end(), true) > 0;
+		bool fault = emb::count(s_data.statusLowCharge.begin(), s_data.statusLowCharge.end(), true) > 0;
 		if (fault)
 		{
 			Syslog::setError(sys::Error::FUELCELL_BATT_LOWCHARGE);
@@ -219,12 +219,11 @@ public:
 	 */
 	static bool hasNoConnection()
 	{
-		bool fault = s_data.statusNoconnection[0];
-		if (fault)
+		if (s_data.statusNoConnection)
 		{
 			Syslog::setError(sys::Error::FUELCELL_NOCONNECTION);
 		}
-		return fault;
+		return s_data.statusNoConnection;
 	}
 
 	/**
@@ -234,12 +233,11 @@ public:
 	 */
 	static bool hasLowPressure()
 	{
-		bool fault = s_data.statusLowpressure[0] || s_data.statusHydroerr[0];
-		if (fault)
+		if (s_data.statusLowPressure)
 		{
 			Syslog::setError(sys::Error::FUELCELL_LOWPRESSURE);
 		}
-		return fault;
+		return s_data.statusLowPressure;
 	}
 
 	/**
@@ -247,10 +245,24 @@ public:
 	 * @param (none)
 	 * @return
 	 */
-	static bool fault()
+	static bool hasHydroError()
 	{
-		return hasOverheat() || hasBattLowCharge()
-				|| hasNoConnection();
+		if (s_data.statusHydroError)
+		{
+			Syslog::setError(sys::Error::FUELCELL_HYDROERROR);
+		}
+		return s_data.statusHydroError;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool checkErrors()
+	{
+		return hasError() || hasOverheat() || hasLowCharge()
+				|| hasNoConnection() || hasLowPressure() || hasHydroError();
 	}
 
 	/**
@@ -261,10 +273,10 @@ public:
 	static uint32_t state()
 	{
 		uint32_t bitError = hasError() ? 1 : 0;
-		uint32_t bitReady = ready() ? 1 : 0;
-		uint32_t bitInop = inOperation() ? 1 : 0;
+		uint32_t bitReady = isStarting() ? 1 : 0;
+		uint32_t bitInop = isRunning() ? 1 : 0;
 		uint32_t bitOverheat = hasOverheat() ? 1 : 0;
-		uint32_t bitLowvo = hasBattLowCharge() ? 1 : 0;
+		uint32_t bitLowvo = hasLowCharge() ? 1 : 0;
 		uint32_t bitNoconn = hasNoConnection() ? 1 : 0;
 		uint32_t bitLowpr = hasLowPressure() ? 1 : 0;
 
@@ -273,6 +285,36 @@ public:
 		ret = bitError | (bitReady << 1) | (bitInop << 2) | (bitOverheat << 3)
 				| (bitLowvo << 4) | (bitNoconn << 5) | (bitLowpr << 6);
 		return ret;
+	}
+
+	/**
+	 * @brief
+	 * @param
+	 * @return
+	 */
+	static void disableErrors()
+	{
+		Syslog::disableError(sys::Error::FUELCELL_ERROR);
+		Syslog::disableError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::disableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::disableError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::disableError(sys::Error::FUELCELL_LOWPRESSURE);
+		Syslog::disableError(sys::Error::FUELCELL_HYDROERROR);
+	}
+
+	/**
+	 * @brief
+	 * @param
+	 * @return
+	 */
+	static void enableErrors()
+	{
+		Syslog::enableError(sys::Error::FUELCELL_ERROR);
+		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
+		Syslog::enableError(sys::Error::FUELCELL_HYDROERROR);
 	}
 
 private:
