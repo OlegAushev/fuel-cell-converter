@@ -31,8 +31,16 @@ Controller::Controller(const Converter* converter,
 	s_data.temperature.fill(0);
 	s_data.cellVoltage.fill(0);
 	s_data.battVoltage.fill(0);
-	s_data.status.fill(FUELCELL_NA);
-	s_data.temperature.fill(0);
+	s_data.current.fill(0);
+
+	s_data.statusError.fill(false);
+	s_data.statusReady.fill(false);
+	s_data.statusInoperation.fill(false);
+	s_data.statusOverheat.fill(false);
+	s_data.statusLowvoltage.fill(false);
+	s_data.statusNoconnection.fill(false);
+	s_data.statusLowpressure.fill(false);
+	s_data.statusHydroerr.fill(false);
 }
 
 
@@ -118,16 +126,20 @@ void Controller::runRx()
 		emb::c28x::from_bytes8<RpdoMessage>(rpdo, rpdoBytes);
 		size_t cell = rpdoId - 0x180;
 
-		s_data.temperature[cell] = -40.0f + rpdo.temperature;
+		s_data.temperature[cell] = rpdo.temperature;
 		s_data.cellVoltage[cell] = 0.1f * rpdo.cellVoltage;
-		s_data.battVoltage[cell] = 15.0f + 0.1f * rpdo.battVoltage;
+		s_data.battVoltage[cell] = 0.1f * rpdo.battVoltage;
 
-		if (emb::Range<unsigned int>(0,7).contains(rpdo.status))
-		{
-			s_data.status[cell] = static_cast<FuelcellStatus>(rpdo.status);
-		}
+		s_data.statusError[cell] = rpdo.statusError;
+		s_data.statusReady[cell] = rpdo.statusReady;
+		s_data.statusInoperation[cell] = rpdo.statusInoperation;
+		s_data.statusOverheat[cell] = rpdo.statusOverheat;
+		s_data.statusLowvoltage[cell] = rpdo.statusLowvoltage;
+		s_data.statusNoconnection[cell] = rpdo.statusNoconnection;
+		s_data.statusLowpressure[cell] = rpdo.statusLowpressure;
+		s_data.statusHydroerr[cell] = rpdo.statusHydroerr;
 
-		s_data.current[cell] = 0.1f * rpdo.current;
+		s_data.current[cell] = 0.1f * float(rpdo.current);
 		break;
 	}
 	case -1:

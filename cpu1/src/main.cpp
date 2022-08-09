@@ -403,7 +403,7 @@ void main()
 
 		if (fuelcell::Controller::fault())
 		{
-			converter->emergencyShutdown();
+			//converter->emergencyShutdown();
 		}
 
 #ifdef TEST_CAN_BY_GPIO

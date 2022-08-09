@@ -397,7 +397,7 @@ private:
 				}
 				else
 				{
-					converter->stopCharging();
+					converter->shutdown();
 				}
 			}
 			break;
@@ -433,7 +433,7 @@ private:
 				}
 				else
 				{
-					converter->stopCharging();
+					converter->shutdown();
 				}
 			}
 			break;

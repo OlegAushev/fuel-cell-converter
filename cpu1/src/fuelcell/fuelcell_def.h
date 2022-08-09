@@ -37,7 +37,7 @@ enum ConverterState
 
 
 /// Fuel cell status
-enum FuelcellStatus
+/*enum FuelcellStatus
 {
 	FUELCELL_NA,
 	FUELCELL_STANDBY,
@@ -47,7 +47,7 @@ enum FuelcellStatus
 	FUELCELL_BATT_LOWCHARGE,
 	FUELCELL_NOCONNECTION,
 	FUELCELL_LOWPRESSURE,
-};
+};*/
 
 
 /// @}

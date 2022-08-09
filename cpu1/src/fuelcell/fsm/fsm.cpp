@@ -60,7 +60,19 @@ void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState)
 ///
 void STANDBY_State::startup(Converter* converter)
 {
-	if ((!Syslog::errors()) && (!Controller::fault()))
+	Syslog::disableError(sys::Error::FUELCELL_ERROR);
+	Syslog::disableError(sys::Error::FUELCELL_OVERHEAT);
+	Syslog::disableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+	Syslog::disableError(sys::Error::FUELCELL_NOCONNECTION);
+	Syslog::disableError(sys::Error::FUELCELL_LOWPRESSURE);
+
+	Syslog::resetError(sys::Error::FUELCELL_ERROR);
+	Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
+	Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+	Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
+	Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
+
+	if (!Syslog::errors())
 	{
 		Controller::start();
 		changeState(converter, STARTUP_State::instance());
@@ -151,15 +163,55 @@ void STARTUP_State::startCharging(Converter* converter)
 void STARTUP_State::run(Converter* converter)
 {
 	static float voltPrev = 0;
-	float voltDiff = fabsf(converter->voltageOut() - voltPrev);
+	float voltDiff = fabsf(converter->voltageIn() - voltPrev);
+	voltPrev = converter->voltageIn();
 
-	if ((fuelcell::Controller::inOperation()) && (voltDiff < 0.05))
+	if (mcu::SystemClock::now() - timestamp() > 10000)
 	{
+		Syslog::resetError(sys::Error::FUELCELL_ERROR);
+		Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
+
+		Syslog::enableError(sys::Error::FUELCELL_ERROR);
+		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
+	}
+
+	if ((fuelcell::Controller::inOperation()) && (voltDiff < 0.1))
+	{
+		Syslog::resetError(sys::Error::FUELCELL_ERROR);
+		Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
+
+		Syslog::enableError(sys::Error::FUELCELL_ERROR);
+		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
+
 		converter->turnRelayOn();
 		waitNgoToState(converter, 5000, READY_State::instance());
 	}
-	else if (mcu::SystemClock::now() - timestamp() > 15000)
+	else if (mcu::SystemClock::now() - timestamp() > 45000)
 	{
+		Syslog::resetError(sys::Error::FUELCELL_ERROR);
+		Syslog::resetError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::resetError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::resetError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::resetError(sys::Error::FUELCELL_LOWPRESSURE);
+
+		Syslog::enableError(sys::Error::FUELCELL_ERROR);
+		Syslog::enableError(sys::Error::FUELCELL_OVERHEAT);
+		Syslog::enableError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		Syslog::enableError(sys::Error::FUELCELL_NOCONNECTION);
+		Syslog::enableError(sys::Error::FUELCELL_LOWPRESSURE);
+
 		Controller::stop();
 		Syslog::setError(sys::Error::FUELCELL_STARTUP_FAILED);
 		changeState(converter, STANDBY_State::instance());
@@ -204,7 +256,7 @@ void READY_State::startup(Converter* converter)
 void READY_State::shutdown(Converter* converter)
 {
 	Controller::stop();
-	changeState(converter, SHUTDOWN_State::instance());
+	waitNgoToState(converter, 2000, SHUTDOWN_State::instance());
 }
 
 
@@ -226,7 +278,10 @@ void READY_State::startCharging(Converter* converter)
 ///
 void READY_State::run(Converter* converter)
 {
-	/* DO NOTHING */
+	if (Syslog::errors() != 0)
+	{
+		shutdown(converter);
+	}
 }
 
 
@@ -268,7 +323,7 @@ void STARTCHARGING_State::shutdown(Converter* converter)
 	converter->stop();
 	Controller::stop();
 	resetState();
-	changeState(converter, SHUTDOWN_State::instance());
+	waitNgoToState(converter, 2000, SHUTDOWN_State::instance());
 }
 
 
@@ -288,7 +343,7 @@ void STARTCHARGING_State::run(Converter* converter)
 {
 	if (Syslog::errors() != 0)
 	{
-		stopCharging(converter);
+		shutdown(converter);
 	}
 
 	float currRefDiff = (converter->config().currentInMax - converter->config().currentInMin) /
@@ -345,7 +400,7 @@ void INOPERATION_State::shutdown(Converter* converter)
 {
 	converter->stop();
 	Controller::stop();
-	changeState(converter, SHUTDOWN_State::instance());
+	waitNgoToState(converter, 2000, SHUTDOWN_State::instance());
 }
 
 
@@ -365,7 +420,7 @@ void INOPERATION_State::run(Converter* converter)
 {
 	if (Syslog::errors() != 0)
 	{
-		stopCharging(converter);
+		shutdown(converter);
 	}
 }
 
@@ -483,17 +538,17 @@ void SHUTDOWN_State::startCharging(Converter* converter)
 ///
 void SHUTDOWN_State::run(Converter* converter)
 {
-	if (Controller::standby())
-	{
+	//if (Controller::ready())
+	//{
 		converter->turnRelayOff();
 		changeState(converter, STANDBY_State::instance());
-	}
-	else if (mcu::SystemClock::now() - timestamp() > 30000)
-	{
-		converter->turnRelayOff();
-		Syslog::setError(sys::Error::FUELCELL_SHUTDOWN_FAILED);
-		changeState(converter, STANDBY_State::instance());
-	}
+	//}
+	//else if (mcu::SystemClock::now() - timestamp() > 30000)
+	//{
+	//	converter->turnRelayOff();
+	//	Syslog::setError(sys::Error::FUELCELL_SHUTDOWN_FAILED);
+	//	changeState(converter, STANDBY_State::instance());
+	//}
 }
 
 
@@ -534,8 +589,7 @@ void WAIT_State::startup(Converter* converter)
 void WAIT_State::shutdown(Converter* converter)
 {
 	converter->stop();
-	Controller::stop();
-	changeState(converter, SHUTDOWN_State::instance());
+	/* DO NOTHING */
 }
 
 
@@ -565,6 +619,11 @@ void WAIT_State::run(Converter* converter)
 			Controller::stop();
 			changeState(converter, SHUTDOWN_State::instance());
 		}
+	}
+
+	if (Syslog::errors() != 0)
+	{
+		shutdown(converter);
 	}
 }
 

@@ -50,8 +50,17 @@ struct RpdoMessage
 	uint64_t temperature : 8;
 	uint64_t cellVoltage : 16;
 	uint64_t battVoltage : 16;
-	uint64_t status : 8;
-	uint64_t current : 16;
+
+	uint64_t statusError : 1;
+	uint64_t statusReady : 1;
+	uint64_t statusInoperation : 1;
+	uint64_t statusOverheat : 1;
+	uint64_t statusLowvoltage : 1;
+	uint64_t statusNoconnection : 1;
+	uint64_t statusLowpressure : 1;
+	uint64_t statusHydroerr : 1;
+
+	int16_t current : 16;
 };
 
 
@@ -66,7 +75,16 @@ struct Data
 	emb::Array<float, FUELCELL_COUNT> temperature;
 	emb::Array<float, FUELCELL_COUNT> cellVoltage;
 	emb::Array<float, FUELCELL_COUNT> battVoltage;
-	emb::Array<FuelcellStatus, FUELCELL_COUNT> status;
+
+	emb::Array<bool, FUELCELL_COUNT> statusError;
+	emb::Array<bool, FUELCELL_COUNT> statusReady;
+	emb::Array<bool, FUELCELL_COUNT> statusInoperation;
+	emb::Array<bool, FUELCELL_COUNT> statusOverheat;
+	emb::Array<bool, FUELCELL_COUNT> statusLowvoltage;
+	emb::Array<bool, FUELCELL_COUNT> statusNoconnection;
+	emb::Array<bool, FUELCELL_COUNT> statusLowpressure;
+	emb::Array<bool, FUELCELL_COUNT> statusHydroerr;
+
 	emb::Array<float, FUELCELL_COUNT> current;
 };
 
@@ -136,7 +154,22 @@ public:
 	 */
 	static bool inOperation()
 	{
-		return emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_INOP) == FUELCELL_COUNT;
+		return emb::count(s_data.statusInoperation.begin(), s_data.statusInoperation.end(), true) == FUELCELL_COUNT;
+	}
+
+	/**
+	 * @brief
+	 * @param
+	 * @return
+	 */
+	static bool hasError()
+	{
+		bool fault = emb::count(s_data.statusError.begin(), s_data.statusError.end(), true) > 0;
+		if (fault)
+		{
+			Syslog::setError(sys::Error::FUELCELL_ERROR);
+		}
+		return fault;
 	}
 
 	/**
@@ -144,9 +177,9 @@ public:
 	 * @param (none)
 	 * @return
 	 */
-	static bool standby()
+	static bool ready()
 	{
-		return emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_STANDBY) == FUELCELL_COUNT;
+		return emb::count(s_data.statusReady.begin(), s_data.statusReady.end(), true) == FUELCELL_COUNT;
 	}
 
 	/**
@@ -156,7 +189,7 @@ public:
 	 */
 	static bool hasOverheat()
 	{
-		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_OVERHEAT) > 0;
+		bool fault = emb::count(s_data.statusOverheat.begin(), s_data.statusOverheat.end(), true) > 0;
 		if (fault)
 		{
 			Syslog::setError(sys::Error::FUELCELL_OVERHEAT);
@@ -171,7 +204,7 @@ public:
 	 */
 	static bool hasBattLowCharge()
 	{
-		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_BATT_LOWCHARGE) > 0;
+		bool fault = emb::count(s_data.statusLowvoltage.begin(), s_data.statusLowvoltage.end(), true) > 0;
 		if (fault)
 		{
 			Syslog::setError(sys::Error::FUELCELL_BATT_LOWCHARGE);
@@ -186,7 +219,7 @@ public:
 	 */
 	static bool hasNoConnection()
 	{
-		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_NOCONNECTION) > 0;
+		bool fault = s_data.statusNoconnection[0];
 		if (fault)
 		{
 			Syslog::setError(sys::Error::FUELCELL_NOCONNECTION);
@@ -201,7 +234,7 @@ public:
 	 */
 	static bool hasLowPressure()
 	{
-		bool fault = emb::count(s_data.status.begin(), s_data.status.end(), FUELCELL_LOWPRESSURE) > 0;
+		bool fault = s_data.statusLowpressure[0] || s_data.statusHydroerr[0];
 		if (fault)
 		{
 			Syslog::setError(sys::Error::FUELCELL_LOWPRESSURE);
@@ -217,7 +250,7 @@ public:
 	static bool fault()
 	{
 		return hasOverheat() || hasBattLowCharge()
-				|| hasNoConnection() || hasLowPressure();
+				|| hasNoConnection();
 	}
 
 	/**
@@ -227,12 +260,18 @@ public:
 	 */
 	static uint32_t state()
 	{
+		uint32_t bitError = hasError() ? 1 : 0;
+		uint32_t bitReady = ready() ? 1 : 0;
+		uint32_t bitInop = inOperation() ? 1 : 0;
+		uint32_t bitOverheat = hasOverheat() ? 1 : 0;
+		uint32_t bitLowvo = hasBattLowCharge() ? 1 : 0;
+		uint32_t bitNoconn = hasNoConnection() ? 1 : 0;
+		uint32_t bitLowpr = hasLowPressure() ? 1 : 0;
+
 		uint32_t ret = 0;
-		ret += 10000 * s_data.status[0];
-		ret += 1000 * s_data.status[1];
-		ret += 100 * s_data.status[2];
-		ret += 10 * s_data.status[3];
-		ret += 1 * s_data.status[4];
+
+		ret = bitError | (bitReady << 1) | (bitInop << 2) | (bitOverheat << 3)
+				| (bitLowvo << 4) | (bitNoconn << 5) | (bitLowpr << 6);
 		return ret;
 	}
 
