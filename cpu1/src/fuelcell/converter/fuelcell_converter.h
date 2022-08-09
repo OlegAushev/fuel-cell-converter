@@ -66,9 +66,9 @@ class Converter : public emb::c28x::Singleton<Converter>
 	friend class IDLE_State;
 	friend class STARTUP_State;
 	friend class READY_State;
-	friend class STARTCHARGING_State;
-	friend class INOPERATION_State;
-	friend class STOPCHARGING_State;
+	friend class CHARGING_START_State;
+	friend class CHARGING_State;
+	friend class CHARGING_STOP_State;
 	friend class SHUTDOWN_State;
 	friend class WAIT_State;
 private:

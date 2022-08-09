@@ -107,16 +107,16 @@ public:
 /**
  * @brief
  */
-class STARTCHARGING_State : public IState
+class CHARGING_START_State : public IState
 {
 private:
-	static STARTCHARGING_State s_instance;
-	STARTCHARGING_State() : IState(CONVERTER_START_CHARGING)
+	static CHARGING_START_State s_instance;
+	CHARGING_START_State() : IState(CONVERTER_CHARGING_START)
 	{
 		resetState();
 	}
 public:
-	static STARTCHARGING_State* instance() { return &s_instance; }
+	static CHARGING_START_State* instance() { return &s_instance; }
 	virtual void startup(Converter* converter);
 	virtual void shutdown(Converter* converter);
 	virtual void startCharging(Converter* converter);
@@ -135,13 +135,13 @@ private:
 /**
  * @brief
  */
-class INOPERATION_State : public IState
+class CHARGING_State : public IState
 {
 private:
-	static INOPERATION_State s_instance;
-	INOPERATION_State() : IState(CONVERTER_IN_OPERATION) {}
+	static CHARGING_State s_instance;
+	CHARGING_State() : IState(CONVERTER_CHARGING) {}
 public:
-	static INOPERATION_State* instance() { return &s_instance; }
+	static CHARGING_State* instance() { return &s_instance; }
 	virtual void startup(Converter* converter);
 	virtual void shutdown(Converter* converter);
 	virtual void startCharging(Converter* converter);
@@ -154,13 +154,13 @@ public:
 /**
  * @brief
  */
-class STOPCHARGING_State : public IState
+class CHARGING_STOP_State : public IState
 {
 private:
-	static STOPCHARGING_State s_instance;
-	STOPCHARGING_State() : IState(CONVERTER_STOP_CHARGING) {}
+	static CHARGING_STOP_State s_instance;
+	CHARGING_STOP_State() : IState(CONVERTER_CHARGING_STOP) {}
 public:
-	static STOPCHARGING_State* instance() { return &s_instance; }
+	static CHARGING_STOP_State* instance() { return &s_instance; }
 	virtual void startup(Converter* converter);
 	virtual void shutdown(Converter* converter);
 	virtual void startCharging(Converter* converter);

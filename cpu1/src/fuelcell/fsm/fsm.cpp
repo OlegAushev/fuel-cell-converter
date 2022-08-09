@@ -18,9 +18,9 @@ uint64_t IState::s_timestamp = 0;
 STANDBY_State STANDBY_State::s_instance;
 STARTUP_State STARTUP_State::s_instance;
 READY_State READY_State::s_instance;
-STARTCHARGING_State STARTCHARGING_State::s_instance;
-INOPERATION_State INOPERATION_State::s_instance;
-STOPCHARGING_State STOPCHARGING_State::s_instance;
+CHARGING_START_State CHARGING_START_State::s_instance;
+CHARGING_State CHARGING_State::s_instance;
+CHARGING_STOP_State CHARGING_STOP_State::s_instance;
 SHUTDOWN_State SHUTDOWN_State::s_instance;
 WAIT_State WAIT_State::s_instance;
 
@@ -225,7 +225,7 @@ void READY_State::startCharging(Converter* converter)
 	if ((Syslog::errors() == 0) && (!Syslog::hasWarning(sys::Warning::BATTERY_CHARGED)))
 	{
 		converter->start();
-		changeState(converter, STARTCHARGING_State::instance());
+		changeState(converter, CHARGING_START_State::instance());
 	}
 }
 
@@ -266,7 +266,7 @@ void READY_State::emergencyShutdown(Converter* converter)
 ///
 ///
 ///
-void STARTCHARGING_State::startup(Converter* converter)
+void CHARGING_START_State::startup(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -275,7 +275,7 @@ void STARTCHARGING_State::startup(Converter* converter)
 ///
 ///
 ///
-void STARTCHARGING_State::shutdown(Converter* converter)
+void CHARGING_START_State::shutdown(Converter* converter)
 {
 	converter->stop();
 	Controller::stop();
@@ -287,7 +287,7 @@ void STARTCHARGING_State::shutdown(Converter* converter)
 ///
 ///
 ///
-void STARTCHARGING_State::startCharging(Converter* converter)
+void CHARGING_START_State::startCharging(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -296,7 +296,7 @@ void STARTCHARGING_State::startCharging(Converter* converter)
 ///
 ///
 ///
-void STARTCHARGING_State::run(Converter* converter)
+void CHARGING_START_State::run(Converter* converter)
 {
 	if (Syslog::errors() != 0)
 	{
@@ -311,7 +311,7 @@ void STARTCHARGING_State::run(Converter* converter)
 	if (m_currentInRef >= converter->config().currentInMax)
 	{
 		resetState();
-		changeState(converter, INOPERATION_State::instance());
+		changeState(converter, CHARGING_State::instance());
 	}
 
 }
@@ -320,7 +320,7 @@ void STARTCHARGING_State::run(Converter* converter)
 ///
 ///
 ///
-void STARTCHARGING_State::stopCharging(Converter* converter)
+void CHARGING_START_State::stopCharging(Converter* converter)
 {
 	converter->stop();
 	resetState();
@@ -331,7 +331,7 @@ void STARTCHARGING_State::stopCharging(Converter* converter)
 ///
 ///
 ///
-void STARTCHARGING_State::emergencyShutdown(Converter* converter)
+void CHARGING_START_State::emergencyShutdown(Converter* converter)
 {
 	shutdown(converter);
 }
@@ -344,7 +344,7 @@ void STARTCHARGING_State::emergencyShutdown(Converter* converter)
 ///
 ///
 ///
-void INOPERATION_State::startup(Converter* converter)
+void CHARGING_State::startup(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -353,7 +353,7 @@ void INOPERATION_State::startup(Converter* converter)
 ///
 ///
 ///
-void INOPERATION_State::shutdown(Converter* converter)
+void CHARGING_State::shutdown(Converter* converter)
 {
 	converter->stop();
 	Controller::stop();
@@ -364,7 +364,7 @@ void INOPERATION_State::shutdown(Converter* converter)
 ///
 ///
 ///
-void INOPERATION_State::startCharging(Converter* converter)
+void CHARGING_State::startCharging(Converter* converter)
 {
 	/* DO NOTHING */
 }
@@ -373,7 +373,7 @@ void INOPERATION_State::startCharging(Converter* converter)
 ///
 ///
 ///
-void INOPERATION_State::run(Converter* converter)
+void CHARGING_State::run(Converter* converter)
 {
 	if (Syslog::errors() != 0)
 	{
@@ -385,7 +385,7 @@ void INOPERATION_State::run(Converter* converter)
 ///
 ///
 ///
-void INOPERATION_State::stopCharging(Converter* converter)
+void CHARGING_State::stopCharging(Converter* converter)
 {
 	converter->stop();
 	changeState(converter, READY_State::instance());
@@ -395,7 +395,7 @@ void INOPERATION_State::stopCharging(Converter* converter)
 ///
 ///
 ///
-void INOPERATION_State::emergencyShutdown(Converter* converter)
+void CHARGING_State::emergencyShutdown(Converter* converter)
 {
 	shutdown(converter);
 }
@@ -408,7 +408,7 @@ void INOPERATION_State::emergencyShutdown(Converter* converter)
 ///
 ///
 ///
-void STOPCHARGING_State::startup(Converter* converter)
+void CHARGING_STOP_State::startup(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -417,7 +417,7 @@ void STOPCHARGING_State::startup(Converter* converter)
 ///
 ///
 ///
-void STOPCHARGING_State::shutdown(Converter* converter)
+void CHARGING_STOP_State::shutdown(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -426,7 +426,7 @@ void STOPCHARGING_State::shutdown(Converter* converter)
 ///
 ///
 ///
-void STOPCHARGING_State::startCharging(Converter* converter)
+void CHARGING_STOP_State::startCharging(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -435,7 +435,7 @@ void STOPCHARGING_State::startCharging(Converter* converter)
 ///
 ///
 ///
-void STOPCHARGING_State::run(Converter* converter)
+void CHARGING_STOP_State::run(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -444,7 +444,7 @@ void STOPCHARGING_State::run(Converter* converter)
 ///
 ///
 ///
-void STOPCHARGING_State::stopCharging(Converter* converter)
+void CHARGING_STOP_State::stopCharging(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
@@ -453,7 +453,7 @@ void STOPCHARGING_State::stopCharging(Converter* converter)
 ///
 ///
 ///
-void STOPCHARGING_State::emergencyShutdown(Converter* converter)
+void CHARGING_STOP_State::emergencyShutdown(Converter* converter)
 {
 	// TODO /* DO NOTHING */
 }
