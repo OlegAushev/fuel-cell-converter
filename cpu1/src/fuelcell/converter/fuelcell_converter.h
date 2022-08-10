@@ -170,11 +170,8 @@ public:
 
 	void setCurrentIn(float value)
 	{
-		if ((value >= m_config.currentInMin) && (value <= m_config.currentInMax))
-		{
-			m_currentController.setOutputMax(value);
-			m_currentController.reset();
-		}
+		m_currentController.setOutputMax(
+				emb::clamp(value, m_config.currentInMin, m_config.currentInMax));
 	}
 
 	/**

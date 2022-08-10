@@ -44,8 +44,13 @@ mcu::ClockTaskStatus taskStartTempSensors()
 }
 
 
-
-
-
+///
+///
+///
+mcu::ClockTaskStatus taskCheckFuelcellErrors()
+{
+	fuelcell::Controller::checkErrors();
+	return mcu::CLOCK_TASK_SUCCESS;
+}
 
 

@@ -8,6 +8,7 @@
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "sys/syslog/syslog.h"
 #include "fuelcell/converter/fuelcell_converter.h"
+#include "fuelcell/controller/fuelcell_controller.h"
 
 
 /**
@@ -35,4 +36,10 @@ mcu::ClockTaskStatus taskStartTempSensors();
 
 
 
+/**
+ * @brief Start fuel cells errors check.
+ * @param (none)
+ * @return Task execution status.
+ */
+mcu::ClockTaskStatus taskCheckFuelcellErrors();
 

@@ -283,6 +283,9 @@ void main()
 	mcu::SystemClock::setTaskPeriod(1, 50);
 	mcu::SystemClock::registerTask(1, taskStartTempSensors);
 
+	mcu::SystemClock::setTaskPeriod(2, 200);
+	mcu::SystemClock::registerTask(2, taskCheckFuelcellErrors);
+
 	mcu::SystemClock::setWatchdogPeriod(1000);
 	mcu::SystemClock::registerWatchdogTask(taskWatchdogTimeout);
 
@@ -370,11 +373,6 @@ void main()
 		ucanopenServer.run();
 		mcu::SystemClock::runTasks();
 		converter->processTemperatureMeasurements();
-
-		if (fuelcell::Controller::checkErrors())
-		{
-			//converter->emergencyShutdown();
-		}
 
 		daca.convert(mcu::DacInput(dacaInput));
 		dacb.convert(mcu::DacInput(dacbInput));

@@ -156,7 +156,7 @@ void STARTUP_State::run(Converter* converter)
 
 	// TODO Controller::start(); // may be needed here to reset errors at fuel cells (multiple start signal sending)
 
-	if (mcu::SystemClock::now() - timestamp() > 10000)
+	if (mcu::SystemClock::now() - timestamp() > 20000)
 	{
 		Controller::enableErrors();
 	}
@@ -304,9 +304,11 @@ void CHARGING_START_State::run(Converter* converter)
 	}
 
 	float currRefDiff = (converter->config().currentInMax - converter->config().currentInMin) /
-			(30 * converter->pwm.freq());
+			(60 * converter->pwm.freq());
 	m_currentInRef = emb::clamp(m_currentInRef + currRefDiff,
 			converter->config().currentInMin, converter->config().currentInMax);
+
+	converter->setCurrentIn(m_currentInRef);
 
 	if (m_currentInRef >= converter->config().currentInMax)
 	{

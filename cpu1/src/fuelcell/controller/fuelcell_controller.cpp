@@ -168,6 +168,105 @@ void Controller::runRx()
 }
 
 
+///
+///
+///
+bool Controller::checkErrors()
+{
+	static bool errorPrev = false;
+	bool errorDelayExpired = m_isErrorRegistered
+			&& (mcu::SystemClock::now() - m_errorRegTimestamp > m_errorDelay);
+	bool error = false;
+
+	if (hasError())
+	{
+		error = true;
+		if (errorDelayExpired)
+		{
+			Syslog::setError(sys::Error::FUELCELL_ERROR);
+		}
+	}
+
+	if (hasOverheat())
+	{
+		error = true;
+		if (errorDelayExpired)
+		{
+			Syslog::setError(sys::Error::FUELCELL_OVERHEAT);
+		}
+	}
+
+	if (hasLowCharge())
+	{
+		error = true;
+		if (errorDelayExpired)
+		{
+			Syslog::setError(sys::Error::FUELCELL_BATT_LOWCHARGE);
+		}
+	}
+
+	if (hasNoConnection())
+	{
+		error = true;
+		if (errorDelayExpired)
+		{
+			Syslog::setError(sys::Error::FUELCELL_NOCONNECTION);
+		}
+	}
+
+	if (hasLowPressure())
+	{
+		error = true;
+		if (errorDelayExpired)
+		{
+			Syslog::setError(sys::Error::FUELCELL_LOWPRESSURE);
+		}
+	}
+
+	if (hasHydroError())
+	{
+		error = true;
+		if (errorDelayExpired)
+		{
+			Syslog::setError(sys::Error::FUELCELL_HYDROERROR);
+		}
+	}
+
+	for (size_t i = 0; i < s_data.cellVoltage.size(); ++i)
+	{
+		if (s_data.cellVoltage[i] < ABSOLUTE_MIN_VOLTAGE)
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_UV);
+			}
+		}
+		else if (s_data.cellVoltage[i] > ABSOLUTE_MAX_VOLTAGE)
+		{
+			error = true;
+			if (errorDelayExpired)
+			{
+				Syslog::setError(sys::Error::FUELCELL_OV);
+			}
+		}
+	}
+
+	if (error && !errorPrev)
+	{
+		m_isErrorRegistered = true;
+		m_errorRegTimestamp = mcu::SystemClock::now();
+	}
+	else if (!error)
+	{
+		m_isErrorRegistered = false;
+	}
+
+	errorPrev = error;
+	return error;
+}
+
+
 } // namespace fuelcell
 
 
