@@ -203,8 +203,8 @@ __interrupt void Converter::onAdcCurrentInSecondInterrupt()
 		//		converter->m_voltageInFilter.output());
 
 		converter->m_currentController.update(
-				Controller::minCellVoltage(),
-				Controller::MIN_OPERATING_VOLTAGE);
+				Controller::MIN_OPERATING_VOLTAGE,
+				Controller::minCellVoltage());
 
 		// run duty cycle controller to achieve needed current
 		converter->m_dutycycleController.update(

@@ -97,9 +97,9 @@ inline ODAccessStatus getConverterTempHeatsink(CobSdoData& dest)
 	return OD_ACCESS_SUCCESS;
 }
 
-inline ODAccessStatus getFuelcellState(CobSdoData& dest)
+inline ODAccessStatus getFuelcellMinVoltage(CobSdoData& dest)
 {
-	float value = fuelcell::Controller::state();
+	float value = fuelcell::Controller::minCellVoltage();
 	memcpy(&dest, &value, sizeof(uint32_t));
 	return OD_ACCESS_SUCCESS;
 }
@@ -182,7 +182,7 @@ extern ODEntry OBJECT_DICTIONARY[] = {
 {{0x5000, 0x02}, {"WATCH", "WATCH", "VOLTAGE_OUT",	"V",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterVoltageOut,	OD_NO_INDIRECT_WRITE_ACCESS}},
 {{0x5000, 0x03}, {"WATCH", "WATCH", "CURRENT_IN",	"A",	OD_FLOAT32, 	OD_ACCESS_RW,	OD_NO_DIRECT_ACCESS,	od::getConverterCurrentIn,	od::setConverterCurrentIn}},
 {{0x5000, 0x04}, {"WATCH", "WATCH", "TEMP_HEATSINK",	"°C",	OD_FLOAT32, 	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getConverterTempHeatsink,	OD_NO_INDIRECT_WRITE_ACCESS}},
-{{0x5000, 0x05}, {"WATCH", "WATCH", "FC_STATE",		"",	OD_FLOAT32,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getFuelcellState,		OD_NO_INDIRECT_WRITE_ACCESS}},
+{{0x5000, 0x05}, {"WATCH", "WATCH", "VOLTAGE_CELL_MIN",	"",	OD_FLOAT32,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::getFuelcellMinVoltage,	OD_NO_INDIRECT_WRITE_ACCESS}},
 
 {{0x2001, 0x00}, {"CONVERTER", 	"CONVERTER",	"RELAY ON",	"",	OD_TASK,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::converterRelayOn,	OD_NO_INDIRECT_WRITE_ACCESS}},
 {{0x2001, 0x01}, {"CONVERTER",	"CONVERTER",	"RELAY OFF",	"",	OD_TASK,	OD_ACCESS_RO,	OD_NO_DIRECT_ACCESS,	od::converterRelayOff,	OD_NO_INDIRECT_WRITE_ACCESS}},
