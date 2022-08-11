@@ -32,7 +32,13 @@ Controller::Controller(const Converter* converter,
 	EMB_STATIC_ASSERT(sizeof(RpdoMessage) == 4);
 
 	s_data.temperature.fill(0);
-	s_data.cellVoltage.fill(0);
+
+	for (size_t i = 0; i < FUELCELL_COUNT; ++i)
+	{
+		s_data.cellVoltage[i].setSmoothFactor(0.1);
+		s_data.cellVoltage[i].reset();
+	}
+
 	s_data.battVoltage.fill(0);
 	s_data.current.fill(0);
 
@@ -130,7 +136,7 @@ void Controller::runRx()
 		size_t cell = rpdoId - 0x180;
 
 		s_data.temperature[cell] = rpdo.temperature;
-		s_data.cellVoltage[cell] = 0.1f * rpdo.cellVoltage;
+		s_data.cellVoltage[cell].push(0.1f * rpdo.cellVoltage);
 		s_data.battVoltage[cell] = 0.1f * rpdo.battVoltage;
 
 		if (cell == 0)
@@ -232,23 +238,12 @@ bool Controller::checkErrors()
 		}
 	}
 
-	for (size_t i = 0; i < s_data.cellVoltage.size(); ++i)
+	if (minCellVoltage() < ABSOLUTE_MIN_VOLTAGE)
 	{
-		if (s_data.cellVoltage[i] < ABSOLUTE_MIN_VOLTAGE)
+		error = true;
+		if (errorDelayExpired)
 		{
-			error = true;
-			if (errorDelayExpired)
-			{
-				Syslog::setError(sys::Error::FUELCELL_UV);
-			}
-		}
-		else if (s_data.cellVoltage[i] > ABSOLUTE_MAX_VOLTAGE)
-		{
-			error = true;
-			if (errorDelayExpired)
-			{
-				Syslog::setError(sys::Error::FUELCELL_OV);
-			}
+			Syslog::setError(sys::Error::FUELCELL_UV);
 		}
 	}
 

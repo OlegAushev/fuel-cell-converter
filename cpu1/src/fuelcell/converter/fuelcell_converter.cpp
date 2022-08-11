@@ -37,7 +37,7 @@ Converter::Converter(const ConverterConfig& converterConfig,
 	, m_currentIn(0, 0)
 	, m_currentInFilter(IDC_SMOOTH_FACTOR)
 	, m_dutycycleController(converterConfig.kP_dutycycle, converterConfig.kI_dutycucle,
-			1 / pwmConfig.switchingFreq, 0, 0.55f)
+			1 / pwmConfig.switchingFreq, 0, 0.7f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
 			1 / pwmConfig.switchingFreq, converterConfig.currentInMin, converterConfig.currentInMax)
 	, FLT_PIN(converterConfig.fltPin)
@@ -198,13 +198,13 @@ __interrupt void Converter::onAdcCurrentInSecondInterrupt()
 	{
 		// OLD ALGO
 		// run current controller to achieve cvVoltageIn
-		//converter->m_currentController.update(
-		//		converter->m_config.cvVoltageIn,
-		//		converter->m_voltageInFilter.output());
-
 		converter->m_currentController.update(
-				Controller::MIN_OPERATING_VOLTAGE,
-				Controller::minCellVoltage());
+				converter->m_config.cvVoltageIn,
+				converter->m_voltageInFilter.output());
+
+		//converter->m_currentController.update(
+		//		Controller::MIN_OPERATING_VOLTAGE,
+		//		Controller::minCellVoltage());
 
 		// run duty cycle controller to achieve needed current
 		converter->m_dutycycleController.update(

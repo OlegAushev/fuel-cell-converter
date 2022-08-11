@@ -11,6 +11,7 @@
 #include "emb/emb_algorithm.h"
 #include "emb/emb_array.h"
 #include "emb/emb_math.h"
+#include "emb/emb_filter.h"
 #include "mcu/cputimers/mcu_cputimers.h"
 #include "mcu/ipc/mcu_ipc.h"
 #include "canbygpio/canbygpio.h"
@@ -73,7 +74,7 @@ const size_t FUELCELL_COUNT = 5;
 struct Data
 {
 	emb::Array<float, FUELCELL_COUNT> temperature;
-	emb::Array<float, FUELCELL_COUNT> cellVoltage;
+	emb::Array<emb::ExponentialMedianFilter<float, 5>, FUELCELL_COUNT> cellVoltage;
 	emb::Array<float, FUELCELL_COUNT> battVoltage;
 	emb::Array<float, FUELCELL_COUNT> current;
 
@@ -107,7 +108,7 @@ private:
 	static const uint64_t m_errorDelay = 5000;
 
 public:
-	static const float MIN_OPERATING_VOLTAGE = 35;
+	static const float MIN_OPERATING_VOLTAGE = 33;
 	static const float MAX_OPERATING_VOLTAGE = 42;
 
 	static const float ABSOLUTE_MIN_VOLTAGE = 32;
@@ -253,7 +254,15 @@ public:
 	 */
 	static float minCellVoltage()
 	{
-		return *emb::min_element(s_data.cellVoltage.begin(), s_data.cellVoltage.end());
+		float min = s_data.cellVoltage[0].emb::ExponentialMedianFilter<float, 5>::output();
+		for (size_t i = 1; i < FUELCELL_COUNT; ++i)
+		{
+			if (s_data.cellVoltage[i].emb::ExponentialMedianFilter<float, 5>::output() < min)
+			{
+				min = s_data.cellVoltage[i].emb::ExponentialMedianFilter<float, 5>::output();
+			}
+		}
+		return min;
 	}
 
 	/**

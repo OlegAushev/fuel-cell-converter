@@ -194,7 +194,7 @@ public:
  */
 class WAIT_State : public IState
 {
-	friend void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState);
+	friend void changeStateAfterWait(Converter* converter, IState* nextState, uint64_t delay);
 private:
 	static WAIT_State s_instance;
 	WAIT_State() : IState(CONVERTER_WAIT) {}

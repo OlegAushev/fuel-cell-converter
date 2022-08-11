@@ -42,7 +42,7 @@ void IState::changeState(Converter* converter, IState* state)
 ///
 ///
 ///
-void waitNgoToState(Converter* converter, uint64_t delay, IState* nextState)
+void changeStateAfterWait(Converter* converter, IState* nextState, uint64_t delay)
 {
 	WAIT_State::instance()->m_waitTime = delay;
 	WAIT_State::instance()->m_nextState = nextState;
@@ -165,13 +165,16 @@ void STARTUP_State::run(Converter* converter)
 	{
 		Controller::enableErrors();
 		converter->turnRelayOn();
-		waitNgoToState(converter, 5000, READY_State::instance());
+		changeStateAfterWait(converter, READY_State::instance(), 5000);
 	}
 	else if (mcu::SystemClock::now() - timestamp() > 45000)
 	{
-		Controller::stop();
 		Syslog::setError(sys::Error::FUELCELL_STARTUP_FAILED);
-		changeState(converter, STANDBY_State::instance());
+	}
+
+	if (Syslog::errors() != 0)
+	{
+		shutdown(converter);
 	}
 }
 
@@ -213,7 +216,7 @@ void READY_State::startup(Converter* converter)
 void READY_State::shutdown(Converter* converter)
 {
 	Controller::stop();
-	waitNgoToState(converter, 2000, SHUTDOWN_State::instance());
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), 2000);
 }
 
 
@@ -280,7 +283,7 @@ void CHARGING_START_State::shutdown(Converter* converter)
 	converter->stop();
 	Controller::stop();
 	resetState();
-	waitNgoToState(converter, 2000, SHUTDOWN_State::instance());
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), 2000);
 }
 
 
@@ -359,7 +362,7 @@ void CHARGING_State::shutdown(Converter* converter)
 {
 	converter->stop();
 	Controller::stop();
-	waitNgoToState(converter, 2000, SHUTDOWN_State::instance());
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), 2000);
 }
 
 
