@@ -286,7 +286,7 @@ void main()
 	mcu::SystemClock::setTaskPeriod(2, 200);
 	mcu::SystemClock::registerTask(2, taskCheckFuelcellErrors);
 
-	mcu::SystemClock::setWatchdogPeriod(1000);
+	mcu::SystemClock::setWatchdogPeriod(4000);
 	mcu::SystemClock::registerWatchdogTask(taskWatchdogTimeout);
 
 /*####################################################################################################################*/
@@ -310,7 +310,7 @@ void main()
 			mcu::GpioConfig(18, GPIO_18_CANRXA),
 			mcu::GpioConfig(19, GPIO_19_CANTXA),
 			mcu::CAN_BITRATE_125K, mcu::CAN_NORMAL_MODE,
-			ucanopen::NodeId(0x01),
+			ucanopen::NodeId(0x42),
 			&rpdoService, &tpdoService, &sdoService, canIpcFlags);
 
 	ucanopenServer.setHeartbeatPeriod(1000);
@@ -321,7 +321,7 @@ void main()
 
 	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM1, 0x1A0);
 	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM2, 0x2A0);
-	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM3, 0x194);
+	ucanopenServer.setRpdoId(ucanopen::RPDO_NUM3, 0x1C3);
 
 /*####################################################################################################################*/
 	/*##################*/
