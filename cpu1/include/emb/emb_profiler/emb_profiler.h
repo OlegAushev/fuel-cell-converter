@@ -43,9 +43,9 @@ public:
 		}
 	}
 
-	static void init(uint64_t (*timeNowFunc)(void))
+	static void init(uint64_t (*timeNowFunc_ns)(void))
 	{
-		m_timeNowFunc = timeNowFunc;
+		m_timeNowFunc = timeNowFunc_ns;
 	}
 };
 
@@ -84,9 +84,9 @@ public:
 		}
 	}
 
-	static void init(uint32_t (*timeNowFunc)(void))
+	static void init(uint32_t (*timeNowFunc_clk)(void))
 	{
-		m_timeNowFunc = timeNowFunc;
+		m_timeNowFunc = timeNowFunc_clk;
 	}
 };
 
