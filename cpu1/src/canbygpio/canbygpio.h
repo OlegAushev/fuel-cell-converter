@@ -13,8 +13,8 @@
 #include "emb/emb_array.h"
 #include "emb/emb_math.h"
 
-#include "mcu/gpio/mcu_gpio.h"
-#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu_c28x/gpio/mcu_gpio.h"
+#include "mcu_c28x/cputimers/mcu_cputimers.h"
 #include "profiler/profiler.h"
 
 

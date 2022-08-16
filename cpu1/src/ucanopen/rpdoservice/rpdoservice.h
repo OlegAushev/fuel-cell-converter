@@ -15,10 +15,10 @@
 
 #include "emb/emb_common.h"
 #include "../ucanopen_def.h"
-#include "mcu/can/mcu_can.h"
-#include "mcu/ipc/mcu_ipc.h"
-#include "mcu/gpio/mcu_gpio.h"
-#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu_c28x/can/mcu_can.h"
+#include "mcu_c28x/ipc/mcu_ipc.h"
+#include "mcu_c28x/gpio/mcu_gpio.h"
+#include "mcu_c28x/cputimers/mcu_cputimers.h"
 
 // APP-SPECIFIC headers
 #include "fuelcell/converter/fuelcell_converter.h"

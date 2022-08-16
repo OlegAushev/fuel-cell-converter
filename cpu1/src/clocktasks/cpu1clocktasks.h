@@ -4,8 +4,8 @@
 
 #include "F28x_Project.h"
 #include "F2837xD_Ipc_drivers.h"
-#include "mcu/support/mcu_support.h"
-#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu_c28x/support/mcu_support.h"
+#include "mcu_c28x/cputimers/mcu_cputimers.h"
 #include "sys/syslog/syslog.h"
 #include "fuelcell/converter/fuelcell_converter.h"
 #include "fuelcell/controller/fuelcell_controller.h"

@@ -14,7 +14,7 @@
 #include "device.h"
 
 #include "../ucanopen_def.h"
-#include "mcu/can/mcu_can.h"
+#include "mcu_c28x/can/mcu_can.h"
 
 // APP-SPECIFIC headers
 #include "sys/syslog/syslog.h"

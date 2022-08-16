@@ -10,7 +10,7 @@
 #include "emb/emb_filter.h"
 #include "emb/emb_pair.h"
 #include "emb/emb_picontroller.h"
-#include "mcu/pwm/mcu_pwm.h"
+#include "mcu_c28x/pwm/mcu_pwm.h"
 #include "../fuelcell_def.h"
 #include "../fsm/fsm.h"
 #include "sensors/currentsensors.h"

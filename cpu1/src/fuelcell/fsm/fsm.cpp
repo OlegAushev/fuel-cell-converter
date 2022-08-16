@@ -7,7 +7,7 @@
 #include "fsm.h"
 #include "../converter/fuelcell_converter.h"
 #include "../controller/fuelcell_controller.h"
-#include "mcu/cputimers/mcu_cputimers.h"
+#include "mcu_c28x/cputimers/mcu_cputimers.h"
 
 
 namespace fuelcell {
