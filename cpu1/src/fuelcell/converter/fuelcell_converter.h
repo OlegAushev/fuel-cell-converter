@@ -83,7 +83,7 @@ private:
 	emb::Pair<float, float> m_currentIn;	// inductor current measured twice per PWM period
 	static const float IDC_SMOOTH_FACTOR = 0.1;
 	emb::ExponentialMedianFilter<float, 3> m_currentInFilter;
-	static const float TEMP_SMOOTH_FACTOR = 0.05;
+	static const float TEMP_SMOOTH_FACTOR = 0.001;
 	emb::ExponentialMedianFilter<float, 5> m_tempHeatsinkFilter;
 
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;

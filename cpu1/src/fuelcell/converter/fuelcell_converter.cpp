@@ -198,13 +198,13 @@ __interrupt void Converter::onAdcCurrentInSecondInterrupt()
 	{
 		// OLD ALGO
 		// run current controller to achieve cvVoltageIn
-		converter->m_currentController.update(
-				converter->m_config.cvVoltageIn,
-				converter->m_voltageInFilter.output());
-
 		//converter->m_currentController.update(
-		//		Controller::MIN_OPERATING_VOLTAGE,
-		//		Controller::minCellVoltage());
+		//		converter->m_config.cvVoltageIn,
+		//		converter->m_voltageInFilter.output());
+
+		converter->m_currentController.update(
+				Controller::MIN_OPERATING_VOLTAGE,
+				Controller::minCellVoltage());
 
 		// run duty cycle controller to achieve needed current
 		converter->m_dutycycleController.update(

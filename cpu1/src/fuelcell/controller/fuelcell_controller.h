@@ -108,10 +108,10 @@ private:
 	static const uint64_t m_errorDelay = 5000;
 
 public:
-	static const float MIN_OPERATING_VOLTAGE = 33;
+	static const float MIN_OPERATING_VOLTAGE = 32.5;
 	static const float MAX_OPERATING_VOLTAGE = 42;
 
-	static const float ABSOLUTE_MIN_VOLTAGE = 32;
+	static const float ABSOLUTE_MIN_VOLTAGE = 30;
 	static const float ABSOLUTE_MAX_VOLTAGE = 45;
 
 public:

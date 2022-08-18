@@ -78,7 +78,7 @@ void main()
 	/*###############*/
 	/*# CAN BY GPIO #*/
 	/*###############*/
-	mcu::GpioConfig canbygpioRxCfg(14, GPIO_14_GPIO14, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 1, GPIO_CORE_CPU2);
+	mcu::GpioConfig canbygpioRxCfg(14, GPIO_14_GPIO14, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 64, GPIO_CORE_CPU2);
 	mcu::GpioConfig canbygpioTxCfg(11, GPIO_11_GPIO11, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::Gpio canbygpioRx(canbygpioRxCfg);

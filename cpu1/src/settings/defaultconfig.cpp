@@ -38,7 +38,7 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.kP_dutycycle = 0.001,
 	.kI_dutycucle = 0.1,
 	.kP_current = 1,
-	.kI_current = 10,
+	.kI_current = 0.1,//10 - for control by Vin
 
 	.fuelCellVoltageMin = 120,
 	.cvVoltageIn = 160,
