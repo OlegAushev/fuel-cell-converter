@@ -1,6 +1,6 @@
 ///
-#define FIRMWARE_VERSION_STRDEF "v22.07"
-#define FIRMWARE_VERSION_NUMDEF 2207
+#define FIRMWARE_VERSION_STRDEF "v22.08"
+#define FIRMWARE_VERSION_NUMDEF 2208
 
 
 //#define TEST_CAN_BY_GPIO
@@ -52,6 +52,12 @@
 
 #ifdef TEST_BUILD
 #include "emb/emb_testrunner/emb_testrunner.h"
+#endif
+
+#ifdef DEBUG
+#include "mcu_c28x/sci/mcu_sci.h"
+#include "cli/cli_server.h"
+#include "cli/shell/cli_shell.h"
 #endif
 
 
@@ -118,6 +124,34 @@ void main()
 	mcu::configureLaunchPadLeds(GPIO_CORE_CPU1, GPIO_CORE_CPU1);
 	mcu::turnLedOff(mcu::LED_BLUE);
 	mcu::turnLedOff(mcu::LED_RED);
+#endif
+
+#ifdef DEBUG
+/*############################################################################*/
+	/*#############*/
+	/*# SCI & CLI #*/
+	/*#############*/
+	mcu::SciConfig sciCConfig =
+	{
+		.baudrate = mcu::SCI_BAUDRATE_9600,
+		.wordLen = mcu::SCI_WORD_8BIT,
+		.stopBits = mcu::SCI_STOP_BIT_ONE,
+		.parityMode = mcu::SCI_PARITY_NONE,
+		.autoBaudMode = mcu::SCI_AUTO_BAUD_DISABLED,
+	};
+	mcu::Sci<mcu::SCIC> sciC(mcu::GpioConfig(139, GPIO_139_SCIRXDC),
+			mcu::GpioConfig(56, GPIO_56_SCITXDC),
+			sciCConfig);
+
+	cli::Server cliServer("launchpad", &sciC, NULL, NULL);
+	cli::Shell::init();
+	cliServer.registerExecCallback(cli::Shell::exec);
+	cli::nextline_blocking();
+	cli::nextline_blocking();
+	cli::nextline_blocking();
+	cli::print_blocking("================================");
+	cli::nextline_blocking();
+	cli::print_blocking("Welcome to debug shell!");
 #endif
 
 #ifdef TEST_BUILD
@@ -373,6 +407,10 @@ void main()
 
 		daca.convert(mcu::DacInput(dacaInput));
 		dacb.convert(mcu::DacInput(dacbInput));
+
+#ifdef DEBUG
+		cliServer.run();
+#endif
 	}
 }
 
