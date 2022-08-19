@@ -469,7 +469,7 @@ public:
 	 * @param pin - trip input
 	 * @return (none)
 	 */
-	void initTzSubmodule(const mcu::Gpio& pin, XBAR_InputNum xbarInput)
+	void initTzSubmodule(const mcu::GpioInput& pin, XBAR_InputNum xbarInput)
 	{
 		assert(static_cast<uint32_t>(xbarInput) <= static_cast<uint32_t>(XBAR_INPUT3));
 

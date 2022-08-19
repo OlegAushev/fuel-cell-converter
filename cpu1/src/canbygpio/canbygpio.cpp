@@ -21,8 +21,8 @@ static emb::Array<int, STREAM_SIZE_W_BIT_STUFFING> rxCanBitStream;
 ///
 ///
 ///
-Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
-		const mcu::Gpio& clkPin, uint32_t bitrate, tag::enable_bit_stuffing)
+Transceiver::Transceiver(const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin,
+		const mcu::GpioOutput& clkPin, uint32_t bitrate, tag::enable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, BIT_STUFFING_ENABLED(true)
 	, RX_STREAM_SIZE(STREAM_SIZE_W_BIT_STUFFING)
@@ -34,8 +34,8 @@ Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 ///
 ///
 ///
-Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
-		const mcu::Gpio& clkPin, uint32_t bitrate, tag::disable_bit_stuffing)
+Transceiver::Transceiver(const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin,
+		const mcu::GpioOutput& clkPin, uint32_t bitrate, tag::disable_bit_stuffing)
 	: emb::c28x::Singleton<Transceiver>(this)
 	, BIT_STUFFING_ENABLED(false)
 	, RX_STREAM_SIZE(STREAM_SIZE_WO_BIT_STUFFING)
@@ -47,8 +47,8 @@ Transceiver::Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
 ///
 ///
 ///
-void Transceiver::_init(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
-		const mcu::Gpio& clkPin, uint32_t bitrate)
+void Transceiver::_init(const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin,
+		const mcu::GpioOutput& clkPin, uint32_t bitrate)
 {
 	m_rxPin = rxPin;
 	m_txPin = txPin;

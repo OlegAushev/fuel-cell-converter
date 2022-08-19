@@ -115,14 +115,9 @@ void main()
 	MemCfg_setGSRAMMasterSel(MEMCFG_SECT_GS10, MEMCFG_GSRAMMASTER_CPU2);	// CPU2 to CPU1 data is placed here
 
 #ifdef _LAUNCHXL_F28379D
-#ifdef DUALCORE
-	mcu::configureLaunchPadLeds(GPIO_CORE_CPU1, GPIO_CORE_CPU2);
-	mcu::turnLedOff(mcu::LED_BLUE);
-#else
 	mcu::configureLaunchPadLeds(GPIO_CORE_CPU1, GPIO_CORE_CPU1);
 	mcu::turnLedOff(mcu::LED_BLUE);
 	mcu::turnLedOff(mcu::LED_RED);
-#endif
 #endif
 
 #ifdef TEST_BUILD
@@ -182,9 +177,9 @@ void main()
 	mcu::GpioConfig canbygpioRxCfg(14, GPIO_14_GPIO14, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 64, GPIO_CORE_CPU2);
 	mcu::GpioConfig canbygpioTxCfg(11, GPIO_11_GPIO11, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::Gpio canbygpioRx(canbygpioRxCfg);
-	mcu::Gpio canbygpioTx(canbygpioTxCfg);
-	mcu::Gpio canbygpioClk(canbygpioClkCfg);
+	mcu::GpioInput canbygpioRx(canbygpioRxCfg);
+	mcu::GpioOutput canbygpioTx(canbygpioTxCfg);
+	mcu::GpioOutput canbygpioClk(canbygpioClkCfg);
 	canbygpioRx.setInterrupt(GPIO_INT_XINT5);
 
 /*####################################################################################################################*/
@@ -227,7 +222,7 @@ void main()
 #else
 	mcu::GpioConfig drvFltPinCfg;
 #endif
-	mcu::Gpio drvFltPin(drvFltPinCfg);
+	mcu::GpioInput drvFltPin(drvFltPinCfg);
 	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
 
 /*####################################################################################################################*/
@@ -235,6 +230,7 @@ void main()
 	/*# BOOT CPU2 #*/
 	/*#############*/
 #ifdef DUALCORE
+	mcu::configureLaunchPadLeds(GPIO_CORE_CPU1, GPIO_CORE_CPU2);
 	mcu::bootCpu2();
 	Syslog::addMessage(sys::Message::DEVICE_BOOT_CPU2);
 	mcu::waitForRemoteIpcFlag(CPU2_BOOTED);

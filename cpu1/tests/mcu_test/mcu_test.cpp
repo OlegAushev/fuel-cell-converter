@@ -10,8 +10,8 @@ void McuTest::GpioTest()
 	mcu::GpioConfig ledBlueCfg(31, GPIO_31_GPIO31, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 	mcu::GpioConfig ledRedCfg(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 
-	mcu::Gpio ledBlue(ledBlueCfg);
-	mcu::Gpio ledRed(ledRedCfg);
+	mcu::GpioOutput ledBlue(ledBlueCfg);
+	mcu::GpioOutput ledRed(ledRedCfg);
 
 	mcu::turnLedOff(mcu::LED_BLUE);
 	mcu::turnLedOff(mcu::LED_RED);
@@ -48,9 +48,9 @@ void McuTest::GpioTest()
 	mcu::GpioConfig in1Cfg(25, GPIO_25_GPIO25, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 	mcu::GpioConfig in2Cfg(25, GPIO_25_GPIO25, mcu::PIN_INPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 
-	mcu::Gpio out(outCfg);
-	mcu::Gpio in1(in1Cfg);
-	mcu::GpioDebouncer db1(in1, 10, 20, 30);
+	mcu::GpioOutput out(outCfg);
+	mcu::GpioInput in1(in1Cfg);
+	mcu::GpioInputDebouncer db1(in1, 10, 20, 30);
 
 	EMB_ASSERT_EQUAL(in1.read(), emb::PIN_INACTIVE);
 	EMB_ASSERT_EQUAL(db1.state(), emb::PIN_INACTIVE);
@@ -88,8 +88,8 @@ void McuTest::GpioTest()
 
 
 	out.set(emb::PIN_INACTIVE);
-	mcu::Gpio in2(in2Cfg);
-	mcu::GpioDebouncer db2(in2, 10, 40, 20);
+	mcu::GpioInput in2(in2Cfg);
+	mcu::GpioInputDebouncer db2(in2, 10, 40, 20);
 	EMB_ASSERT_EQUAL(in2.read(), emb::PIN_ACTIVE);
 	EMB_ASSERT_EQUAL(db2.state(), emb::PIN_INACTIVE);
 	EMB_ASSERT_TRUE(!db2.stateChanged());

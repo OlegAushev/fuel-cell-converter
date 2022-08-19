@@ -103,17 +103,9 @@ struct GpioConfig
 		, activeState(_activeState)
 		, type(_type)
 		, qualMode(_qualMode)
+		, qualPeriod(_qualPeriod)
 		, masterCore(_masterCore)
-	{
-		if (_qualPeriod >=1 && _qualPeriod <= 510)
-		{
-			qualPeriod = _qualPeriod;
-		}
-		else
-		{
-			while (true) {}
-		}
-	}
+	{}
 
 	/**
 	 * @brief Constructs GPIO pin config for muxed pins.
@@ -121,7 +113,7 @@ struct GpioConfig
 	 * @param _mux - pin mux
 	 */
 	GpioConfig(uint32_t _no, uint32_t _mux)
-		: valid(true)
+		: valid(false)
 		, no(_no)
 		, mux(_mux)
 	{}
@@ -133,52 +125,17 @@ struct GpioConfig
 };
 
 
+/*============================================================================*/
 /**
- * @brief GPIO pin class.
+ * @brief GPIO generic base class.
  */
-class Gpio : public emb::IGpio
+class Gpio
 {
-private:
+protected:
 	GpioConfig m_cfg;
 	bool m_initialized;
-
-	GPIO_ExternalIntNum m_intNum;
+	Gpio() : m_initialized(false) {}
 public:
-	/**
-	 * @brief Gpio pin default constructor.
-	 * @param (none)
-	 */
-	Gpio()
-		: m_initialized(false)
-	{}
-
-	/**
-	 * @brief Constructs GPIO pin.
-	 * @param cfg - pin config
-	 */
-	Gpio(const GpioConfig& cfg)
-		: m_initialized(false)
-	{
-		init(cfg);
-	}
-
-	/**
-	 * @brief Initializes GPIO pin.
-	 * @param cfg - pin config
-	 * @return (none)
-	 */
-	void init(const GpioConfig& cfg)
-	{
-		m_cfg = cfg;
-		if (m_cfg.valid)
-		{
-#ifdef CPU1
-			_init();
-#endif
-			m_initialized = true;
-		}
-	}
-
 	/**
 	 * @brief Sets the master core.
 	 * @param _masterCore - master core
@@ -191,52 +148,6 @@ public:
 #ifdef CPU1
 		GPIO_setMasterCore(m_cfg.no, masterCore);
 #endif
-	}
-
-	/**
-	 * @brief Reads pin state.
-	 * @param (none)
-	 * @return Pin state.
-	 */
-	virtual emb::PinState read() const
-	{
-		assert(m_initialized);
-		return static_cast<emb::PinState>(1
-				- (GPIO_readPin(m_cfg.no) ^ static_cast<uint32_t>(m_cfg.activeState)));
-	}
-
-	/**
-	 * @brief Sets pin state.
-	 * @param state - pin state
-	 * @return (none)
-	 */
-	virtual void set(emb::PinState state = emb::PIN_ACTIVE) const
-	{
-		assert(m_initialized);
-		GPIO_writePin(m_cfg.no, 1
-				- (static_cast<uint32_t>(state) ^ static_cast<uint32_t>(m_cfg.activeState)));
-	}
-
-	/**
-	 * @brief Sets pin state to INACTIVE.
-	 * @param (none)
-	 * @return (none)
-	 */
-	virtual void reset() const
-	{
-		assert(m_initialized);
-		set(emb::PIN_INACTIVE);
-	}
-
-	/**
-	 * @brief Toggles pin state.
-	 * @param (none)
-	 * @return (none)
-	 */
-	virtual void toggle() const
-	{
-		assert(m_initialized);
-		GPIO_togglePin(m_cfg.no);
 	}
 
 	/**
@@ -258,36 +169,66 @@ public:
 	{
 		return m_cfg.no;
 	}
+};
 
+
+/*============================================================================*/
+/**
+ * @brief GPIO input pin class.
+ */
+class GpioInput : public emb::IGpioInput, public Gpio
+{
 private:
+	GPIO_ExternalIntNum m_intNum;
+public:
 	/**
-	 * @brief Initializes GPIO pin.
+	 * @brief GPIO input pin default constructor.
 	 * @param (none)
+	 */
+	GpioInput() {}
+
+	/**
+	 * @brief Constructs GPIO input pin.
+	 * @param cfg - pin config
+	 */
+	GpioInput(const GpioConfig& cfg)
+	{
+		init(cfg);
+	}
+
+	/**
+	 * @brief Initializes GPIO input pin.
+	 * @param cfg - pin config
 	 * @return (none)
 	 */
-	void _init()
+	void init(const GpioConfig& cfg)
 	{
-		switch (m_cfg.direction)
+		m_cfg = cfg;
+		if (m_cfg.valid)
 		{
-		case PIN_OUTPUT:
-			GPIO_setPadConfig(m_cfg.no, m_cfg.type);
-			//set() - is virtual, shouldn't be called in ctor
-			GPIO_writePin(m_cfg.no, 1
-					- (static_cast<uint32_t>(emb::PIN_INACTIVE) ^ static_cast<uint32_t>(m_cfg.activeState)));
-			GPIO_setPinConfig(m_cfg.mux);
-			GPIO_setDirectionMode(m_cfg.no, static_cast<GPIO_Direction>(m_cfg.direction));
-			break;
-
-		case PIN_INPUT:
+			assert(cfg.direction == PIN_INPUT);
+#ifdef CPU1
 			GPIO_setQualificationPeriod(m_cfg.no, m_cfg.qualPeriod);
 			GPIO_setQualificationMode(m_cfg.no, static_cast<GPIO_QualificationMode>(m_cfg.qualMode));
 			GPIO_setPadConfig(m_cfg.no, m_cfg.type);
 			GPIO_setPinConfig(m_cfg.mux);
-			GPIO_setDirectionMode(m_cfg.no, static_cast<GPIO_Direction>(m_cfg.direction));
-			break;
+			GPIO_setDirectionMode(m_cfg.no, GPIO_DIR_MODE_IN);
+			GPIO_setMasterCore(m_cfg.no, m_cfg.masterCore);
+#endif
+			m_initialized = true;
 		}
+	}
 
-		GPIO_setMasterCore(m_cfg.no, m_cfg.masterCore);
+	/**
+	 * @brief Reads pin state.
+	 * @param (none)
+	 * @return Pin state.
+	 */
+	virtual emb::PinState read() const
+	{
+		assert(m_initialized);
+		return static_cast<emb::PinState>(1
+				- (GPIO_readPin(m_cfg.no) ^ static_cast<uint32_t>(m_cfg.activeState)));
 	}
 
 public:
@@ -350,13 +291,108 @@ public:
 };
 
 
+/*============================================================================*/
 /**
- * @brief GPIO pin debouncing class.
+ * @brief GPIO output pin class.
  */
-class GpioDebouncer
+class GpioOutput : public emb::IGpioOutput, public Gpio
+{
+public:
+	/**
+	 * @brief GPIO output pin default constructor.
+	 * @param (none)
+	 */
+	GpioOutput() {}
+
+	/**
+	 * @brief Constructs GPIO output pin.
+	 * @param cfg - pin config
+	 */
+	GpioOutput(const GpioConfig& cfg)
+	{
+		init(cfg);
+	}
+
+	/**
+	 * @brief Initializes GPIO output pin.
+	 * @param cfg - pin config
+	 * @return (none)
+	 */
+	void init(const GpioConfig& cfg)
+	{
+		m_cfg = cfg;
+		if (m_cfg.valid)
+		{
+			assert(cfg.direction == PIN_OUTPUT);
+#ifdef CPU1
+			GPIO_setPadConfig(m_cfg.no, m_cfg.type);
+			//set() - is virtual, shouldn't be called in ctor
+			GPIO_writePin(m_cfg.no, 1
+					- (static_cast<uint32_t>(emb::PIN_INACTIVE) ^ static_cast<uint32_t>(m_cfg.activeState)));
+			GPIO_setPinConfig(m_cfg.mux);
+			GPIO_setDirectionMode(m_cfg.no, GPIO_DIR_MODE_OUT);
+			GPIO_setMasterCore(m_cfg.no, m_cfg.masterCore);
+#endif
+			m_initialized = true;
+		}
+	}
+
+	/**
+	 * @brief Reads pin state.
+	 * @param (none)
+	 * @return Pin state.
+	 */
+	virtual emb::PinState read() const
+	{
+		assert(m_initialized);
+		return static_cast<emb::PinState>(1
+				- (GPIO_readPin(m_cfg.no) ^ static_cast<uint32_t>(m_cfg.activeState)));
+	}
+
+	/**
+	 * @brief Sets pin state.
+	 * @param state - pin state
+	 * @return (none)
+	 */
+	virtual void set(emb::PinState state = emb::PIN_ACTIVE) const
+	{
+		assert(m_initialized);
+		GPIO_writePin(m_cfg.no, 1
+				- (static_cast<uint32_t>(state) ^ static_cast<uint32_t>(m_cfg.activeState)));
+	}
+
+	/**
+	 * @brief Sets pin state to INACTIVE.
+	 * @param (none)
+	 * @return (none)
+	 */
+	virtual void reset() const
+	{
+		assert(m_initialized);
+		set(emb::PIN_INACTIVE);
+	}
+
+	/**
+	 * @brief Toggles pin state.
+	 * @param (none)
+	 * @return (none)
+	 */
+	virtual void toggle() const
+	{
+		assert(m_initialized);
+		GPIO_togglePin(m_cfg.no);
+	}
+};
+
+
+/*============================================================================*/
+/**
+ * @brief GPIO input pin debouncing class.
+ */
+class GpioInputDebouncer
 {
 private:
-	const Gpio m_pin;
+	const GpioInput m_pin;
 public:
 	const unsigned int ACQ_PERIOD_MSEC;
 	const unsigned int ACTIVE_DEBOUNCE_MSEC;
@@ -375,7 +411,7 @@ public:
 	 * @param act_msec - time(msec) before registering active state
 	 * @param inact_msec - time(msec) before registering inactive state
 	 */
-	GpioDebouncer(const Gpio& pin, unsigned int acqPeriod_msec, unsigned int act_msec, unsigned int inact_msec)
+	GpioInputDebouncer(const GpioInput& pin, unsigned int acqPeriod_msec, unsigned int act_msec, unsigned int inact_msec)
 		: m_pin(pin)
 		, ACQ_PERIOD_MSEC(acqPeriod_msec)
 		, ACTIVE_DEBOUNCE_MSEC(act_msec)

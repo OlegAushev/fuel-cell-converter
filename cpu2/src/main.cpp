@@ -38,6 +38,8 @@ void main()
 	mcu::initDevice();
 	mcu::setLocalIpcFlag(CPU2_BOOTED);
 
+	mcu::turnLedOff(mcu::LED_RED);
+
 /*####################################################################################################################*/
 	/*##########*/
 	/*# SYSLOG #*/
@@ -55,7 +57,7 @@ void main()
 	/*# CLOCK #*/
 	/*#########*/
 	mcu::SystemClock::init();
-	mcu::SystemClock::setTaskPeriod(0, 1000);	// Led toggle period
+	mcu::SystemClock::setTaskPeriod(0, 2000);	// Led toggle period
 	mcu::SystemClock::registerTask(0, taskToggleLed);
 
 /*####################################################################################################################*/
@@ -81,9 +83,9 @@ void main()
 	mcu::GpioConfig canbygpioRxCfg(14, GPIO_14_GPIO14, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_6SAMPLE, 64, GPIO_CORE_CPU2);
 	mcu::GpioConfig canbygpioTxCfg(11, GPIO_11_GPIO11, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
 	mcu::GpioConfig canbygpioClkCfg(15, GPIO_15_GPIO15, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1, GPIO_CORE_CPU2);
-	mcu::Gpio canbygpioRx(canbygpioRxCfg);
-	mcu::Gpio canbygpioTx(canbygpioTxCfg);
-	mcu::Gpio canbygpioClk(canbygpioClkCfg);
+	mcu::GpioInput canbygpioRx(canbygpioRxCfg);
+	mcu::GpioOutput canbygpioTx(canbygpioTxCfg);
+	mcu::GpioOutput canbygpioClk(canbygpioClkCfg);
 	fuelcell::Controller fcController(converter, canbygpioRx, canbygpioTx, canbygpioClk);
 
 /*####################################################################################################################*/

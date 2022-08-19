@@ -38,10 +38,10 @@ inline void configureLaunchPadLeds(GPIO_CoreSelect blueLedCore, GPIO_CoreSelect 
 	GpioConfig ledBlueCfg(31, GPIO_31_GPIO31, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 	GpioConfig ledRedCfg(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
 
-	Gpio ledBlue(ledBlueCfg);
+	GpioOutput ledBlue(ledBlueCfg);
 	ledBlue.setMasterCore(blueLedCore);
 
-	Gpio ledRed(ledRedCfg);
+	GpioOutput ledRed(ledRedCfg);
 	ledRed.setMasterCore(redLedCore);
 }
 
@@ -87,7 +87,7 @@ enum ControlCardLed
 inline void configureControlCardLeds(GPIO_CoreSelect ledRedCore)
 {
 	GpioConfig ledRedCfg(34, GPIO_34_GPIO34, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_SYNC, 1);
-	Gpio ledRed(ledRedCfg);
+	GpioOutput ledRed(ledRedCfg);
 	ledRed.setMasterCore(ledRedCore);
 }
 

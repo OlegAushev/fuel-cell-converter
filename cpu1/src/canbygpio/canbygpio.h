@@ -72,9 +72,9 @@ private:
 
 	static const uint32_t TX_PIN_IDLE_STATE = 1;
 
-	mcu::Gpio m_rxPin;
-	mcu::Gpio m_txPin;
-	mcu::Gpio m_clkPin;
+	mcu::GpioInput m_rxPin;
+	mcu::GpioOutput m_txPin;
+	mcu::GpioOutput m_clkPin;
 
 	bool m_txActive;
 	int m_txBitCount;
@@ -101,8 +101,8 @@ public:
 	 * @param clkPin - aux CLK pin
 	 * @param bitrate - bitrate
 	 */
-	Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
-			const mcu::Gpio& clkPin, uint32_t bitrate, tag::enable_bit_stuffing);
+	Transceiver(const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin,
+			const mcu::GpioOutput& clkPin, uint32_t bitrate, tag::enable_bit_stuffing);
 
 	/**
 	 * @brief Configures CAN-BY-GPIO transceiver with disabled bit stuffing.
@@ -111,8 +111,8 @@ public:
 	 * @param clkPin - aux CLK pin
 	 * @param bitrate - bitrate
 	 */
-	Transceiver(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
-			const mcu::Gpio& clkPin, uint32_t bitrate, tag::disable_bit_stuffing);
+	Transceiver(const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin,
+			const mcu::GpioOutput& clkPin, uint32_t bitrate, tag::disable_bit_stuffing);
 
 	/**
 	 * @brief Resets transceiver.
@@ -160,8 +160,8 @@ public:
 	}
 
 protected:
-	void _init(const mcu::Gpio& rxPin, const mcu::Gpio& txPin,
-			const mcu::Gpio& clkPin, uint32_t bitrate);
+	void _init(const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin,
+			const mcu::GpioOutput& clkPin, uint32_t bitrate);
 	int generateTxCanFrame(unsigned int frameId, const uint16_t* buf, size_t len, bool bitStuffingEnabled);
 	int parseRxCanFrame(unsigned int& frameId, uint16_t* buf, bool bitStuffingEnabled);
 	void terminateRx();

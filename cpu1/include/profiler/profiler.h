@@ -27,7 +27,7 @@ class DurationLoggerPin
 private:
 	const uint32_t m_pin;
 public:
-	explicit DurationLoggerPin(const mcu::Gpio& pin)
+	explicit DurationLoggerPin(const mcu::GpioOutput& pin)
 	: m_pin(pin.config().no)
 	{
 		switch (Mode)
@@ -80,7 +80,7 @@ public:
  * @param pin
  * @param masterCore
  */
-inline void initDurationLoggerPin(mcu::Gpio& pin, GPIO_CoreSelect masterCore)
+inline void initDurationLoggerPin(mcu::GpioOutput& pin, GPIO_CoreSelect masterCore)
 {
 	pin.setMasterCore(masterCore);
 }

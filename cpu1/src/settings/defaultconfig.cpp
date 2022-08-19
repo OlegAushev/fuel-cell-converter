@@ -46,7 +46,7 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.currentInMax = 30,
 	.batteryChargedVoltage = 375.0,
 
-	.fltPin = mcu::Gpio(),
+	.fltPin = mcu::GpioInput(),
 },
 
 /* ========================================================================== */

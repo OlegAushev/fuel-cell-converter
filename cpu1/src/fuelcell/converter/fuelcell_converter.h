@@ -52,7 +52,7 @@ struct ConverterConfig
 	float currentInMax;
 	float batteryChargedVoltage;
 
-	mcu::Gpio fltPin;
+	mcu::GpioInput fltPin;
 };
 
 
@@ -89,10 +89,10 @@ private:
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;
 	emb::PiControllerCl<emb::CONTROLLER_INVERSE> m_currentController;
 
-	const mcu::Gpio FLT_PIN;
-	const mcu::Gpio RST_PIN;
-	const mcu::Gpio ERR_PIN;
-	const mcu::Gpio REL_PIN;
+	const mcu::GpioInput FLT_PIN;
+	const mcu::GpioOutput RST_PIN;
+	const mcu::GpioOutput ERR_PIN;
+	const mcu::GpioOutput REL_PIN;
 public:
 	mcu::Pwm<mcu::PWM_ONE_PHASE> pwm;
 	InVoltageSensor inVoltageSensor;

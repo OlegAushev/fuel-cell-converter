@@ -25,13 +25,26 @@ enum PinState
 
 
 /**
- * @brief GPIO interface class.
+ * @brief GPIO input interface class.
  */
-class IGpio
+class IGpioInput
 {
 public:
-	IGpio() {}
-	virtual ~IGpio() {}
+	IGpioInput() {}
+	virtual ~IGpioInput() {}
+
+	virtual emb::PinState read() const = 0;
+};
+
+
+/**
+ * @brief GPIO output interface class.
+ */
+class IGpioOutput
+{
+public:
+	IGpioOutput() {}
+	virtual ~IGpioOutput() {}
 
 	virtual emb::PinState read() const = 0;
 	virtual void set(emb::PinState state = emb::PIN_ACTIVE) const = 0;

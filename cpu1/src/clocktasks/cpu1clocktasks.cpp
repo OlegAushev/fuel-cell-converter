@@ -17,7 +17,7 @@ mcu::ClockTaskStatus taskWatchdogTimeout()
 ///
 mcu::ClockTaskStatus taskToggleLed()
 {
-	const uint64_t periods[4] = {100, 100, 100, 700};
+	const uint64_t periods[4] = {100, 100, 100, 1700};
 	static size_t index = 0;
 
 	mcu::SystemClock::setTaskPeriod(0, periods[index]);

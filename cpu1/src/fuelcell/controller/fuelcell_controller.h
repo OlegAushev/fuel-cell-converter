@@ -116,7 +116,7 @@ public:
 
 public:
 	Controller(const Converter* converter,
-			const mcu::Gpio& rxPin, const mcu::Gpio& txPin, mcu::Gpio& clkPin);
+			const mcu::GpioInput& rxPin, const mcu::GpioOutput& txPin, mcu::GpioOutput& clkPin);
 
 	/**
 	 * @brief
