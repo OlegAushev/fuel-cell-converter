@@ -19,6 +19,9 @@ namespace fuelcell {
 /// @{
 
 
+extern unsigned int failureCount;
+
+
 /// Forward declaration.
 class Converter;
 

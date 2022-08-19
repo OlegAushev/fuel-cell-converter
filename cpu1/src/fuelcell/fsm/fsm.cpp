@@ -32,6 +32,11 @@ const uint64_t FUELCELL_STARTUP_MAX_DURATION = 45000;
 const uint64_t STARTUP_TO_READY_DELAY = 5000;
 const uint64_t DELAY_BEFORE_SHUTDOWN = 2000;
 const uint64_t POWERUP_TO_STANDBY_DELAY = 5000;
+const uint64_t RELAUNCH_DELAY = 10000;
+
+
+unsigned int failureCount = 0;
+const unsigned int MAX_FAILURE_COUNT = 3;
 
 
 /* ################################################################################################################## */
@@ -130,10 +135,19 @@ void POWERUP_State::emergencyShutdown(Converter* converter)
 ///
 void STANDBY_State::startup(Converter* converter)
 {
-	if (!Syslog::errors() && !Syslog::hasWarning(sys::Warning::BATTERY_CHARGED))
+	if (!Syslog::hasWarning(sys::Warning::BATTERY_CHARGED))
 	{
-		Controller::start();
-		changeState(converter, STARTUP_State::instance());
+		if (!Syslog::errors())
+		{
+			Controller::start();
+			changeState(converter, STARTUP_State::instance());
+		}
+		else if (failureCount < MAX_FAILURE_COUNT)
+		{
+			Controller::disableErrors();
+			Syslog::resetErrorsWarnings();
+			changeStateAfterWait(converter, STANDBY_State::instance(), RELAUNCH_DELAY);
+		}
 	}
 }
 
@@ -202,7 +216,7 @@ void STARTUP_State::startup(Converter* converter)
 void STARTUP_State::shutdown(Converter* converter)
 {
 	Controller::stop();
-	changeState(converter, STANDBY_State::instance());
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), DELAY_BEFORE_SHUTDOWN);
 }
 
 
@@ -571,6 +585,10 @@ void SHUTDOWN_State::startCharging(Converter* converter)
 void SHUTDOWN_State::run(Converter* converter)
 {
 	converter->turnRelayOff();
+	if (Syslog::errors() != 0)
+	{
+		++failureCount;
+	}
 	changeState(converter, STANDBY_State::instance());
 }
 
@@ -612,7 +630,6 @@ void WAIT_State::startup(Converter* converter)
 void WAIT_State::shutdown(Converter* converter)
 {
 	converter->stop();
-	/* DO NOTHING */
 }
 
 

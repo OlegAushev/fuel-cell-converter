@@ -133,6 +133,7 @@ inline ODAccessStatus resetAllFaults(CobSdoData& dest)
 {
 	mcu::SystemClock::resetWatchdog();
 	Syslog::resetErrorsWarnings();
+	fuelcell::failureCount = 0;
 	dest.u32 = TASK_SUCCESS;
 	return OD_ACCESS_SUCCESS;
 }
