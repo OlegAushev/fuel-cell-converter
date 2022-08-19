@@ -87,6 +87,7 @@ struct Data
 	bool statusLowPressure;
 	bool statusHydroError;
 
+	emb::Array<uint64_t, FUELCELL_COUNT> recvTimestamp;
 };
 
 
@@ -105,7 +106,8 @@ private:
 
 	static uint64_t m_errorRegTimestamp;
 	static bool m_isErrorRegistered;
-	static const uint64_t m_errorDelay = 5000;
+	static const uint64_t ERROR_PROPAGATION_DELAY = 5000;
+	static const uint64_t CONNECTION_WAIT = 5000;
 
 public:
 	static const float MIN_OPERATING_VOLTAGE = 32.5;
@@ -238,6 +240,28 @@ public:
 	static bool hasHydroError()
 	{
 		return s_data.statusHydroError;
+	}
+
+	/**
+	 * @brief
+	 * @param (none)
+	 * @return
+	 */
+	static bool isConnectionOk()
+	{
+		if (mcu::SystemClock::now() <= CONNECTION_WAIT)
+		{
+			return false;
+		}
+
+		for (size_t i = 0; i < s_data.recvTimestamp.size(); ++i)
+		{
+			if (mcu::SystemClock::now() - s_data.recvTimestamp[i] > CONNECTION_WAIT)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

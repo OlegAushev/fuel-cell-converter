@@ -25,6 +25,12 @@ SHUTDOWN_State SHUTDOWN_State::s_instance;
 WAIT_State WAIT_State::s_instance;
 
 
+const uint64_t ERROR_ENABLING_DELAY = 30000;
+const uint64_t FUELCELL_STARTUP_MAX_DURATION = 45000;
+const uint64_t STARTUP_TO_READY_DELAY = 5000;
+const uint64_t DELAY_BEFORE_SHUTDOWN = 2000;
+
+
 /* ################################################################################################################## */
 /* ##################### */
 /* ##### INTERFACE ##### */
@@ -156,7 +162,7 @@ void STARTUP_State::run(Converter* converter)
 
 	// TODO Controller::start(); // may be needed here to reset errors at fuel cells (multiple start signal sending)
 
-	if (mcu::SystemClock::now() - timestamp() > 20000)
+	if (mcu::SystemClock::now() - timestamp() > ERROR_ENABLING_DELAY)
 	{
 		Controller::enableErrors();
 	}
@@ -165,9 +171,9 @@ void STARTUP_State::run(Converter* converter)
 	{
 		Controller::enableErrors();
 		converter->turnRelayOn();
-		changeStateAfterWait(converter, READY_State::instance(), 5000);
+		changeStateAfterWait(converter, READY_State::instance(), STARTUP_TO_READY_DELAY);
 	}
-	else if (mcu::SystemClock::now() - timestamp() > 45000)
+	else if (mcu::SystemClock::now() - timestamp() > FUELCELL_STARTUP_MAX_DURATION)
 	{
 		Syslog::setError(sys::Error::FUELCELL_STARTUP_FAILED);
 	}
@@ -216,7 +222,7 @@ void READY_State::startup(Converter* converter)
 void READY_State::shutdown(Converter* converter)
 {
 	Controller::stop();
-	changeStateAfterWait(converter, SHUTDOWN_State::instance(), 2000);
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), DELAY_BEFORE_SHUTDOWN);
 }
 
 
@@ -283,7 +289,7 @@ void CHARGING_START_State::shutdown(Converter* converter)
 	converter->stop();
 	Controller::stop();
 	resetState();
-	changeStateAfterWait(converter, SHUTDOWN_State::instance(), 2000);
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), DELAY_BEFORE_SHUTDOWN);
 }
 
 
@@ -362,7 +368,7 @@ void CHARGING_State::shutdown(Converter* converter)
 {
 	converter->stop();
 	Controller::stop();
-	changeStateAfterWait(converter, SHUTDOWN_State::instance(), 2000);
+	changeStateAfterWait(converter, SHUTDOWN_State::instance(), DELAY_BEFORE_SHUTDOWN);
 }
 
 

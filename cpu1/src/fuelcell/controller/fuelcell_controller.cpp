@@ -50,6 +50,8 @@ Controller::Controller(const Converter* converter,
 	s_data.statusNoConnection = false;
 	s_data.statusLowPressure = false;
 	s_data.statusHydroError = false;
+
+	s_data.recvTimestamp.fill(0);
 }
 
 
@@ -153,6 +155,8 @@ void Controller::runRx()
 		s_data.statusLowCharge[cell] = rpdo.statusLowCharge;
 
 		s_data.current[cell] = 0.1f * float(rpdo.current);
+
+		s_data.recvTimestamp[cell] = mcu::SystemClock::now();
 		break;
 	}
 	case -1:
@@ -181,7 +185,7 @@ bool Controller::checkErrors()
 {
 	static bool errorPrev = false;
 	bool errorDelayExpired = m_isErrorRegistered
-			&& (mcu::SystemClock::now() - m_errorRegTimestamp > m_errorDelay);
+			&& (mcu::SystemClock::now() - m_errorRegTimestamp > ERROR_PROPAGATION_DELAY);
 	bool error = false;
 
 	if (hasError())
@@ -245,6 +249,15 @@ bool Controller::checkErrors()
 		{
 			Syslog::setError(sys::Error::FUELCELL_UV);
 		}
+	}
+
+	if (!isConnectionOk())
+	{
+		Syslog::setError(sys::Error::RS_CONNECTION_LOST);
+	}
+	else
+	{
+		Syslog::resetError(sys::Error::RS_CONNECTION_LOST);
 	}
 
 	if (error && !errorPrev)
