@@ -28,8 +28,8 @@ const mcu::GpioConfig relPinCfg;
 Converter::Converter(const ConverterConfig& converterConfig,
 		const mcu::PwmConfig<mcu::PWM_ONE_PHASE>& pwmConfig)
 	: emb::c28x::Singleton<Converter>(this)
-	, m_state(STANDBY_State::instance())
-	, m_stateId(CONVERTER_STANDBY)
+	, m_state(POWERUP_State::instance())
+	, m_stateId(CONVERTER_POWERUP)
 	, m_config(converterConfig)
 	, m_voltageInFilter(VDC_SMOOTH_FACTOR)
 	, m_voltageOutFilter(VDC_SMOOTH_FACTOR)

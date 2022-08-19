@@ -15,6 +15,8 @@ namespace fuelcell {
 
 uint64_t IState::s_timestamp = 0;
 
+
+POWERUP_State POWERUP_State::s_instance;
 STANDBY_State STANDBY_State::s_instance;
 STARTUP_State STARTUP_State::s_instance;
 READY_State READY_State::s_instance;
@@ -29,6 +31,7 @@ const uint64_t ERROR_ENABLING_DELAY = 30000;
 const uint64_t FUELCELL_STARTUP_MAX_DURATION = 45000;
 const uint64_t STARTUP_TO_READY_DELAY = 5000;
 const uint64_t DELAY_BEFORE_SHUTDOWN = 2000;
+const uint64_t POWERUP_TO_STANDBY_DELAY = 5000;
 
 
 /* ################################################################################################################## */
@@ -58,9 +61,70 @@ void changeStateAfterWait(Converter* converter, IState* nextState, uint64_t dela
 
 
 /* ################################################################################################################## */
-/* ############################ */
+/* ######################### */
+/* ##### POWERUP state ##### */
+/* ######################### */
+///
+///
+///
+void POWERUP_State::startup(Converter* converter)
+{
+	/* DO NOTHING */
+}
+
+
+///
+///
+///
+void POWERUP_State::shutdown(Converter* converter)
+{
+	/* DO NOTHING */
+}
+
+
+///
+///
+///
+void POWERUP_State::startCharging(Converter* converter)
+{
+	/* DO NOTHING */
+}
+
+
+///
+///
+///
+void POWERUP_State::run(Converter* converter)
+{
+	if (Controller::isConnectionOk())
+	{
+		changeStateAfterWait(converter, STANDBY_State::instance(), POWERUP_TO_STANDBY_DELAY);
+	}
+}
+
+
+///
+///
+///
+void POWERUP_State::stopCharging(Converter* converter)
+{
+	/* DO NOTHING */
+}
+
+
+///
+///
+///
+void POWERUP_State::emergencyShutdown(Converter* converter)
+{
+	/* DO NOTHING */
+}
+
+
+/* ################################################################################################################## */
+/* ######################### */
 /* ##### STANDBY state ##### */
-/* ############################ */
+/* ######################### */
 ///
 ///
 ///

@@ -18,6 +18,7 @@ namespace fuelcell {
 // Converter states
 enum ConverterState
 {
+	CONVERTER_POWERUP,
 	CONVERTER_STANDBY,
 	CONVERTER_STARTUP,
 	CONVERTER_READY,

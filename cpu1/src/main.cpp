@@ -146,7 +146,7 @@ void main()
 	Syslog::init(syslogIpcFlags);
 	Syslog::addMessage(sys::Message::DEVICE_CPU1_BOOT_SUCCESS);
 	fuelcell::Controller::disableErrors();			// no fuel cell errors registering at startup
-	Syslog::setError(sys::Error::RS_CONNECTION_LOST);	// wait for fuel cells ready
+	Syslog::setError(sys::Error::RS_CONNECTION_LOST);	// at powerup - wait for fuel cells ready
 
 // BEGIN of CPU1 PERIPHERY CONFIGURATION and OBJECTS CREATION
 /*####################################################################################################################*/

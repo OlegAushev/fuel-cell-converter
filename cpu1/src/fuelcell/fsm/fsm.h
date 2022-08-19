@@ -50,6 +50,25 @@ public:
 /**
  * @brief
  */
+class POWERUP_State : public IState
+{
+private:
+	static POWERUP_State s_instance;
+	POWERUP_State() : IState(CONVERTER_STANDBY) {}
+public:
+	static POWERUP_State* instance() { return &s_instance; }
+	virtual void startup(Converter* converter);
+	virtual void shutdown(Converter* converter);
+	virtual void startCharging(Converter* converter);
+	virtual void run(Converter* converter);
+	virtual void stopCharging(Converter* converter);
+	virtual void emergencyShutdown(Converter* converter);
+};
+
+
+/**
+ * @brief
+ */
 class STANDBY_State : public IState
 {
 private:
