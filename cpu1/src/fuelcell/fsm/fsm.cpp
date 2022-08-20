@@ -101,7 +101,7 @@ void POWERUP_State::startCharging(Converter* converter)
 ///
 void POWERUP_State::run(Converter* converter)
 {
-	if (Controller::isConnectionOk())
+	if (!Syslog::hasError(sys::Error::RS_CONNECTION_LOST))
 	{
 		changeStateAfterWait(converter, STANDBY_State::instance(), POWERUP_TO_STANDBY_DELAY);
 	}
