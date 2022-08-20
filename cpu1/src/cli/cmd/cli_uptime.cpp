@@ -14,11 +14,9 @@
 
 int cli_uptime(int argc, const char** argv)
 {
-	char str[32];
-
 	if (argc == 0)
 	{
-		snprintf(str, 32, "uptime: %llums", mcu::SystemClock::now());
+		snprintf(CLI_CMD_OUTPUT, CLI_CMD_OUTPUT_LENGTH, "uptime: %llums", mcu::SystemClock::now());
 	}
 	else
 	{
@@ -30,15 +28,15 @@ int cli_uptime(int argc, const char** argv)
 			sec -= 60 * min;
 
 			float uptime = mcu::SystemClock::now() / 1000.f;
-			snprintf(str, 32, "uptime: %llum %llus %llums", min, sec, msec);
+			snprintf(CLI_CMD_OUTPUT, CLI_CMD_OUTPUT_LENGTH, "uptime: %llum %llus %llums", min, sec, msec);
 		}
 		else
 		{
-			snprintf(str, 32, "uptime: invalid option - \"%s\"", argv[0]);
+			snprintf(CLI_CMD_OUTPUT, CLI_CMD_OUTPUT_LENGTH, "uptime: invalid option - \"%s\"", argv[0]);
 		}
 	}
 
-	cli::print(str);
+	cli::print(CLI_CMD_OUTPUT);
 	return 0;
 }
 
