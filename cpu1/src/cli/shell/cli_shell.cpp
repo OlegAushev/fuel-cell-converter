@@ -16,6 +16,9 @@ int cli_uptime(int argc, const char** argv);
 int cli_syslog(int argc, const char** argv);
 
 
+extern char CLI_OUTPUT[CLI_OUTPUT_LENGTH] = {0};
+
+
 namespace cli {
 
 

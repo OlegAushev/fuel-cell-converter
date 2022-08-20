@@ -14,10 +14,9 @@
 
 int cli_syslog(int argc, const char** argv)
 {
-	char str[32];
 	if (argc == 0)
 	{
-		strncpy(str, "Options not specified.", 32);
+		strncpy(CLI_OUTPUT, "Options not specified.", CLI_OUTPUT_LENGTH);
 		goto cli_syslog_print;
 	}
 
@@ -25,25 +24,25 @@ int cli_syslog(int argc, const char** argv)
 	{
 		if (argc == 1)
 		{
-			strncpy(str, "syslog-show: options not specified", 32);
+			strncpy(CLI_OUTPUT, "syslog-show: options not specified", CLI_OUTPUT_LENGTH);
 			goto cli_syslog_print;
 		}
 
 		if (strcmp(argv[1], "errors") == 0)
 		{
-			snprintf(str, 32, "errors: 0x%08lX", Syslog::errors());
+			snprintf(CLI_OUTPUT, CLI_OUTPUT_LENGTH, "errors: 0x%08lX", Syslog::errors());
 			goto cli_syslog_print;
 		}
 
 		if (strcmp(argv[1], "warnings") == 0)
 		{
-			snprintf(str, 32, "warnings: 0x%08lX", Syslog::warnings());
+			snprintf(CLI_OUTPUT, CLI_OUTPUT_LENGTH, "warnings: 0x%08lX", Syslog::warnings());
 			goto cli_syslog_print;
 		}
 	}
 
 cli_syslog_print:
-	cli::print(str);
+	cli::print(CLI_OUTPUT);
 	return 0;
 }
 
