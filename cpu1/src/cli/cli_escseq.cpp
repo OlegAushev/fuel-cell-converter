@@ -27,7 +27,6 @@ void Server::_escReturn()
 	case 0:
 		break;
 	default:
-		print(CLI_ENDL);
 		exec(argc, argv);
 		break;
 	}

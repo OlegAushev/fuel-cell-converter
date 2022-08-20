@@ -36,6 +36,7 @@ int cli_uptime(int argc, const char** argv)
 		}
 	}
 
+	cli::nextline();
 	cli::print(CLI_CMD_OUTPUT);
 	return 0;
 }

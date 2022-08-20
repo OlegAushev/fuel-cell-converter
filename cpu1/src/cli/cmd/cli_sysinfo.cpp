@@ -14,6 +14,7 @@
 
 int cli_sysinfo(int argc, const char** argv)
 {
+	cli::nextline();
 	cli::print("device name: ");
 	cli::print(sys::DEVICE_NAME);
 	cli::nextline();

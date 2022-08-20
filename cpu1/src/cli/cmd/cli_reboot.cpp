@@ -15,6 +15,8 @@
 
 int cli_reboot(int argc, const char** argv)
 {
+	cli::nextline();
+
 	if (argc > 1)
 	{
 		cli::print("Invalid options.");
