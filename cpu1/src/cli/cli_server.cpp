@@ -14,17 +14,24 @@ const char* PROMPT_BEGIN = CLI_PROMPT_BEGIN;
 const char* PROMPT_END = CLI_PROMPT_END;
 
 
-emb::IUart* Server::m_uart = static_cast<emb::IUart*>(NULL);
-emb::IGpioOutput* Server::m_pinRTS = static_cast<emb::IGpioOutput*>(NULL);
-emb::IGpioInput* Server::m_pinCTS = static_cast<emb::IGpioInput*>(NULL);
+emb::IUart* Server::s_uart = static_cast<emb::IUart*>(NULL);
+emb::IGpioOutput* Server::s_pinRTS = static_cast<emb::IGpioOutput*>(NULL);
+emb::IGpioInput* Server::s_pinCTS = static_cast<emb::IGpioInput*>(NULL);
 
 char Server::PROMPT[CLI_PROMPT_MAX_LENGTH] = {0};
-emb::String<CLI_CMDLINE_MAX_LENGTH> Server::m_cmdline;
-emb::String<CLI_ESCSEQ_MAX_LENGTH> Server::m_escseq;
+emb::String<CLI_CMDLINE_MAX_LENGTH> Server::s_cmdline;
+emb::String<CLI_ESCSEQ_MAX_LENGTH> Server::s_escseq;
 
-size_t Server::m_cursorPos = 0;
+size_t Server::s_cursorPos = 0;
 
-emb::Queue<char, CLI_OUTBUT_BUFFER_LENGTH> Server::m_outputBuf;
+emb::Queue<char, CLI_OUTBUT_BUFFER_LENGTH> Server::s_outputBuf;
+
+#ifdef CLI_USE_HISTORY
+emb::CircularBuffer<emb::String<CLI_CMDLINE_MAX_LENGTH>, CLI_HISTORY_LENGTH> Server::s_history;
+size_t Server::s_lastCmdHistoryPos = 0;
+size_t Server::s_historyPosition = 0;
+bool Server::s_newCmdSaved = false;
+#endif
 
 int (*Server::exec)(int argc, const char** argv) = Server::execNull;
 
@@ -39,6 +46,8 @@ const Server::EscSeq Server::ESCSEQ_LIST[] = {
 {.str = "\x08",		.len = 1,	.handler = Server::_escBack},
 {.str = "\x7F",		.len = 1,	.handler = Server::_escBack},
 {.str = CLI_ESC"[3~",	.len = 4,	.handler = Server::_escDel},
+{.str = CLI_ESC"[A",	.len = 3,	.handler = Server::_escUp},
+{.str = CLI_ESC"[B",	.len = 3,	.handler = Server::_escDown},
 };
 
 const size_t ESCSEQ_LIST_SIZE = sizeof(Server::ESCSEQ_LIST) / sizeof(Server::ESCSEQ_LIST[0]);
@@ -49,9 +58,9 @@ const size_t ESCSEQ_LIST_SIZE = sizeof(Server::ESCSEQ_LIST) / sizeof(Server::ESC
 ///
 Server::Server(const char* deviceName, emb::IUart* uart, emb::IGpioOutput* pinRTS, emb::IGpioInput* pinCTS)
 {
-	m_uart = uart;
-	m_pinRTS = pinRTS;	// output
-	m_pinCTS = pinCTS;	// input
+	s_uart = uart;
+	s_pinRTS = pinRTS;	// output
+	s_pinCTS = pinCTS;	// input
 
 	memset(PROMPT, 0, CLI_PROMPT_MAX_LENGTH);
 	strcat(PROMPT, PROMPT_BEGIN);
@@ -67,17 +76,17 @@ Server::Server(const char* deviceName, emb::IUart* uart, emb::IGpioOutput* pinRT
 ///
 void Server::run()
 {
-	if (!m_outputBuf.empty())
+	if (!s_outputBuf.empty())
 	{
-		if (m_uart->send(m_outputBuf.front()))
+		if (s_uart->send(s_outputBuf.front()))
 		{
-			m_outputBuf.pop();
+			s_outputBuf.pop();
 		}
 	}
 	else
 	{
 		char ch;
-		if (m_uart->recv(ch))
+		if (s_uart->recv(ch))
 		{
 			processChar(ch);
 		}
@@ -90,9 +99,9 @@ void Server::run()
 ///
 void Server::print(char ch)
 {
-	if (!m_outputBuf.full())
+	if (!s_outputBuf.full())
 	{
-		m_outputBuf.push(ch);
+		s_outputBuf.push(ch);
 	}
 }
 
@@ -102,9 +111,9 @@ void Server::print(char ch)
 ///
 void Server::print(const char* str)
 {
-	while ((*str != '\0') && !m_outputBuf.full())
+	while ((*str != '\0') && !s_outputBuf.full())
 	{
-		m_outputBuf.push(*str++);
+		s_outputBuf.push(*str++);
 	}
 }
 
@@ -114,7 +123,7 @@ void Server::print(const char* str)
 ///
 void Server::printBlocking(const char* str)
 {
-	m_uart->send(str, strlen(str));
+	s_uart->send(str, strlen(str));
 }
 
 
@@ -123,48 +132,48 @@ void Server::printBlocking(const char* str)
 ///
 void Server::processChar(char ch)
 {
-	if (m_cmdline.full())
+	if (s_cmdline.full())
 		return;
 
-	if (m_escseq.empty())
+	if (s_escseq.empty())
 	{
 		// Check escape signature
 		if (ch <= 0x1F || ch == 0x7F)
 		{
-			m_escseq.push_back(ch);
+			s_escseq.push_back(ch);
 		}
 		// Print symbol if escape sequence signature is not found
-		if (m_escseq.empty())
+		if (s_escseq.empty())
 		{
-			if (m_cursorPos < m_cmdline.lenght())
+			if (s_cursorPos < s_cmdline.lenght())
 			{
-				m_cmdline.insert(m_cursorPos, ch);
+				s_cmdline.insert(s_cursorPos, ch);
 				saveCursorPos();
-				print(m_cmdline.begin() + m_cursorPos);
+				print(s_cmdline.begin() + s_cursorPos);
 				loadCursorPos();
 			}
 			else
 			{
-				m_cmdline.push_back(ch);
+				s_cmdline.push_back(ch);
 			}
 			print(ch);
-			++m_cursorPos;
+			++s_cursorPos;
 		}
 	}
 	else
 	{
-		m_escseq.push_back(ch);
+		s_escseq.push_back(ch);
 	}
 
 	// Process escape sequence
-	if (!m_escseq.empty())
+	if (!s_escseq.empty())
 	{
 		int possibleEscseqCount = 0;
 		size_t escseqIdx = 0;
 		for (size_t i = 0; i < ESCSEQ_LIST_SIZE; ++i)
 		{
-			if ((m_escseq.lenght() <= ESCSEQ_LIST[i].len)
-					&& (strncmp(m_escseq.data(), ESCSEQ_LIST[i].str, m_escseq.lenght()) == 0))
+			if ((s_escseq.lenght() <= ESCSEQ_LIST[i].len)
+					&& (strncmp(s_escseq.data(), ESCSEQ_LIST[i].str, s_escseq.lenght()) == 0))
 			{
 				++possibleEscseqCount;
 				escseqIdx = i;
@@ -184,13 +193,13 @@ void Server::processChar(char ch)
 			}
 			print(m_cmdline.begin() + m_cursorPos);
 			m_cursorPos += m_escseq.lenght();*/
-			m_escseq.clear();
+			s_escseq.clear();
 			break;
 
 		case 1: // one possible sequence found - check size and call handler
-			if (m_escseq.lenght() == ESCSEQ_LIST[escseqIdx].len)
+			if (s_escseq.lenght() == ESCSEQ_LIST[escseqIdx].len)
 			{
-				m_escseq.clear();
+				s_escseq.clear();
 				ESCSEQ_LIST[escseqIdx].handler();
 			}
 			break;
@@ -224,8 +233,8 @@ void Server::printPrompt()
 {
 	print(CLI_ENDL);
 	print(PROMPT);
-	m_cmdline.clear();
-	m_cursorPos = 0;
+	s_cmdline.clear();
+	s_cursorPos = 0;
 }
 
 
@@ -236,6 +245,11 @@ int Server::tokenize(const char** argv, emb::String<CLI_CMDLINE_MAX_LENGTH>& cmd
 {
 	int argc = 0;
 	size_t idx = 0;
+
+	if (cmdline.empty())
+	{
+		return 0;
+	}
 
 	// replace all ' ' with '\0'
 	for (size_t i = 0; i < cmdline.lenght(); ++i)
@@ -270,10 +284,58 @@ int Server::tokenize(const char** argv, emb::String<CLI_CMDLINE_MAX_LENGTH>& cmd
 }
 
 
+#ifdef CLI_USE_HISTORY
+///
+///
+///
+void Server::searchHistory(HistorySearchDirection dir)
+{
+	static size_t pos;
 
+	switch (dir)
+	{
+	case CLI_HISTORY_SEARCH_UP:
+		if (s_newCmdSaved)
+		{
+			pos = s_historyPosition;
+		}
+		else
+		{
+			s_historyPosition = (s_historyPosition + (s_history.size() - 1)) % s_history.size();
+			pos = s_historyPosition;
+		}
+		break;
+	case CLI_HISTORY_SEARCH_DOWN:
+		s_historyPosition = (s_historyPosition + 1) % s_history.size();
+		pos = s_historyPosition;
+		break;
+	}
 
+	s_newCmdSaved = false;
 
+	// move cursor to line beginning
+	if (s_cursorPos > 0)
+	{
+		moveCursor(-s_cursorPos);
+		s_cursorPos = 0;
+	}
+
+	int remainder = s_cmdline.size() - s_history.data()[pos].size();
+	s_cmdline = s_history.data()[pos];
+	print(s_cmdline.data());
+	s_cursorPos = s_cmdline.size();
+
+	// clear remaining symbols
+	saveCursorPos();
+	for (int i = 0; i < remainder; ++i)
+	{
+		print(" ");
+	}
+	loadCursorPos();
+}
+#endif
 
 
 } // namespace cli
+
 

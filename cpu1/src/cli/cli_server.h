@@ -13,6 +13,7 @@
 #include "emb/emb_interfaces/emb_gpio.h"
 #include "emb/emb_queue.h"
 #include "emb/emb_string.h"
+#include "emb/emb_circularbuffer.h"
 
 #include "cli_config.h"
 
@@ -30,17 +31,24 @@ class Server
 	friend void print(const char* str);
 	friend void print_blocking(const char* str);
 private:
-	static emb::IUart* m_uart;
-	static emb::IGpioOutput* m_pinRTS;
-	static emb::IGpioInput* m_pinCTS;
+	static emb::IUart* s_uart;
+	static emb::IGpioOutput* s_pinRTS;
+	static emb::IGpioInput* s_pinCTS;
 
 	static char PROMPT[CLI_PROMPT_MAX_LENGTH];
-	static emb::String<CLI_CMDLINE_MAX_LENGTH> m_cmdline;
-	static emb::String<CLI_ESCSEQ_MAX_LENGTH> m_escseq;
+	static emb::String<CLI_CMDLINE_MAX_LENGTH> s_cmdline;
+	static emb::String<CLI_ESCSEQ_MAX_LENGTH> s_escseq;
 
-	static size_t m_cursorPos;
+	static size_t s_cursorPos;
 
-	static emb::Queue<char, CLI_OUTBUT_BUFFER_LENGTH> m_outputBuf;
+	static emb::Queue<char, CLI_OUTBUT_BUFFER_LENGTH> s_outputBuf;
+
+#ifdef CLI_USE_HISTORY
+	static emb::CircularBuffer<emb::String<CLI_CMDLINE_MAX_LENGTH>, CLI_HISTORY_LENGTH> s_history;
+	static size_t s_lastCmdHistoryPos;
+	static size_t s_historyPosition;
+	static bool s_newCmdSaved;
+#endif
 
 private:
 	Server(const Server& other);		// no copy constructor
@@ -99,6 +107,18 @@ private:
 	static void _escEnd();
 	static void _escBack();
 	static void _escDel();
+	static void _escUp();
+	static void _escDown();
+
+private:
+#ifdef CLI_USE_HISTORY
+	enum HistorySearchDirection
+	{
+		CLI_HISTORY_SEARCH_UP,
+		CLI_HISTORY_SEARCH_DOWN,
+	};
+	static void searchHistory(HistorySearchDirection dir);
+#endif
 };
 
 

@@ -174,6 +174,20 @@ public:
 };
 
 
+template <size_t Capacity>
+inline bool operator==(const String<Capacity>& lhs, const String<Capacity>& rhs)
+{
+	return strcmp(lhs.data(), rhs.data()) == 0;
+}
+
+
+template <size_t Capacity>
+inline bool operator!=(const String<Capacity>& lhs, const String<Capacity>& rhs)
+{
+	return !(lhs == rhs);
+}
+
+
 } // namespace emb
 
 

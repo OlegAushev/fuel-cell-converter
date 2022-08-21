@@ -149,7 +149,7 @@ void main()
 	cli::nextline_blocking();
 	cli::nextline_blocking();
 	cli::nextline_blocking();
-	cli::print_blocking("================================");
+	cli::print_blocking(CLI_WELCOME_STRING);
 	cli::nextline_blocking();
 	cli::print_blocking(CLI_COLOR_RED"Welcome to debug shell!"CLI_COLOR_OFF);
 #endif
