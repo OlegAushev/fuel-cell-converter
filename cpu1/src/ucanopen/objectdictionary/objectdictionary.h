@@ -14,8 +14,8 @@
 
 #include "../ucanopen_def.h"
 #include "emb/emb_math.h"
-#include "mcu_c28x/system/mcu_system.h"
-#include "mcu_c28x/cputimers/mcu_cputimers.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 
 // APP-SPECIFIC headers
 #include "sys/syslog/syslog.h"

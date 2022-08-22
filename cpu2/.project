@@ -26,9 +26,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>device</name>
+			<name>drivers</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/cpu1/device</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/cpu1/drivers</locationURI>
 		</link>
 		<link>
 			<name>include</name>
@@ -44,11 +44,6 @@
 			<name>src/fuelcell</name>
 			<type>2</type>
 			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/fuelcell</locationURI>
-		</link>
-		<link>
-			<name>src/mcu_c28x</name>
-			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/cpu1/src/mcu_c28x</locationURI>
 		</link>
 		<link>
 			<name>src/sys</name>

@@ -15,8 +15,8 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "mcu_c28x/system/mcu_system.h"
-#include "mcu_c28x/gpio/mcu_gpio.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 #include <math.h>

@@ -9,7 +9,7 @@
 
 #include "cli/shell/cli_shell.h"
 
-#include "mcu_c28x/cputimers/mcu_cputimers.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 
 
 int cli_uptime(int argc, const char** argv)

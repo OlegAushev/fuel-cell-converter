@@ -25,7 +25,7 @@ void SdoServiceTest::MessageProcessingTest()
 	rsdo.subindex = 0x00;
 	rsdo.cs = SDO_CCS_READ;
 	sdoService._processRequest(rsdo, tsdo);
-	EMB_ASSERT_EQUAL(tsdo.data.u32, Syslog::FIRMWARE_VERSION);
+	EMB_ASSERT_EQUAL(tsdo.data.u32, sys::FIRMWARE_VERSION_NUM);
 
 /*
 	rsdo.cs = SDO_CCS_READ;

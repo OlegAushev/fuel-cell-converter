@@ -7,7 +7,7 @@
 #pragma once
 
 
-#include "mcu_c28x/adc/mcu_adc.h"
+#include "mcu/adc/mcu_adc.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 

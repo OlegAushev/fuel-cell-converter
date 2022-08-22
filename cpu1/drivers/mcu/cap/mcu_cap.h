@@ -13,7 +13,7 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include "mcu_c28x/gpio/mcu_gpio.h"
+#include "mcu/gpio/mcu_gpio.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
 

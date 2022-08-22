@@ -6,8 +6,8 @@
 
 #include "cli_shell.h"
 
-#include "mcu_c28x/system/mcu_system.h"
-#include "mcu_c28x/cputimers/mcu_cputimers.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/cputimers/mcu_cputimers.h"
 
 
 int cli_sysinfo(int argc, const char** argv);

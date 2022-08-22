@@ -5,7 +5,7 @@
 #include "driverlib.h"
 #include "device.h"
 #include "emb/emb_common.h"
-#include "mcu_c28x/gpio/mcu_gpio.h"
+#include "mcu/gpio/mcu_gpio.h"
 
 
 //#define PIN_PROFILER_ENABLED

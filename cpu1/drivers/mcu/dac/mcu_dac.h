@@ -12,7 +12,7 @@
 
 #include "driverlib.h"
 #include "device.h"
-#include "mcu_c28x/system/mcu_system.h"
+#include "mcu/system/mcu_system.h"
 #include "emb/emb_common.h"
 
 

@@ -14,8 +14,8 @@
 #include "device.h"
 #include "emb/emb_common.h"
 #include "emb/emb_array.h"
-#include "mcu_c28x/system/mcu_system.h"
-#include "mcu_c28x/adc/channels/mcu_adcchannels.h"
+#include "mcu/system/mcu_system.h"
+#include "mcu/adc/channels/mcu_adcchannels.h"
 
 
 namespace mcu {
