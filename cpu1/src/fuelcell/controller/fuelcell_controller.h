@@ -148,7 +148,7 @@ public:
 	 */
 	static void stop()
 	{
-		disableErrors();	// errors after stop must not be registered
+		disableErrors();	// fuel cell errors must not be registered after stop
 		mcu::setLocalIpcFlag(SIG_STOP.local);
 	}
 

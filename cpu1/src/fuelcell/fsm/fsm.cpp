@@ -144,7 +144,6 @@ void STANDBY_State::startup(Converter* converter)
 		}
 		else if (failureCount < MAX_FAILURE_COUNT)
 		{
-			Controller::disableErrors();
 			Syslog::resetErrorsWarnings();
 			changeStateAfterWait(converter, STANDBY_State::instance(), RELAUNCH_DELAY);
 		}
