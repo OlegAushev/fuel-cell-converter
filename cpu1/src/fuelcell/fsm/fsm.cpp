@@ -246,6 +246,7 @@ void STARTUP_State::run(Converter* converter)
 
 	if ((fuelcell::Controller::isRunning()) && (voltDiff < 0.1))
 	{
+		failureCount = 0;
 		Controller::enableErrors();
 		converter->turnRelayOn();
 		changeStateAfterWait(converter, READY_State::instance(), STARTUP_TO_READY_DELAY);
