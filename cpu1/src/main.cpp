@@ -252,14 +252,6 @@ void main()
 	Settings settings;
 	Settings::SYSTEM_CONFIG = Settings::DEFAULT_CONFIG;
 
-#ifdef CRD300
-	mcu::GpioConfig drvFltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-#else
-	mcu::GpioConfig drvFltPinCfg;
-#endif
-	mcu::GpioInput drvFltPin(drvFltPinCfg);
-	Settings::SYSTEM_CONFIG.CONVERTER_CONFIG.fltPin = drvFltPin;
-
 /*####################################################################################################################*/
 	/*#############*/
 	/*# BOOT CPU2 #*/

@@ -51,8 +51,6 @@ struct ConverterConfig
 	float currentInMin;
 	float currentInMax;
 	float batteryChargedVoltage;
-
-	mcu::GpioInput fltPin;
 };
 
 
