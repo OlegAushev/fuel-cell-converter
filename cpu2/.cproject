@@ -62,6 +62,7 @@
 									<listOptionValue builtIn="false" value="DUALCORE"/>
 									<listOptionValue builtIn="false" value="NDEBUG"/>
 									<listOptionValue builtIn="false" value="_LAUNCHXL_F28379D"/>
+									<listOptionValue builtIn="false" value="HARDWARE_REVISION=1"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.DEBUGGING_MODEL.1332425433" name="Debugging model" superClass="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.DEBUGGING_MODEL" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.DEBUGGING_MODEL.SYMDEBUG__DWARF" valueType="enumerated"/>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.C_DIALECT.1939094164" name="C Dialect" superClass="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.C_DIALECT" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.C_DIALECT.C11" valueType="enumerated"/>
@@ -171,6 +172,7 @@
 									<listOptionValue builtIn="false" value="DUALCORE"/>
 									<listOptionValue builtIn="false" value="_LAUNCHXL_F28379D"/>
 									<listOptionValue builtIn="false" value="DEBUG"/>
+									<listOptionValue builtIn="false" value="HARDWARE_REVISION=1"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.DEBUGGING_MODEL.268524812" name="Debugging model" superClass="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.DEBUGGING_MODEL" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.DEBUGGING_MODEL.SYMDEBUG__DWARF" valueType="enumerated"/>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.C_DIALECT.1664446284" name="C Dialect" superClass="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.C_DIALECT" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_21.6.compilerID.C_DIALECT.C11" valueType="enumerated"/>
