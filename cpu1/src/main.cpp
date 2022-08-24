@@ -159,12 +159,12 @@ void main()
 #endif
 
 #ifdef CRD300
-	mcu::Gpio p61(P61_CFG);
-	mcu::Gpio p123(P123_CFG);
-	mcu::Gpio p122(P122_CFG);
-	mcu::Gpio p22(P22_CFG);
-	mcu::Gpio p111(P111_CFG);
-	mcu::Gpio p56(P56_CFG);
+	mcu::GpioOutput p61(P61_CFG);
+	mcu::GpioOutput p123(P123_CFG);
+	mcu::GpioOutput p122(P122_CFG);
+	mcu::GpioOutput p22(P22_CFG);
+	mcu::GpioOutput p111(P111_CFG);
+	mcu::GpioOutput p56(P56_CFG);
 #endif
 
 /*####################################################################################################################*/

@@ -78,24 +78,24 @@ private:
 	static const mcu::GpioConfig PROFILER_PIN_D3_CONFIG;
 #endif
 
-	emb::Array<mcu::Gpio, 6> psdisPins;
-	emb::Array<mcu::Gpio, 6> lenPins;
-	emb::Array<mcu::Gpio, 6> ocenPins;
-	emb::Array<mcu::Gpio, 6> faultPins;
-	mcu::Gpio shutdownPos15VPin;
-	emb::Array<mcu::Gpio, 3> ledPins;
+	emb::Array<mcu::GpioOutput, 6> psdisPins;
+	emb::Array<mcu::GpioOutput, 6> lenPins;
+	emb::Array<mcu::GpioOutput, 6> ocenPins;
+	emb::Array<mcu::GpioInput, 6> faultPins;
+	mcu::GpioOutput shutdownPos15VPin;
+	emb::Array<mcu::GpioOutput, 3> ledPins;
 
 public:
-	mcu::Gpio faultPinUVW;
-	mcu::Gpio faultPinXYZ;
-	mcu::Gpio faultPinALL;
+	mcu::GpioInput faultPinUVW;
+	mcu::GpioInput faultPinXYZ;
+	mcu::GpioInput faultPinALL;
 #ifdef USE_SD_PINS_FOR_PROFILING
-	mcu::Gpio profilerPinC1;
-	mcu::Gpio profilerPinC2;
-	mcu::Gpio profilerPinC3;
-	mcu::Gpio profilerPinD1;
+	mcu::GpioOutput profilerPinC1;
+	mcu::GpioOutput profilerPinC2;
+	mcu::GpioOutput profilerPinC3;
+	mcu::GpioOutput profilerPinD1;
 //	mcu::GpioPin profilerPinD2;
-	mcu::Gpio profilerPinD3;
+	mcu::GpioOutput profilerPinD3;
 #endif
 
 	/**
@@ -206,7 +206,7 @@ public:
 	 */
 	bool hasDriverFault(Phase phase)
 	{
-		if (GPIO_readPin(faultPins[phase].config().no) == 0)
+		if (GPIO_readPin(faultPins[phase].no()) == 0)
 		{
 			return true;
 		}

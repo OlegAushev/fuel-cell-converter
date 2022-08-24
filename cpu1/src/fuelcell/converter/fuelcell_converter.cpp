@@ -12,15 +12,20 @@ namespace fuelcell {
 
 
 #ifndef CRD300
-const mcu::GpioConfig fltPinCfg;
-const mcu::GpioConfig rstPinCfg(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioConfig errPinCfg(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioConfig relPinCfg(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig REL_PIN_CFG(125, GPIO_125_GPIO125, mcu::PIN_OUTPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+
+#if HARDWARE_REVISION == 1
+const mcu::GpioConfig RST_PIN_CFG(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig ERR_PIN_CFG(16, GPIO_16_GPIO16, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+
+#elif HARDWARE_REVISION == 2
+const mcu::GpioConfig FLT_PIN_CFG(16, GPIO_16_GPIO16, mcu::PIN_INPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig RDY_PIN_CFG(29, GPIO_29_GPIO29, mcu::PIN_INPUT, emb::ACTIVE_HIGH, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+const mcu::GpioConfig RST_PIN_CFG(24, GPIO_24_GPIO24, mcu::PIN_OUTPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
+#endif
+
 #else
-const mcu::GpioConfig fltPinCfg(15, GPIO_15_GPIO15, mcu::PIN_INPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
-const mcu::GpioConfig rstPinCfg;
-const mcu::GpioConfig errPinCfg;
-const mcu::GpioConfig relPinCfg;
+const mcu::GpioConfig FLT_PIN_CFG(15, GPIO_15_GPIO15, mcu::PIN_INPUT, emb::ACTIVE_LOW, mcu::PIN_STD, mcu::PIN_QUAL_ASYNC, 1);
 #endif
 
 
@@ -42,13 +47,22 @@ Converter::Converter(const ConverterConfig& converterConfig,
 			1 / pwmConfig.switchingFreq, 0, 0.7f)
 	, m_currentController(converterConfig.kP_current, converterConfig.kI_current,
 			1 / pwmConfig.switchingFreq, converterConfig.currentInMin, converterConfig.currentInMax)
-	, FLT_PIN(fltPinCfg)
-	, RST_PIN(rstPinCfg)
-	, ERR_PIN(errPinCfg)
-	, REL_PIN(relPinCfg)
+#ifndef CRD300
+	, REL_PIN(REL_PIN_CFG)
+#if HARDWARE_REVISION == 1
+	, RST_PIN(RST_PIN_CFG)
+	, ERR_PIN(ERR_PIN_CFG)
+#elif HARDWARE_REVISION == 2
+	, FLT_PIN(FLT_PIN_CFG)
+	, RDY_PIN(RDY_PIN_CFG)
+	, RST_PIN(RST_PIN_CFG)
+#endif
+#else
+	, FLT_PIN(FLT_PIN_CFG)
+#endif
 	, pwm(pwmConfig)
 {
-#ifdef CRD300
+#if defined(CRD300) || HARDWARE_REVISION == 2
 	pwm.initTzSubmodule(FLT_PIN, XBAR_INPUT1);
 #endif
 	pwm.registerEventInterruptHandler(onPwmEventInterrupt);
@@ -61,9 +75,14 @@ Converter::Converter(const ConverterConfig& converterConfig,
 	mcu::Adc::instance()->registerInterruptHandler(mcu::ADC_IRQ_TEMP_HEATSINK, onAdcTempHeatsinkInterrupt);
 
 #ifndef CRD300
-	RST_PIN.set();
-	ERR_PIN.set();
+#if HARDWARE_REVISION == 1
+	RST_PIN.reset();
+	ERR_PIN.reset();
 	mcu::delay_us(100000);
+#elif HARDWARE_REVISION == 2
+	RST_PIN.reset();
+	mcu::delay_us(100000);
+#endif
 #endif
 }
 

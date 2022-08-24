@@ -58,25 +58,25 @@ private:
 	Controller(const Controller& other); 		// no copy constructor
 	Controller& operator=(const Controller& other);	// no copy assignment operator
 
-	static const emb::Array<mcu::GpioPinConfig, 3> PSDIS_PINS_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 3> LEN_PINS_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 3> OCEN_PINS_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 3> FAULT_PINS_CONFIG;
-	static const mcu::GpioPinConfig SHUTDOWN_POS15V_PIN_CONFIG;
-	static const mcu::GpioPinConfig SHUTDOWN_NEG15V_PIN_CONFIG;
-	static const emb::Array<mcu::GpioPinConfig, 4> LED_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 3> PSDIS_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 3> LEN_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 3> OCEN_PINS_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 3> FAULT_PINS_CONFIG;
+	static const mcu::GpioConfig SHUTDOWN_POS15V_PIN_CONFIG;
+	static const mcu::GpioConfig SHUTDOWN_NEG15V_PIN_CONFIG;
+	static const emb::Array<mcu::GpioConfig, 4> LED_PINS_CONFIG;
 
-	static const mcu::GpioPinConfig PROFILER_PIN_P22_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_P111_CONFIG;
-	static const mcu::GpioPinConfig PROFILER_PIN_P56_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_P22_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_P111_CONFIG;
+	static const mcu::GpioConfig PROFILER_PIN_P56_CONFIG;
 
-	emb::Array<mcu::GpioPin, 3> psdisPins;
-	emb::Array<mcu::GpioPin, 3> lenPins;
-	emb::Array<mcu::GpioPin, 3> ocenPins;
-	emb::Array<mcu::GpioPin, 3> faultPins;
-	mcu::GpioPin shutdownPos15VPin;
-	mcu::GpioPin shutdownNeg15VPin;
-	emb::Array<mcu::GpioPin, 4> ledPins;
+	emb::Array<mcu::GpioOutput, 3> psdisPins;
+	emb::Array<mcu::GpioOutput, 3> lenPins;
+	emb::Array<mcu::GpioOutput, 3> ocenPins;
+	emb::Array<mcu::GpioInput, 3> faultPins;
+	mcu::GpioOutput shutdownPos15VPin;
+	mcu::GpioOutput shutdownNeg15VPin;
+	emb::Array<mcu::GpioOutput, 4> ledPins;
 
 public:
 
@@ -182,7 +182,7 @@ public:
 	 */
 	bool hasDriverFault(Phase phase)
 	{
-		if (GPIO_readPin(faultPins[phase].config().no) == 0)
+		if (GPIO_readPin(faultPins[phase].no()) == 0)
 		{
 			return true;
 		}

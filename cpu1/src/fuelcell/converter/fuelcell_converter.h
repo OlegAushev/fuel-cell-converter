@@ -87,10 +87,23 @@ private:
 	emb::PiControllerCl<emb::CONTROLLER_DIRECT> m_dutycycleController;
 	emb::PiControllerCl<emb::CONTROLLER_INVERSE> m_currentController;
 
-	const mcu::GpioInput FLT_PIN;
+#ifndef CRD300
+	const mcu::GpioOutput REL_PIN;
+
+#if HARDWARE_REVISION == 1
 	const mcu::GpioOutput RST_PIN;
 	const mcu::GpioOutput ERR_PIN;
-	const mcu::GpioOutput REL_PIN;
+
+#elif HARDWARE_REVISION == 2
+	const mcu::GpioInput FLT_PIN;
+	const mcu::GpioInput RDY_PIN;
+	const mcu::GpioOutput RST_PIN;
+#endif
+
+#else
+	const mcu::GpioInput FLT_PIN;
+#endif
+
 public:
 	mcu::Pwm<mcu::PWM_ONE_PHASE> pwm;
 	InVoltageSensor inVoltageSensor;
