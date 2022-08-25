@@ -31,7 +31,7 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.ocpCurrentIn = 45,
 
 	.otpTempJunction = 105,
-	.otpTempHeatsink = 95,
+	.otpTempHeatsink = 85,
 	.fanTempThOn = 65,
 	.fanTempThOff = 55,
 

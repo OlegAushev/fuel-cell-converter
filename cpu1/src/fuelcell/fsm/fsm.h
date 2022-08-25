@@ -57,7 +57,7 @@ class POWERUP_State : public IState
 {
 private:
 	static POWERUP_State s_instance;
-	POWERUP_State() : IState(CONVERTER_STANDBY) {}
+	POWERUP_State() : IState(CONVERTER_POWERUP) {}
 public:
 	static POWERUP_State* instance() { return &s_instance; }
 	virtual void startup(Converter* converter);
