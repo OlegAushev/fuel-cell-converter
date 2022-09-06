@@ -27,11 +27,12 @@ SHUTDOWN_State SHUTDOWN_State::s_instance;
 WAIT_State WAIT_State::s_instance;
 
 
+const uint64_t POWERUP_TO_STANDBY_DELAY = 5000;
 const uint64_t ERROR_ENABLING_DELAY = 30000;
 const uint64_t FUELCELL_STARTUP_MAX_DURATION = 45000;
 const uint64_t STARTUP_TO_READY_DELAY = 5000;
 const uint64_t DELAY_BEFORE_SHUTDOWN = 2000;
-const uint64_t POWERUP_TO_STANDBY_DELAY = 5000;
+const uint64_t DELAY_AFTER_SHUTDOWN = 5000;
 const uint64_t RELAUNCH_DELAY = 10000;
 
 
@@ -101,8 +102,9 @@ void POWERUP_State::startCharging(Converter* converter)
 ///
 void POWERUP_State::run(Converter* converter)
 {
-	if (!Syslog::hasError(sys::Error::RS_CONNECTION_LOST))
+	if (Controller::isConnectionOk())
 	{
+		Syslog::resetError(sys::Error::RS_CONNECTION_LOST);
 		changeStateAfterWait(converter, STANDBY_State::instance(), POWERUP_TO_STANDBY_DELAY);
 	}
 }
@@ -589,7 +591,7 @@ void SHUTDOWN_State::run(Converter* converter)
 	{
 		++failureCount;
 	}
-	changeState(converter, STANDBY_State::instance());
+	changeStateAfterWait(converter, STANDBY_State::instance(), DELAY_AFTER_SHUTDOWN);
 }
 
 

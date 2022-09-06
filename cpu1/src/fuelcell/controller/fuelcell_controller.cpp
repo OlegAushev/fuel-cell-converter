@@ -255,10 +255,6 @@ bool Controller::checkErrors()
 	{
 		Syslog::setError(sys::Error::RS_CONNECTION_LOST);
 	}
-	else
-	{
-		Syslog::resetError(sys::Error::RS_CONNECTION_LOST);
-	}
 
 	if (error && !errorPrev)
 	{
