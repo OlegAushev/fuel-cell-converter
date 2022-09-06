@@ -12,8 +12,8 @@
 #pragma once
 
 
-#define UCANOPEN_CAN1 mcu::CANA
-#define UCANOPEN_CAN2 mcu::CANB
+#define UCANOPEN_CAN1 mcu::CANB
+#define UCANOPEN_CAN2 mcu::CANA
 
 
 namespace ucanopen {
