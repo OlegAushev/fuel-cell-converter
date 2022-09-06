@@ -40,7 +40,7 @@
 #include "mcu/dac/mcu_dac.h"
 
 #include "sys/syslog/syslog.h"
-#include "clocktasks/cpu1clocktasks.h"
+#include "clocktasks/clocktasks_cpu1.h"
 #include "fuelcell/converter/fuelcell_converter.h"
 #include "settings/settings.h"
 #include "canbygpio/canbygpio.h"

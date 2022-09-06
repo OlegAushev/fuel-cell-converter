@@ -5,7 +5,7 @@
  *      Author: Oleg Aushev
  */
 
-#include "cpu2clocktasks.h"
+#include "clocktasks_cpu2.h"
 
 
 ///

@@ -14,7 +14,7 @@
 #include "mcu/dac/mcu_dac.h"
 
 #include "sys/syslog/syslog.h"
-#include "clocktasks/cpu2clocktasks.h"
+#include "clocktasks/clocktasks_cpu2.h"
 #include "fuelcell/controller/fuelcell_controller.h"
 
 
