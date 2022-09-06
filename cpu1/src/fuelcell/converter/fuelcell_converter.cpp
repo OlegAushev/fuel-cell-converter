@@ -149,13 +149,12 @@ __interrupt void Converter::onAdcVoltageOutInterrupt()
 	Converter* converter = Converter::instance();
 
 	float vOut = converter->outVoltageSensor.read();
-	converter->m_voltageOutFilter.push(vOut);
-
-	if (converter->m_voltageOutFilter.output() > converter->m_config.ovpVoltageOut)
+	if (vOut > converter->m_config.ovpVoltageOut)
 	{
 		Syslog::setError(sys::Error::OVP_OUT);
 	}
 
+	converter->m_voltageOutFilter.push(vOut);
 	if (converter->m_voltageOutFilter.output() > converter->m_config.batteryChargedVoltage)
 	{
 		Syslog::setWarning(sys::Warning::BATTERY_CHARGED);
