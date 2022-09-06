@@ -16,7 +16,7 @@
 #include "mcu/system/mcu_system.h"
 #include "mcu/ipc/mcu_ipc.h"
 
-#include "syslogconfig.h"
+#include "syslogdef.h"
 
 
 /// @addtogroup syslog
