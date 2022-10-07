@@ -158,7 +158,7 @@ __interrupt void Converter::onAdcVoltageOutInterrupt()
 	if (converter->m_voltageOutFilter.output() > converter->m_config.batteryChargedVoltage)
 	{
 		Syslog::setWarning(sys::Warning::BATTERY_CHARGED);
-		converter->stop();
+		converter->stopCharging();
 	}
 	else if (converter->m_voltageOutFilter.output() < converter->m_config.batteryChargedVoltage - 10)
 	{
