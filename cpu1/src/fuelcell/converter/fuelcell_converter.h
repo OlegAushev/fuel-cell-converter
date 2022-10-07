@@ -50,7 +50,11 @@ struct ConverterConfig
 	float cvVoltageIn;
 	float currentInMin;
 	float currentInMax;
-	float batteryChargedVoltage;
+	float batteryMinVoltage;
+	float batteryMaxVoltage;
+
+	uint32_t batteryMinCharge;
+	uint32_t batteryMaxCharge;
 };
 
 

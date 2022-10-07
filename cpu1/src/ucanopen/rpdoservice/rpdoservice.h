@@ -44,7 +44,9 @@ struct CobRpdo1
 		struct
 		{
 			uint32_t reserved1 : 32;
-			uint32_t reserved2 : 32;
+			uint32_t reserved2 : 8;
+			uint32_t chargePercent : 8;
+			uint32_t reserved3 : 16;
 		} can1;
 		struct
 		{
@@ -131,6 +133,7 @@ struct ProcessedRpdoData
 	bool bitBmsChargeEnDebug;
 	bool bitBmsFatalError;
 	bool bitBmsFatalErrorDebug;
+	uint32_t chargePercent;
 };
 extern ProcessedRpdoData rpdoProcessedDataShared;
 extern ProcessedRpdoData rpdoProcessedDataNonShared;
@@ -254,7 +257,7 @@ public:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			// RESERVED;
+			data().chargePercent = pdoMsg.can1.chargePercent;
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED
@@ -363,7 +366,15 @@ private:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
-			// RESERVED;
+			if (data().chargePercent > converter->config().batteryMaxCharge)
+			{
+				Syslog::setWarning(sys::Warning::BATTERY_CHARGED);
+				converter->shutdown();
+			}
+			else if (data().chargePercent < converter->config().batteryMinCharge)
+			{
+				Syslog::resetWarning(sys::Warning::BATTERY_CHARGED);
+			}
 			break;
 		case UCANOPEN_CAN2:
 			// RESERVED;

@@ -155,12 +155,12 @@ __interrupt void Converter::onAdcVoltageOutInterrupt()
 	}
 
 	converter->m_voltageOutFilter.push(vOut);
-	if (converter->m_voltageOutFilter.output() > converter->m_config.batteryChargedVoltage)
+	if (converter->m_voltageOutFilter.output() > converter->m_config.batteryMaxVoltage)
 	{
 		Syslog::setWarning(sys::Warning::BATTERY_CHARGED);
-		converter->stopCharging();
+		converter->shutdown();
 	}
-	else if (converter->m_voltageOutFilter.output() < converter->m_config.batteryChargedVoltage - 10)
+	else if (converter->m_voltageOutFilter.output() < converter->m_config.batteryMinVoltage)
 	{
 		Syslog::resetWarning(sys::Warning::BATTERY_CHARGED);
 	}

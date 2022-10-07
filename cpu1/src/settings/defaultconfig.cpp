@@ -44,7 +44,11 @@ const Settings::SystemConfig Settings::DEFAULT_CONFIG = {
 	.cvVoltageIn = 160,
 	.currentInMin = 5,
 	.currentInMax = 30,
-	.batteryChargedVoltage = 375.0,
+	.batteryMinVoltage = 360.0,
+	.batteryMaxVoltage = 375.0,
+
+	.batteryMinCharge = 75,
+	.batteryMaxCharge = 85,
 },
 
 /* ========================================================================== */
