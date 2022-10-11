@@ -366,6 +366,8 @@ private:
 		switch (Module)
 		{
 		case UCANOPEN_CAN1:
+			converter->setBatteryCharge(data().chargePercent);
+
 			if (data().chargePercent > converter->config().batteryMaxCharge)
 			{
 				Syslog::setWarning(sys::Warning::BATTERY_CHARGED);

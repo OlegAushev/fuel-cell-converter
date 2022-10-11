@@ -61,6 +61,7 @@ Converter::Converter(const ConverterConfig& converterConfig,
 	, FLT_PIN(FLT_PIN_CFG)
 #endif
 	, pwm(pwmConfig)
+	, m_batteryCharge(0)
 {
 #if defined(CRD300) || HARDWARE_REVISION == 2
 	pwm.initTzSubmodule(FLT_PIN, XBAR_INPUT1);

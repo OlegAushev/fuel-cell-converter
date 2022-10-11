@@ -108,6 +108,7 @@ private:
 	const mcu::GpioInput FLT_PIN;
 #endif
 
+	uint32_t m_batteryCharge;
 public:
 	mcu::Pwm<mcu::PWM_ONE_PHASE> pwm;
 	InVoltageSensor inVoltageSensor;
@@ -210,6 +211,9 @@ public:
 		REL_PIN.reset();
 #endif
 	}
+
+	uint32_t batteryCharge() const { return m_batteryCharge; }
+	void setBatteryCharge(uint32_t value) { m_batteryCharge = value; }
 
 protected:
 	static __interrupt void onPwmEventInterrupt();
